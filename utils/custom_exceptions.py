@@ -12,7 +12,7 @@
         super().__init__(self.status_code, self.message, self.error_message)
 
 """
-
+import pymysql
 
 # don't touch
 class CustomUserError(Exception):
@@ -68,7 +68,16 @@ class UserNotExist(CustomUserError):
 
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
+        status_code = 500
         message = 'database connection fail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class DatabaseError(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'database error'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
