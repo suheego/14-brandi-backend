@@ -5,6 +5,10 @@ from model import SampleUserDao, UserDao
 from service import SampleUserService, UserService
 from view import create_endpoints
 
+from model.store import DestinationSelectDao
+from service.store import DestinationSelectService
+from view.store import DestinationSelectView
+
 # for getting multiple service classes
 class Services:
     pass
@@ -28,13 +32,18 @@ def create_app(test_config=None):
     sample_user_dao = SampleUserDao()
     user_dao = UserDao()
 
+    destination_dao = DestinationSelectDao()
+
     # business Layer
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
     services.user_service = UserService(user_dao)
 
 
+    services.destination_select_service = DestinationSelectService(destination_dao)
+
     # presentation Layer
     create_endpoints(app, services, database)
+
 
     return app

@@ -52,4 +52,3 @@ def error_handle(app):
     @app.errorhandler(CustomUserError)
     def handle_error(e):
         return jsonify({"message": e.message, "errorMessage": e.error_message}), e.status_code
-

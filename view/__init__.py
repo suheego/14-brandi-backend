@@ -12,12 +12,11 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 from .sample_user_view import SampleUserView
 from .store.user_view import SignUpView
 from utils.error_handler import error_handle
+from .store import DestinationSelectView, DestinationView
 
 
 def create_endpoints(app, services, database):
-    sample_user_service = services.sample_user_service
-    user_service = services.user_service
-    """ 앤드 포인트 시작
+      """ 앤드 포인트 시작
 
             Args: 
                 app     : Flask 앱
@@ -36,6 +35,10 @@ def create_endpoints(app, services, database):
                 2020-20-22(홍길동): 2차 수정
             """
 
+    sample_user_service = services.sample_user_service
+    user_service = services.user_service
+    destination_select_service = services.destination_select_service
+    
 # ----------------------------------------------------------------------------------------------------------------------
 # Service Section(write your code under your name)
 # ----------------------------------------------------------------------------------------------------------------------
@@ -43,7 +46,23 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 김기용 example ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-    app.add_url_rule('/test', view_func=SampleUserView.as_view('sample_user_view', sample_user_service, database))
+    app.add_url_rule('/test',
+            view_func=SampleUserView.as_view(
+                'sample_user_view',
+                sample_user_service,
+                database))
+
+    app.add_url_rule('/destination/<destinations_id>',
+            view_func=DestinationSelectView.as_view(
+                'destination_select_view',
+                destination_select_service,
+                database))
+
+    app.add_url_rule('/destination',
+            view_func=DestinationView.as_view(
+                'destination_View',
+                destination_select_service,
+                database))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 김민구 ◟( ˘ ³˘)◞ ♡
