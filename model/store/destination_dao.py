@@ -55,6 +55,7 @@ class DestinationSelectDao:
             if affected_row == 0:
                 raise DestinationCreateDenied('unable_to_create')
 
+
     def check_account_type(self, connection, account_id):
         """ 계정 종류 확인 함수
 

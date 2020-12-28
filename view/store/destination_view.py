@@ -52,7 +52,6 @@ class DestinationView(MethodView):
         Param('address1', JSON, str),
         Param('address2', JSON, str),
         Param('post_number', JSON, str, rules=[PostalCodeRule()]),
-        Param('default_location', JSON, str),
         Param('is_deleted', JSON, str, rules=[IsDeleteRule()])
     )
     def post(self,*args):
@@ -63,8 +62,7 @@ class DestinationView(MethodView):
             'address1': args[3],
             'address2': args[4],
             'post_number': args[5],
-            'default_location': args[6],
-            'is_deleted': args[7]
+            'is_deleted': args[6]
         }
 
         """POST 메소드:  유저생성
@@ -87,6 +85,7 @@ class DestinationView(MethodView):
             400, {'message': 'key error', 'errorMessage': 'key_error'}                                        : 잘못 입력된 키값
             400, {'message': 'destination_creatation_denied', 'errorMessage': 'destination_creatation_denied'}: 배송지 생성 실패
             400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                                      : 유저 불일치 
+            400, {'message': 'data_limit_reached', 'errorMessage': 'max_destination_limit_reached'}           : 유저 불일치 
             401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}               : 계정 정보 없음
             500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}          : 커넥션 종료 실패
             500, {'message': 'internal server error', 'errorMessage': format(e)})                             : 서버 에러

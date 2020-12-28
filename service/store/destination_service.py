@@ -40,15 +40,18 @@ class DestinationSelectService:
 
             # 2. check_default_location 메서드를 통해 기본 배송지 설정 여부를 판단한다.
             default_location = self.destination_dao.check_default_location(connection, data['user_id'])
-            
-            # 리턴받은 튜플에 첫번째 인덱스에 접근
-            for row in default_location:
-                if row[0] == 1:
-                    data['default_location'] = 0
-                    break
-                else:
-                    data['default_location'] = 1
 
+            # 리턴받은 튜플에 첫번째 인덱스에 접근
+            if not default_location:
+                data['default_location'] = 1
+            else:
+                for row in default_location:
+                    if row[0] == 1:
+                        data['default_location'] = 0
+                        break
+                    else:
+                        print('elseelse:', row)
+                        data['default_location'] = 1
 
             return self.destination_dao.create_destination_dao(connection, data)
         except KeyError:
