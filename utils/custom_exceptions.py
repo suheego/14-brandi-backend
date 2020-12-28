@@ -97,3 +97,34 @@ class DestinationCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
+class CartItemNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'cart items not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class CartItemCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'cart item create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class CartItemUpdateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'cart item update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class CustomerPermissionDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'customer permissions denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
