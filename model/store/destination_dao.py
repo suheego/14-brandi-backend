@@ -1,6 +1,6 @@
 import pymysql
 
-from utils.custom_exceptions import DestinationNotExist, DestinationCreateDenied
+from utils.custom_exceptions import DestinationNotExist, DestinationCreateDenied, AccountNotExist, DataLimitExceeded
 
 
 class DestinationSelectDao:
@@ -52,13 +52,80 @@ class DestinationSelectDao:
         """
         with connection.cursor() as cursor:
             affected_row = cursor.execute(sql, data)
-            print(affected_row)
             if affected_row == 0:
                 raise DestinationCreateDenied('unable_to_create')
 
-#    def check_account_type(self, connectoin, account_id):
-#        
-#        sql ="""
-#        SELECT permission_type
-#        FROM 
-#
+    def check_account_type(self, connection, account_id):
+        """ 계정 종류 확인 함수
+
+        account_id 값으로 계정 종류를 확인한다.
+        master(1), seller(2), user(3)
+
+
+        Args:
+            connection: 데이터베이스 연결 객체
+            account_id: 계정 아이디
+
+        Author: 김기용
+
+        Returns: 3: user
+
+        Raises:
+            400, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}: 계정 정보 없음
+
+        History:
+            2020-12-28(김기용): 초기 생성
+        """
+        sql ="""
+        SELECT
+            permission_type_id
+        FROM
+            accounts
+        WHERE
+            id=%s;
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(sql, account_id)
+            permission_type_id = cursor.fetchall()
+            if not permission_type_id:
+                raise AccountNotExist('account_does_not_exist')
+            return permission_type_id[0][0]
+
+    def check_default_location(self, connection, account_id):
+        """ 계정 종류 확인 함수
+
+        account_id 값으로 계정 종류를 확인한다.
+        master(1), seller(2), user(3)
+
+
+        Args:
+            connection: 데이터베이스 연결 객체
+            account_id: 계정 아이디
+
+        Author: 김기용
+
+        Returns: 3: user
+
+        Raises:
+            400, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist'}: 계정 정보 없음
+            400, {'message': 'data_limit_reached', 'errorMessage': 'max_destination_limit_reached'}: 계정 정보 없음
+
+        History:
+            2020-12-28(김기용): 초기 생성
+        """
+        sql ="""
+        SELECT
+            default_location
+        FROM
+            destinations
+        WHERE
+            user_id=%s;
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(sql, account_id)
+            default_location = cursor.fetchall()
+
+            # 배송지 5개가 넘어가면 예외처리
+            if len(default_location) >= 5:
+                raise DataLimitExceeded('max_destination_limit_reached')
+            return default_location
