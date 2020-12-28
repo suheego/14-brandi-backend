@@ -72,3 +72,12 @@ class DatabaseCloseFail(CustomUserError):
         message = 'database connection fail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class DestinationNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'destination not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
