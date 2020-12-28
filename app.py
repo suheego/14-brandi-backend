@@ -1,13 +1,10 @@
 from flask import Flask
 from flask_cors import CORS
 
-from model import SampleUserDao, UserDao
-from service import SampleUserService, UserService
+from model import SampleUserDao, UserDao, DestinationSelectDao
+from service import SampleUserService, UserService, DestinationSelectService
 from view import create_endpoints
 
-from model.store import DestinationSelectDao
-from service.store import DestinationSelectService
-from view.store import DestinationSelectView
 
 # for getting multiple service classes
 class Services:
