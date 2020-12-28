@@ -89,3 +89,11 @@ class DestinationNotExist(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
        
+
+class DestinationCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'destination create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+

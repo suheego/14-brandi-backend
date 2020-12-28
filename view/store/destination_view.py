@@ -42,7 +42,11 @@ class DestinationView(MethodView):
         self.service = service
         self.database = database
 
+    def get(self):
+        pass
+
     @validate_params(
+        # account_id 102번 부터 유저
         Param('user_id', JSON, str, rules=[NumberRule()]),
         Param('recipient', JSON, str),
         Param('phone', JSON, str),
@@ -52,7 +56,7 @@ class DestinationView(MethodView):
         Param('default_location', JSON, str),
         Param('is_deleted', JSON, str)
     )
-    def get(self, *args):
+    def post(self,*args):
         data = {
             'user_id': args[0],
             'recipient': args[1],
@@ -80,9 +84,6 @@ class DestinationView(MethodView):
                     connection.close()
             except Exception:
                 raise DatabaseCloseFail('database close fail')
-
-
-    def post(self):
         pass
 
     def patch(self):
