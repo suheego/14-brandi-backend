@@ -27,48 +27,48 @@ class CustomUserError(Exception):
 
 class InvalidUserId(CustomUserError):
     def __init__(self, error_message):
-        self.status_code = 400
-        self.message = 'user_id must be integer'
-        self.error_message = error_message
-        super().__init__(self.status_code, self.message, self.error_message)
+        status_code = 400
+        message = 'user_id must be integer'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
 
 
 class UserAlreadyExist(CustomUserError):
     def __init__(self, error_message):
-        self.status_code = 400
-        self.message = 'user already exist'
-        self.error_message = error_message
-        super().__init__(self.status_code, self.message, self.error_message)
+        status_code = 400
+        message = 'user already exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
 
 
 class UserUpdateDenied(CustomUserError):
     def __init__(self, error_message):
-        self.status_code = 400
-        self.message = 'user update denied'
-        self.error_message = error_message
-        super().__init__(self.status_code, self.message, self.error_message)
+        status_code = 400
+        message = 'user update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
 
 
 class UserCreateDenied(CustomUserError):
     def __init__(self, error_message):
-        self.status_code = 400
-        self.message = 'user create denied'
-        self.error_message = error_message
-        super().__init__(self.status_code, self.message, self.error_message)
+        status_code = 400
+        message = 'user create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
 
 
 class UserNotExist(CustomUserError):
     def __init__(self, error_message):
-        self.status_code = 400
-        self.message = 'user not exist'
-        self.error_message = error_message
+        status_code = 400
+        message = 'user not exist'
+        error_message = error_message
 
-        super().__init__(self.status_code, self.message, self.error_message)
+        super().__init__(status_code, message, error_message)
 
 
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
-        self.status_code = 400
-        self.message = 'database connection fail'
-        self.error_message = error_message
-        super().__init__(self.status_code, self.message, self.error_message)
+        status_code = 400
+        message = 'database connection fail'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
