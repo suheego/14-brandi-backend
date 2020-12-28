@@ -27,11 +27,11 @@ def create_app(test_config=None):
 
     # persistence Layer
     sample_user_dao = SampleUserDao()
-
+    
     # business Layer
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
-
+    
     # presentation Layer
     create_endpoints(app, services, database)
 
