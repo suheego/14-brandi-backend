@@ -61,19 +61,45 @@ class DestinationView(MethodView):
         self.database = database
 
     def get(self):
+
+        # 로그인 데코레이터 달리면 그때 account_id 를 받아올예정
+        account_id = 120
+        data = dict()
+        data['account_id'] = account_id
+        """GET 메소드:  유저생성
+
+        Args:
+            account_id: 데코레이터에서 넘겨받은 유저 정보
+
+
+        Author: 김기용
+
+        Returns: 200, {'message': 'success', 'result': 유저 배송지 정보들}: 배송지 조회 성공
+
+        Raises:
+            400, {'message': 'key error', 'errorMessage': 'key_error'}                                        : 잘못 입력된 키값
+            400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                                      : 유저 불일치 
+            401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}               : 계정 정보 없음
+            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}          : 커넥션 종료 실패
+            500, {'message': 'internal server error', 'errorMessage': format(e)})                             : 서버 에러
+
+        History:
+            2020-12-29(김기용): 초기 생성
+        """
         try:
             connection = get_connection(self.database)
-            self.service.get_destination_service(connection)
-            return {'message': 'success'}
+            destination_detail = self.service.get_destination_detail_by_user_service(connection, data)
+            return {'message': 'success', 'result': destination_detail}
+
         except Exception as e:
             raise e
+
         finally:
             try:
                 if connection:
                     connection.close()
             except Exception:
                 raise DatabaseCloseFail('database_close_failed')
-
 
     @validate_params(
         Param('user_id', JSON, str, rules=[NumberRule()]),

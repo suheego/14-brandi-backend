@@ -55,11 +55,12 @@ def create_endpoints(app, services, database):
     #destination 상세 정보 불러오기
     app.add_url_rule('/destination/<destination_id>',
                      view_func=DestinationDetailView.as_view(
-                         'destination_select_view',
+                         'destination_detail_view',
                          destination_service,
                          database
                      ))
 
+    # destionation view 
     app.add_url_rule('/destination',
                      view_func=DestinationView.as_view(
                          'destination_View',
