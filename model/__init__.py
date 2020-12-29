@@ -6,7 +6,8 @@
 
 from .sample_user_dao import SampleUserDao
 from .store.user_dao import UserDao
-from .store.destination_dao import DestinationSelectDao
+from .store.destination_dao import DestinationDao
 from .store.cart_item_dao import CartItemDao
+
 
 
