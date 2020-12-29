@@ -44,3 +44,11 @@ class GenderRule(AbstractRule):
         if value not in gender_set:
             errors.append('accept only male and female value')
         return value, errors
+
+
+class RequiredFiledRule(AbstractRule):
+    def validate(self, value):
+        errors = []
+        if not value:
+            errors.append('required value')
+        return value, errors
