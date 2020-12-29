@@ -8,7 +8,6 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 
 """
 
-
 from .sample_user_view import SampleUserView
 from .admin.event_view import EventView
 from utils.error_handler import error_handle
