@@ -13,7 +13,7 @@ from .sample_user_view import SampleUserView
 from .store.user_view import SignUpView
 from .store.destination_view import DestinationView, DestinationSelectView
 
-from .store.cart_item_view import CartItemView
+from .store.cart_item_view import CartItemView, CartItemAddView
 from utils.error_handler import error_handle
 
 
@@ -83,6 +83,13 @@ def create_endpoints(app, services, database):
 # 고수희
 # ----------------------------------------------------------------------------------------------------------------------
     app.add_url_rule('/checkout/cart',
+                    view_func=CartItemAddView.as_view(
+                        'cart_item_add_view',
+                        cart_item_service,
+                        database
+                    ))
+
+    app.add_url_rule('/checkout/cart/<int:cart_id>',
                     view_func=CartItemView.as_view(
                         'cart_item_view',
                         cart_item_service,

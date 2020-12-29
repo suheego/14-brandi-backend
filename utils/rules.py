@@ -48,21 +48,10 @@ class GenderRule(AbstractRule):
 
 class DecimalRule(AbstractRule):
     def validate(self, value):
-        pattern = ''
+        pattern = '^\d*\.?\d*$'
         regex = re.compile(pattern)
         result = regex.match(value)
         errors = []
         if not result:
             errors.append('accept only decimal value')
-        return value, errors
-
-
-class ListInNumberRule(AbstractRule):
-    def validate(self, value):
-        pattern = '^[0-9]+$'
-        regex = re.compile(pattern)
-        result = regex.findall(value)
-        errors = []
-        if not result:
-            errors.append('accept only list in number value')
         return value, errors

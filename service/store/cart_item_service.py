@@ -17,7 +17,7 @@ class CartItemService:
         self.cart_item_dao = cart_item_dao
 
     def get_cart_item_service(self, connection, data):
-        """ GET 메소드: 장바구니 상품 조회
+        """ GET 메소드: 장바구니 상품 조회, 조회 시 상품 품절 여부 체
 
         Args:
             connection: 데이터베이스 연결 객체
@@ -38,17 +38,21 @@ class CartItemService:
             2020-12-28(고수희): 초기 생성
         """
         try:
-            permission_check = data['user_id']
-            if permission_check != 3:
-                raise CustomerPermissionDenied('customer_permission_denied')
-
-            return self.cart_item_dao.get_dao(connection, data)
+            #사용자의 권한 체크
+            # permission_check = data['user_id']
+            # if permission_check != 3:
+            #     raise CustomerPermissionDenied('customer_permission_denied')
+            #상품 품절 여부 체크
+            cart_id = data['cart_id']
+            sold_out_check = self.cart_item_dao.get_cart_item_soldout_dao(connection, data)
+            #상품 정보 조회
+            cart_item = self.cart_item_dao.get_dao(connection, data)
 
         except KeyError:
             raise KeyError('key_error')
 
     def post_cart_item_service(self, connection, data):
-        """ POST 메소드: 장바구니 상품 추가, 동일한 상품 옵션이 이미 있을 경우 상품 수량 수정
+        """ POST 메소드: 장바구니 상품 추가
 
         Args:
             connection: 데이터베이스 연결 객체
@@ -68,11 +72,6 @@ class CartItemService:
         """
 
         try:
-            # #동일한 상품 및 상품 옵션 중복 검사
-            # item_exist = self.cart_item_dao.patch_dao(connection, data)
-            # if item_exist:
-            #     return self.cart_item_dao.patch_dao(connection, data)
-
             return self.cart_item_dao.post_dao(connection, data)
 
         except KeyError:

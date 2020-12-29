@@ -1,14 +1,15 @@
 from flask import jsonify
 from flask.views import MethodView
-from utils.connection import get_connection
-from utils.custom_exceptions import DatabaseCloseFail
-from utils.rules import NumberRule, GenderRule, AlphabeticRule, DecimalRule, ListInNumberRule
 from flask_request_validator import (
-    GET,
+    PATH,
     Param,
     JSON,
     validate_params
 )
+
+from utils.connection import get_connection
+from utils.custom_exceptions import DatabaseCloseFail
+from utils.rules import NumberRule, DecimalRule
 
 
 class CartItemView(MethodView):
@@ -29,30 +30,34 @@ class CartItemView(MethodView):
         self.database = database
 
     @validate_params(
-        # 결제를 시도하려는 장바구니 상품이 여러개일 수 있으므로 list로 받음
-        Param('cartIds', GET, list, rules=[ListInNumberRule()])
+        Param('cart_id', PATH, int)
     )
-    #login_decorator
-    def get(self, cartIds):
-        """ GET 메소드: 해당 유저의 장바구니 정보를 조회.
+    # login_decorator
+    def get(self, *args):
+        """ GET 메소드: 해당 유저의 장바구니 상품 정를 조회.
 
-        cartIds에 해당되는 상품을 테이블에서 조회 후 가져옴
+        cart_id에 해당되는 장바구니 상품을 테이블에서 조회 후 가져옴
 
         Args: args = ('cart_id')
 
         Author: 고수희
-
+보
         Returns:
             return {
             "message": "success",
-            "result": [{"id":"3",
-                        "product_id": "3",
-                        "stock_id": "41",
+            "result": {totalPrice":"9000",
+                        {id: "3",
+                        "sellerName": "미우블랑"
+                        "productName": "회색 반팔티"
+                        "productImage": "https://img.freepik.com/free-psd/simple-black-men-s-tee-mockup_53876-57893.jpg?size=338&ext=jpg&ga=GA1.2.1060993109.1605750477",
+                        "productSize": "Free"
+                        "productColor": "Gray"
                         "quantity": "1",
-                        "sale":"0.10",
-                        "origin_price":"10000",
-                        "discounted_price":"9000"
-                        }]}
+                        "sale": "0.10",
+                        "originalPrice": "10000",
+                        "discountedPrice": "9000",
+                        "soldOut": true
+                        }}
 
         Raises:
             400, {'message': 'key error',
@@ -67,10 +72,8 @@ class CartItemView(MethodView):
         History:
             2020-12-28(고수희): 초기 생성
         """
-
         data = {
-            'cart_id': cartIds
-            #'user_id': user_id
+            "cart_id": args[0]
         }
 
         try:
@@ -87,6 +90,24 @@ class CartItemView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database close fail')
 
+
+class CartItemAddView(MethodView):
+    """ Presentation Layer
+
+    Attributes:
+        database: app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
+        service : CartItemService 클래스
+
+    Author: 고수희
+
+    History:
+        2020-12-28(고수희): 초기 생성
+    """
+
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+
     @validate_params(
         Param('userId', JSON, str, rules=[NumberRule()]),
         Param('productId', JSON, str, rules=[NumberRule()]),
@@ -96,19 +117,9 @@ class CartItemView(MethodView):
         Param('sale', JSON, str, rules=[DecimalRule()]),
         Param('discountedPrice', JSON, str, rules=[DecimalRule()])
     )
-    #login_decorator
+    # login_decorator
     def post(self, *args):
-        data = {
-            'user_id': args[0],
-            'product_id': args[1],
-            'stock_id': args[2],
-            'quantity': args[3],
-            'original_price': args[4],
-            'sale': args[5],
-            'discounted_price': args[6]
-        }
-
-        """POST 메소드: 장바구니 상품 생성 
+        """POST 메소드: 장바구니 상품 생성
 
         Args: args = ('product_id', 'stock_id', 'quantity', 'origin_price', 'sale', 'discounted_price')
 
@@ -124,7 +135,7 @@ class CartItemView(MethodView):
             'errorMessage': 'cart_item_create_error'} : 장바구니 상품 추가 실패
             400, {'message': 'unable to close database',
             'errorMessage': 'unable_to_close_database'} : 커넥션 종료 실패
-            403, {'message': 'customer permission denied', 
+            403, {'message': 'customer permission denied',
             'errorMessage': 'customer_permission_denied'} : 사용자 권한이 아님
             500, {'message': 'internal server error',
             'errorMessage': format(e)}) : 서버 에러
@@ -132,12 +143,21 @@ class CartItemView(MethodView):
         History:
             2020-12-28(고수희): 초기 생성
         """
+        data = {
+            'user_id': args[0],
+            'product_id': args[1],
+            'stock_id': args[2],
+            'quantity': args[3],
+            'original_price': args[4],
+            'sale': args[5],
+            'discounted_price': args[6]
+        }
 
         try:
             connection = get_connection(self.database)
             cart_items = self.service.post_cart_item_service(connection, data)
             connection.commit()
-            return {'message': 'success', 'result': {"id": cart_items}}
+            return {'message': 'success', 'result': {"cartId": cart_items}}
 
         except Exception as e:
             connection.rollback()
