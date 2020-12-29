@@ -10,13 +10,15 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 
 
 from .sample_user_view import SampleUserView
+from .admin.seller_view import SellerView
 from utils.error_handler import error_handle
 
 
 def create_endpoints(app, services, database):
-    sample_user_service = services.sample_user_service
-    """ 앤드 포인트 시작
+   # sample_user_service = services.sample_user_service
+    seller_service = services.seller_service
 
+    """ 앤드 포인트 시작
             Args: 
                 app     : Flask 앱
                 services: Services 클래스:Service 클래스들을 담고 있는 클래스이다.
@@ -41,7 +43,7 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 김기용 example ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-    app.add_url_rule('/test', view_func=SampleUserView.as_view('sample_user_view', sample_user_service, database))
+#    app.add_url_rule('/test', view_func=SampleUserView.as_view('sample_user_view', sample_user_service, database))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 김민구 ◟( ˘ ³˘)◞ ♡
@@ -59,6 +61,9 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # Admin 2 Section
 # ----------------------------------------------------------------------------------------------------------------------
+# 김영환
+    app.add_url_rule('/admin/signup', view_func = SellerView.as_view('seller_view', seller_service, database))
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 이성보 ◟( ˘ ³˘)◞ ♡

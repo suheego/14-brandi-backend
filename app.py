@@ -1,8 +1,8 @@
 from flask import Flask
 from flask_cors import CORS
 
-from model import SampleUserDao
-from service import SampleUserService
+from model.admin import SellerDao
+from service.admin import SellerService
 from view import create_endpoints
 
 
@@ -26,11 +26,11 @@ def create_app(test_config=None):
     database = app.config['DB']
 
     # persistence Layer
-    sample_user_dao = SampleUserDao()
+    seller_dao = SellerDao()
 
     # business Layer
     services = Services
-    services.sample_user_service = SampleUserService(sample_user_dao)
+    services.seller_service = SellerService(seller_dao)
 
     # presentation Layer
     create_endpoints(app, services, database)
