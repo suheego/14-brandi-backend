@@ -11,7 +11,7 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 
 from .sample_user_view import SampleUserView
 from .store.user_view import SignUpView
-from .store.destination_view import DestinationView, DestinationSelectView
+from .store.destination_view import DestinationView, DestinationDetailView
 from utils.error_handler import error_handle
 
 
@@ -36,7 +36,7 @@ def create_endpoints(app, services, database):
     """
     sample_user_service = services.sample_user_service
     user_service = services.user_service
-    destination_select_service = services.destination_select_service
+    destination_service = services.destination_service
     
 # ----------------------------------------------------------------------------------------------------------------------
 # Service Section(write your code under your name)
@@ -52,17 +52,18 @@ def create_endpoints(app, services, database):
                          database
                      ))
 
+    #destination 상세 정보 불러오기
     app.add_url_rule('/destination/<destinations_id>',
-                     view_func=DestinationSelectView.as_view(
+                     view_func=DestinationDetailView.as_view(
                          'destination_select_view',
-                         destination_select_service,
+                         destination_service,
                          database
                      ))
 
     app.add_url_rule('/destination',
                      view_func=DestinationView.as_view(
                          'destination_View',
-                         destination_select_service,
+                         destination_service,
                          database
                      ))
 

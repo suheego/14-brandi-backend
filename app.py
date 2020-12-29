@@ -1,8 +1,8 @@
 from flask import Flask
 from flask_cors import CORS
 
-from model import SampleUserDao, UserDao, DestinationSelectDao
-from service import SampleUserService, UserService, DestinationSelectService
+from model import SampleUserDao, UserDao, DestinationDao
+from service import SampleUserService, UserService, DestinationService
 from view import create_endpoints
 
 
@@ -29,7 +29,7 @@ def create_app(test_config=None):
     sample_user_dao = SampleUserDao()
     user_dao = UserDao()
 
-    destination_dao = DestinationSelectDao()
+    destination_dao = DestinationDao()
 
     # business Layer
     services = Services
@@ -37,7 +37,7 @@ def create_app(test_config=None):
     services.user_service = UserService(user_dao)
 
 
-    services.destination_select_service = DestinationSelectService(destination_dao)
+    services.destination_service = DestinationService(destination_dao)
 
     # presentation Layer
     create_endpoints(app, services, database)

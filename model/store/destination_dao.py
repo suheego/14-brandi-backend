@@ -3,10 +3,27 @@ import pymysql
 from utils.custom_exceptions import DestinationNotExist, DestinationCreateDenied, AccountNotExist, DataLimitExceeded
 
 
-class DestinationSelectDao:
+class DestinationDao:
 
-    def select_destination(self, connection, data):
+    def get_detail_destination(self, connection, data):
+        """ 배송지 상세 정보 조회
 
+        데이터베이스에 destinations_id 를 가지고 데이터를 조회한다.
+
+        Args:
+            connection: 데이터베이스 연결 객체
+            data      : service 에서 넘겨받은 data 객체
+
+        Author: 김기용
+
+        Returns: 배송지 상세 정보
+
+        Raises: 
+            400, {'message': 'destinations_dose_not_exist', 'errorMessage': 'destinations_dose_not_exist'}: 배송지 조회 실패
+
+        History:
+            2020-12-29(김기용): 초기 생성
+        """
         sql = """
             SELECT
                 id
@@ -20,10 +37,11 @@ class DestinationSelectDao:
             FROM
                 destinations
             WHERE
-                id = %(destination_id)s;
+                id=%s;
         """
+
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql, data)
+            cursor.execute(sql, data['destinations_id'])
             result = cursor.fetchall()
             if not result:
                 raise DestinationNotExist('destination_does_not_exist')

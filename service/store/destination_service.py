@@ -1,12 +1,29 @@
 from utils.custom_exceptions import NotUser
 
-class DestinationSelectService:
+class DestinationService:
 
     def __init__(self, destination_dao):
         self.destination_dao = destination_dao
 
-    def destination_select_service(self, connection, data):
-        return self.destination_dao.select_destination(connection, data)
+    def get_destination_detail_service(self, connection, data):
+        """ 배송지 상세 정보 서비스
+
+        View에서 받은 connection 객체와 data를 model 계층으로 넘겨준다.
+
+        Args:
+            connection: 데이터베이스 연결 객체
+            data      : View 에서 넘겨받은 data 객체
+
+        Author: 김기용
+
+        Returns: 배송지 상세정보
+
+        Raises: None
+
+        History:
+            2020-12-29(김기용): 초기 생성
+        """
+        return self.destination_dao.get_detail_destination(connection, data)
 
     def create_destination_service(self, connection, data):
         """ 배송지 생성 함수
