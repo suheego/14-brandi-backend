@@ -57,6 +57,18 @@ class EventDao:
                 400, {'message': 'event not exist', 'errorMessage': 'event does not exist'} : 이벤트 정보 조회 실패
         """
 
+        total_count_sql = """
+            SELECT
+                COUNT(*) AS total_count
+            FROM `events` AS `event`
+                INNER JOIN event_types AS event_type
+                    ON `event`.event_type_id = event_type.id
+                INNER JOIN event_kinds AS event_kind
+                   ON `event`.event_kind_id = event_kind.id
+            WHERE
+                `event`.is_deleted = 0
+        """
+
         sql = """
             SELECT
                 `event`.id AS event_number
@@ -81,57 +93,50 @@ class EventDao:
                 `event`.is_deleted = 0
         """
 
-        search_query = {
-            'event_name': ' AND `event`.`name` LIKE %(name)s',
-            'event_number': ' AND `event`.id = %(number)s',
-            'progress': ' AND NOW() BETWEEN `event`.start_date AND `event`.end_date',
-            'wait': ' AND NOW() < `event`.start_date',
-            'end': '  AND NOW() > `event`.end_date',
-            'event_crated': """
-                 AND `event`.created_at BETWEEN 
-                CONCAT(%(start_date)s, " 00:00:00") AND CONCAT(%(end_date)s, " 23:59:59")
-            """,
-            'display': ' AND `event`.is_display = 1',
-            'not_display': ' AND `event`.is_display = 0'
-        }
-
-        order_query = {
-            'desc': ' ORDER BY `event`.id DESC'
-        }
-
-        limit_query = ' LIMIT %(page)s, %(length)s;'
-
         # search option 1 : search by keyword (event_name or event_number)
         if data['name']:
-            sql += search_query['event_name']
+            total_count_sql += ' AND `event`.`name` LIKE %(name)s'
+            sql += ' AND `event`.`name` LIKE %(name)s'
         elif data['number']:
-            sql += search_query['event_number']
+            total_count_sql += ' AND `event`.id = %(number)s'
+            sql += ' AND `event`.id = %(number)s'
 
         # search option 2 : search by event_status
-        if data['status']:
-            sql += search_query[data['status']]
+        if data['status'] == 'progress':
+            total_count_sql += ' AND NOW() BETWEEN `event`.start_date AND `event`.end_date'
+            sql += ' AND NOW() BETWEEN `event`.start_date AND `event`.end_date'
+        elif data['status'] == 'wait':
+            total_count_sql += ' AND NOW() < `event`.start_date'
+            sql += ' AND NOW() < `event`.start_date'
+        elif data['status'] == 'end':
+            total_count_sql += ' AND NOW() > `event`.end_date'
+            sql += ' AND NOW() > `event`.end_date'
 
         # search option 3 : exposure
         if data['exposure'] is not None and data['exposure']:
-            sql += search_query['display']
+            total_count_sql += ' AND `event`.is_display = 1'
+            sql += ' AND `event`.is_display = 1'
         elif data['exposure'] is not None and not data['exposure']:
-            sql += search_query['not_display']
+            total_count_sql += ' AND `event`.is_display = 0'
+            sql += ' AND `event`.is_display = 0'
 
         # search option 4 : event_registered_date
         if data['start_date'] and data['end_date']:
-            sql += search_query['event_crated']
+            total_count_sql += """
+                AND `event`.created_at BETWEEN CONCAT(%(start_date)s, " 00:00:00") AND CONCAT(%(end_date)s, " 23:59:59")
+            """
+            sql += """
+                AND `event`.created_at BETWEEN CONCAT(%(start_date)s, " 00:00:00") AND CONCAT(%(end_date)s, " 23:59:59")
+            """
 
-        sql += order_query['desc'] + limit_query
-
-        # total_count_sql = """
-        #     SELECT COUNT () ;
-        # """
+        sql += ' ORDER BY `event`.id DESC LIMIT %(page)s, %(length)s;'
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, data)
-            # cursor.execute(total_count_sql, sql)
-            result = cursor.fetchall(),
-                # 'total_count': cursor.fetchone()
-            if not result:
+            events = cursor.fetchall()
+            cursor.execute(total_count_sql, data)
+            count = cursor.fetchall()
+            print(count)
+            if not events:
                 raise EventDoesNotExist('event does not exist')
-            return result
+            return {'events': events, 'total_count': count[0]['total_count']}
