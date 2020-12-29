@@ -1,7 +1,7 @@
 from flask import jsonify, request
 from flask.views import MethodView
 from utils.connection import get_connection
-from utils.custom_exceptions import DatabaseCloseFail
+from utils.custom_exceptions import DatabaseCloseFail, DateMissingOne, EventSearchTwoInput
 
 from utils.rules import NumberRule, EventStatusRule, EventExposureRule, DateRule
 from flask_request_validator import (
@@ -39,6 +39,11 @@ class EventView(MethodView):
             'start_date': args[6],
             'end_date': args[7]
         }
+        if (data['start_date'] and not data['end_date']) or (not data['start_date'] and data['end_date']):
+            raise DateMissingOne('start_date or end_date is missing')
+
+        if data['name'] and data['number']:
+            raise EventSearchTwoInput('search value accept only one of name or number')
 
         try:
             connection = get_connection(self.database)

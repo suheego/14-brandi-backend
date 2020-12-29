@@ -1,8 +1,62 @@
 import pymysql
-
+from utils.custom_exceptions import EventDoesNotExist
 
 class EventDao:
+    """ Persistence Layer
+
+        Attributes: None
+
+        Author: 강두연
+
+        History:
+            2020-12-28(강두연): 초기 생성 및 조회 기능 작성
+            2020-12-29(강두연): 이벤트 검색조건별 조회 작성
+    """
     def get_events_list(self, connection, data):
+        """기획전 정보 조회
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data   : 비지니스 레이어에서 넘겨 받은 검색 조건 키벨류
+
+            Author: 강두연
+
+            Returns:
+                return [
+                    {
+                        "created_at": "Mon, 28 Dec 2020 16:40:41 GMT",
+                        "end_date": "Mon, 01 Mar 2021 00:00:00 GMT",
+                        "event_kind": "버튼",
+                        "event_name": "성보의 하루 시리즈2(버튼형)",
+                        "event_number": 2,
+                        "event_status": "진행중",
+                        "event_type": "상품(이미지)",
+                        "is_display": "노출",
+                        "product_count": 59,
+                        "start_date": "Mon, 19 Oct 2020 00:00:00 GMT"
+                    },
+                    {
+                        "created_at": "Mon, 28 Dec 2020 16:40:41 GMT",
+                        "end_date": "Mon, 01 Mar 2021 00:00:00 GMT",
+                        "event_kind": "상품",
+                        "event_name": "성보의 하루 시리즈",
+                        "event_number": 1,
+                        "event_status": "진행중",
+                        "event_type": "상품(이미지)",
+                        "is_display": "노출",
+                        "product_count": 40,
+                        "start_date": "Mon, 19 Oct 2020 00:00:00 GMT"
+                    }
+                ]
+
+            History:
+                2020-12-28(강두연): 초기 생성 및 조회 기능 작성
+                2020-12-29(강두연): 이벤트 검색조건별 조회 작성
+
+            Raises:
+                400, {'message': 'event not exist', 'errorMessage': 'event does not exist'} : 이벤트 정보 조회 실패
+        """
+
         sql = """
             SELECT
                 `event`.id AS event_number
@@ -48,7 +102,6 @@ class EventDao:
         limit_query = ' LIMIT %(page)s, %(length)s;'
 
         # search option 1 : search by keyword (event_name or event_number)
-        print(data)
         if data['name']:
             sql += search_query['event_name']
         elif data['number']:
@@ -69,12 +122,10 @@ class EventDao:
             sql += search_query['event_crated']
 
         sql += order_query['desc'] + limit_query
-        # print(sql)
+
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, data)
             result = cursor.fetchall()
-            print(result)
             if not result:
-                print('no result')
-                # error handling required!
+                raise EventDoesNotExist('event does not exist')
             return result
