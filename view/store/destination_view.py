@@ -16,12 +16,12 @@ class DestinationDetailView(MethodView):
         self.service = service
         self.database = database
 
-    def get(self, destinations_id):
+    def get(self, destination_id):
         """GET 메소드: 배송지 상세정보 조회
 
         Args:
             args:
-                destinations_id : url pass_parameter로 입력받은 값
+                destination_id : url pass_parameter로 입력받은 값
 
         Author: 김기용
 
@@ -29,14 +29,14 @@ class DestinationDetailView(MethodView):
 
         Raises:
             400, {'message': 'key_error', 'errorMessage': 'key_error'}                                    : 잘못 입력된 키값
-            400, {'message': 'destinations_dose_not_exist', 'errorMessage': 'destinations_dose_not_exist'}: 배송지 조회 실패:w
+            400, {'message': 'destination_dose_not_exist', 'errorMessage': 'destination_dose_not_exist'}: 배송지 조회 실패:w
             500, {'message': 'internal server error', 'errorMessage': format(e)})                         : 서버 에러
 
         History:
             2020-12-29(김기용): 초기 생성
         """
         data = dict()
-        data['destinations_id'] = destinations_id
+        data['destination_id'] = destination_id
 
         try:
             connection = get_connection(self.database)

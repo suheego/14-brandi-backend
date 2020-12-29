@@ -8,7 +8,7 @@ class DestinationDao:
     def get_detail_destination(self, connection, data):
         """ 배송지 상세 정보 조회
 
-        데이터베이스에 destinations_id 를 가지고 데이터를 조회한다.
+        데이터베이스에 destination_id 를 가지고 데이터를 조회한다.
 
         Args:
             connection: 데이터베이스 연결 객체
@@ -19,7 +19,7 @@ class DestinationDao:
         Returns: 배송지 상세 정보
 
         Raises: 
-            400, {'message': 'destinations_dose_not_exist', 'errorMessage': 'destinations_dose_not_exist'}: 배송지 조회 실패
+            400, {'message': 'destination_dose_not_exist', 'errorMessage': 'destination_dose_not_exist'}: 배송지 조회 실패
 
         History:
             2020-12-29(김기용): 초기 생성
@@ -41,7 +41,7 @@ class DestinationDao:
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql, data['destinations_id'])
+            cursor.execute(sql, data['destination_id'])
             result = cursor.fetchall()
             if not result:
                 raise DestinationNotExist('destination_does_not_exist')
