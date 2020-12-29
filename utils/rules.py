@@ -22,7 +22,7 @@ class NumberRule(AbstractRule):
         result = regex.match(value)
         errors = []
         if not result:
-            errors.append('accept only number')
+            errors.append('accept_only_number')
         return value, errors
 
 
@@ -43,4 +43,38 @@ class GenderRule(AbstractRule):
         errors = []
         if value not in gender_set:
             errors.append('accept only male and female value')
+        return value, errors
+
+
+class UsernameRule(AbstractRule):
+    def validate(self, value):
+        print(value)
+        pattern = '^[a-zA-Z0-9]{6,20}$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('username_is_not_valid')
+        return value, errors
+
+
+class PasswordRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^.*(?=.{8,18})(?=.*[a-zA-Z])(?=.*?[A-Z])(?=.*\d)(?=.*[!@#£$%^&*()_+={}\-?:~\[\]])[a-zA-Z0-9!@#£$%^&*()_+={}\-?:~\[\]]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('password_is_not_valid')
+        return value, errors
+
+
+class EmailRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('email_is_not_valid')
         return value, errors

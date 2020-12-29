@@ -12,7 +12,7 @@
         super().__init__(self.status_code, self.message, self.error_message)
 
 """
-
+import pymysql
 
 # don't touch
 class CustomUserError(Exception):
@@ -28,7 +28,7 @@ class CustomUserError(Exception):
 class InvalidUserId(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
-        message = 'user_id must be integer'
+        message = 'user_id_must_be_integer'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -36,7 +36,7 @@ class InvalidUserId(CustomUserError):
 class UserAlreadyExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
-        message = 'user already exist'
+        message = 'user_already_exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -44,31 +44,85 @@ class UserAlreadyExist(CustomUserError):
 class UserUpdateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
-        message = 'user update denied'
+        message = 'user_update_denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
 class UserCreateDenied(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
-        message = 'user create denied'
+        status_code = 500
+        message = 'user_create_denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
 class UserNotExist(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
-        message = 'user not exist'
+        status_code = 404
+        message = 'user_not_exist'
         error_message = error_message
+        super().__init__(status_code, message, error_message)
 
+
+class InvalidUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_user'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class InvalidToken(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_token'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class TokenCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'token_create_denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class UnauthorizedUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 401
+        message = 'unauthorized_user'
+        error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
-        message = 'database connection fail'
+        status_code = 500
+        message = 'database_connection_fail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class DatabaseError(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'database_error'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class DestinationNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'destination not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+       
+
+class DestinationCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'destination create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+

@@ -369,10 +369,10 @@ tags
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,python,pycharm,flask,vscode,vim
 
-ideas
+.ideas
 config.py
 *.pyc
 __pycache__/
 .DS_Store
 *.log
-
+.idea/

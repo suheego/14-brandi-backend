@@ -29,11 +29,11 @@ def error_handle(app):
 
     @app.errorhandler(Exception)
     def handle_internal_server_error(e):
-        return jsonify({'message': 'internal server error', 'errorMessage': format(e)}), 500
+        return jsonify({'message': 'internal_server_error', 'errorMessage': format(e)}), 500
 
     @app.errorhandler(KeyError)
     def handle_key_error(e):
-        return jsonify({'message': 'key error', 'errorMessage': format(e)}), 400
+        return jsonify({'message': 'key_error', 'errorMessage': format(e)}), 400
 
     @app.errorhandler(NotImplementedError)
     def handle_key_error(e):
@@ -51,5 +51,4 @@ def error_handle(app):
     # customized exception
     @app.errorhandler(CustomUserError)
     def handle_error(e):
-        return jsonify({"message": e.message, "errorMessage": e.error_message, "status_code": e.status_code})
-
+        return jsonify({"message": e.message, "errorMessage": e.error_message}), e.status_code
