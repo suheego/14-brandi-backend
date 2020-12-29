@@ -28,14 +28,14 @@ class CustomUserError(Exception):
 class InvalidUserId(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
-        message = 'user_id_must_be_integer'
+        message = 'id_must_be_integer'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
 class UserAlreadyExist(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
+        status_code = 403
         message = 'user_already_exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
@@ -52,7 +52,7 @@ class UserUpdateDenied(CustomUserError):
 class UserCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
-        message = 'user_create_denied'
+        message = 'user_creatation_denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -97,7 +97,7 @@ class UnauthorizedUser(CustomUserError):
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
-        message = 'database_connection_fail'
+        message = 'database_connection_failed'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -111,18 +111,105 @@ class DatabaseError(CustomUserError):
 
 
 class DestinationNotExist(CustomUserError):
+    """ 배송지 조회 불가
+
+    Author: 김기용
+
+    History:
+        2020-12-28(김기용): 초기생성
+    """
     def __init__(self, error_message):
-        status_code = 400
-        message = 'destination not exist'
+        status_code = 401
+        message = 'destination_does_not_exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
        
 
 class DestinationCreateDenied(CustomUserError):
+    """ 배송지 생성 거절
+
+    Author: 김기용
+
+    History:
+        2020-12-28(김기용): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 400
-        message = 'destination create denied'
+        message = 'destination_creatation_denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
+class NotUser(CustomUserError):
+    """ 유저가 아님
+
+    Author: 김기용
+
+    History:
+        2020-12-28(김기용): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'not_a_user'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class AccountNotExist(CustomUserError):
+    """ 계정정보없음
+
+    Author: 김기용
+
+    History:
+        2020-12-28(김기용): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 401
+        message = 'account_does_not_exist'
+        
+        
+class CartItemNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'cart items not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class CartItemCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'cart item create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class DataLimitExceeded(CustomUserError):
+    """ 데이터 제한 초과
+
+    Author: 김기용
+
+    History:
+        2020-12-28(김기용): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'data_limit_reached'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+        
+        
+class CartItemUpdateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'cart item update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class CustomerPermissionDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'customer permissions denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)

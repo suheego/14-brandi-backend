@@ -48,13 +48,32 @@ class GenderRule(AbstractRule):
 
 class UsernameRule(AbstractRule):
     def validate(self, value):
-        print(value)
         pattern = '^[a-zA-Z0-9]{6,20}$'
         regex = re.compile(pattern)
         result = regex.match(value)
         errors = []
         if not result:
             errors.append('username_is_not_valid')
+        return value, errors
+
+      
+class PhoneRule(AbstractRule):
+    """ 휴대폰 자리수 규칙
+
+    10~11 자리 숫자를 허용한다.
+
+    Author: 김기용
+
+    History:
+        2020-12-28(김기용): 초기생성
+    """
+    def validate(self, value):
+        pattern = '^[0-9]{10,11}$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only 10~11 digit numbers')
         return value, errors
 
 
@@ -69,6 +88,26 @@ class PasswordRule(AbstractRule):
         return value, errors
 
 
+class PostalCodeRule(AbstractRule):
+    """ 우편번호 자리수 규칙
+
+    8 자리 숫자만 허용한다.
+
+    Author: 김기용
+
+    History:
+        2020-12-28(김기용): 초기생성
+    """
+    def validate(self, value):
+        pattern = '^[0-9]{8}$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only 8 digit numbers')
+        return value, errors
+
+
 class EmailRule(AbstractRule):
     def validate(self, value):
         pattern = '^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+$'
@@ -77,4 +116,33 @@ class EmailRule(AbstractRule):
         errors = []
         if not result:
             errors.append('email_is_not_valid')
+        return value, errors
+
+
+class DecimalRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^\d*\.?\d*$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only decimal value')
+        return value, errors
+
+
+class IsDeleteRule(AbstractRule):
+    """ 논리 삭제 규칙
+
+    0, 1 만 허용한다.
+
+    Author: 김기용
+
+    History:
+        2020-12-28(김기용): 초기생성
+    """
+    def validate(self, value):
+        gender_set = ['0', '1']
+        errors = []
+        if value not in gender_set:
+            errors.append('accept only 0 and 1 value')
         return value, errors
