@@ -72,3 +72,19 @@ class DatabaseCloseFail(CustomUserError):
         message = 'database connection fail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class ProductCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'product create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ProductImageCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'product image create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)

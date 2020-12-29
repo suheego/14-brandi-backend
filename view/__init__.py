@@ -7,27 +7,29 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
     app.add_url_rule('/test', view_func=TestUserView.as_view('test_user_view', test_user_service, database))
 
 """
+# from .sample_user_view import SampleUserView
+from .admin.create_product_view import CreateProductView
 
-
-from .sample_user_view import SampleUserView
 from utils.error_handler import error_handle
 
 
 def create_endpoints(app, services, database):
-    sample_user_service = services.sample_user_service
+    # sample_user_service = services.sample_user_service
+    create_product_service1 = services.create_product_service
+
     """ 앤드 포인트 시작
 
-            Args: 
+            Args:
                 app     : Flask 앱
                 services: Services 클래스:Service 클래스들을 담고 있는 클래스이다.
-                database: 데이터베이스 
+                database: 데이터베이스
 
             Author: 홍길동
 
             Returns: None
 
             Raises: None
-            
+
             History:
                 2020-20-20(홍길동): 초기 생성
                 2020-20-21(홍길동): 1차 수정
@@ -41,7 +43,7 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 김기용 example ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-    app.add_url_rule('/test', view_func=SampleUserView.as_view('sample_user_view', sample_user_service, database))
+#     app.add_url_rule('/test', view_func=SampleUserView.as_view('sample_user_view', sample_user_service, database))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 김민구 ◟( ˘ ³˘)◞ ♡
@@ -59,9 +61,17 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # Admin 2 Section
 # ----------------------------------------------------------------------------------------------------------------------
-
 # ----------------------------------------------------------------------------------------------------------------------
 # 심원두
+    app.add_url_rule('/product/productRegist',
+                     view_func=CreateProductView.as_view(
+                         'create_product_view',
+                         create_product_service1,
+                         database
+                     ))
+
+    # ----------------------------------------------------------------------------------------------------------------------
+# 이성보 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
