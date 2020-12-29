@@ -123,9 +123,15 @@ class EventDao:
 
         sql += order_query['desc'] + limit_query
 
+        # total_count_sql = """
+        #     SELECT COUNT () ;
+        # """
+
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, data)
-            result = cursor.fetchall()
+            # cursor.execute(total_count_sql, sql)
+            result = cursor.fetchall(),
+                # 'total_count': cursor.fetchone()
             if not result:
                 raise EventDoesNotExist('event does not exist')
             return result
