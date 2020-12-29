@@ -36,11 +36,9 @@ def create_app(test_config=None):
     services.sample_user_service = SampleUserService(sample_user_dao)
     services.user_service = UserService(user_dao)
 
-
     services.destination_service = DestinationService(destination_dao)
 
     # presentation Layer
     create_endpoints(app, services, database)
-
 
     return app

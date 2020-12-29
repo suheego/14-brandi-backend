@@ -107,7 +107,7 @@ class DestinationDao:
             2020-12-28(김기용): 초기 생성
         """
 
-        sql ="""
+        sql = """
         INSERT INTO destinations (
             user_id
             , recipient
@@ -130,7 +130,6 @@ class DestinationDao:
             affected_row = cursor.execute(sql, data)
             if affected_row == 0:
                 raise DestinationCreateDenied('unable_to_create')
-
 
     def check_account_type(self, connection, account_id):
         """ 계정 종류 확인 함수
@@ -169,11 +168,10 @@ class DestinationDao:
             return permission_type_id[0][0]
 
     def check_default_location(self, connection, account_id):
-        """ 계정 종류 확인 함수
+        """ 기본 배송지 값 조회
 
-        account_id 값으로 계정 종류를 확인한다.
-        master(1), seller(2), user(3)
-
+        account_id 에 해당하는 유저의 모든 배송지 기본 값을
+        조회해서 반환한다.
 
         Args:
             connection: 데이터베이스 연결 객체
@@ -190,19 +188,55 @@ class DestinationDao:
         History:
             2020-12-28(김기용): 초기 생성
         """
-        sql ="""
+        sql = """
         SELECT
             default_location
         FROM
             destinations
         WHERE
-            user_id=%s;
+            user_id=%s
+        AND
+            default_location = 1;
         """
+
         with connection.cursor() as cursor:
             cursor.execute(sql, account_id)
             default_location = cursor.fetchall()
 
-            # 배송지 5개가 넘어가면 예외처리
-            if len(default_location) >= 5:
-                raise DataLimitExceeded('max_destination_limit_reached')
+            print('check_default_location:', bool(default_location))
             return default_location
+
+    def check_default_location_length(self, connection, account_id):
+
+        sql = """
+        SELECT COUNT(*) as cnt
+        FROM
+            destinations
+        WHERE
+            user_id = %s;
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(sql, account_id)
+            counts = cursor.fetchone()
+
+            print('check_default_location_lenth:', counts)
+            return counts
+            
+    def delete_destination_dao(self, connection, data):
+
+        sql = """
+        UPDATE
+            is_deleted
+        FROM
+            destinations
+        WHERE
+            id=%(destination_id)s
+        AND
+            user_id=%(user_id)s;
+        """
+
+        with connection.cursor() as cursor:
+            affected_row = cursor.execute(sql, data)
+            if affected_row == 0:
+                raise DeleteFailed('unable_to_delete_destinations')
