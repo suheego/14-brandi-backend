@@ -86,6 +86,17 @@ class PostalCodeRule(AbstractRule):
         return value, errors
 
 
+class DecimalRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^\d*\.?\d*$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only decimal value')
+        return value, errors
+
+
 class IsDeleteRule(AbstractRule):
     """ 논리 삭제 규칙
 

@@ -138,6 +138,20 @@ class AccountNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 401
         message = 'account_does_not_exist'
+        
+        
+class CartItemNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'cart items not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class CartItemCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'cart item create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -153,5 +167,21 @@ class DataLimitExceeded(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'data_limit_reached'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+        
+        
+class CartItemUpdateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'cart item update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class CustomerPermissionDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'customer permissions denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
