@@ -62,7 +62,7 @@ class SampleUserView(MethodView):
         try:
             connection = get_connection(self.database)
             user = self.service.get_sample_user_service(connection, data)
-            return jsonify({'message': 'success', 'result': user})
+            return jsonify({'message': 'success', 'result': user}), 200
 
         except Exception as e:
             raise e

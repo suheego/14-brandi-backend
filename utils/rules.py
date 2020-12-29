@@ -44,3 +44,14 @@ class GenderRule(AbstractRule):
         if value not in gender_set:
             errors.append('accept only male and female value')
         return value, errors
+
+
+class SellerInfoRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^[0-9]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only number')
+        return value, errors
