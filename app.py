@@ -34,7 +34,7 @@ def create_app(test_config=None):
     # business Layer
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
-    services.user_service = UserService(user_dao)
+    services.user_service = UserService(user_dao, app.config)
     services.destination_service = DestinationService(destination_dao)
     services.cart_item_service = CartItemService(cart_item_dao)
 

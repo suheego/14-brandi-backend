@@ -51,7 +51,7 @@ class UserUpdateDenied(CustomUserError):
 
 class UserCreateDenied(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
+        status_code = 500
         message = 'user_creatation_denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
@@ -59,10 +59,38 @@ class UserCreateDenied(CustomUserError):
 
 class UserNotExist(CustomUserError):
     def __init__(self, error_message):
-        status_code = 401
+        status_code = 404
         message = 'user_not_exist'
         error_message = error_message
+        super().__init__(status_code, message, error_message)
 
+
+class InvalidUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_user'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class InvalidToken(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_token'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class TokenCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'token_create_denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class UnauthorizedUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 401
+        message = 'unauthorized_user'
+        error_message = error_message
         super().__init__(status_code, message, error_message)
 
 

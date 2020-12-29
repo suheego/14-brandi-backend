@@ -10,7 +10,7 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 
 
 from .sample_user_view import SampleUserView
-from .store.user_view import SignUpView
+from .store.user_view import SignUpView, SignInView, GoogleSocialSignInView
 from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
 from utils.error_handler import error_handle
@@ -73,7 +73,26 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 김민구 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-    app.add_url_rule('/user/signup', view_func=SignUpView.as_view('sign_up_view', user_service, database))
+    app.add_url_rule('/users/signup',
+                     view_func=SignUpView.as_view(
+                         'sign_up_view',
+                         user_service,
+                         database
+                     ))
+
+    app.add_url_rule('/users/signin',
+                     view_func=SignInView.as_view(
+                         'sign_in_view',
+                         user_service,
+                         database
+                     ))
+
+    app.add_url_rule('/users/social',
+                     view_func=GoogleSocialSignInView.as_view(
+                         'google_social_sign_in_view',
+                         user_service,
+                         database
+                     ))
 
 
 

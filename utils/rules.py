@@ -22,7 +22,7 @@ class NumberRule(AbstractRule):
         result = regex.match(value)
         errors = []
         if not result:
-            errors.append('accept only number')
+            errors.append('accept_only_number')
         return value, errors
 
 
@@ -46,6 +46,17 @@ class GenderRule(AbstractRule):
         return value, errors
 
 
+class UsernameRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^[a-zA-Z0-9]{6,20}$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('username_is_not_valid')
+        return value, errors
+
+      
 class PhoneRule(AbstractRule):
     """ 휴대폰 자리수 규칙
 
@@ -66,6 +77,17 @@ class PhoneRule(AbstractRule):
         return value, errors
 
 
+class PasswordRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^.*(?=.{8,18})(?=.*[a-zA-Z])(?=.*?[A-Z])(?=.*\d)(?=.*[!@#£$%^&*()_+={}\-?:~\[\]])[a-zA-Z0-9!@#£$%^&*()_+={}\-?:~\[\]]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('password_is_not_valid')
+        return value, errors
+
+
 class PostalCodeRule(AbstractRule):
     """ 우편번호 자리수 규칙
 
@@ -83,6 +105,17 @@ class PostalCodeRule(AbstractRule):
         errors = []
         if not result:
             errors.append('accept only 8 digit numbers')
+        return value, errors
+
+
+class EmailRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('email_is_not_valid')
         return value, errors
 
 
