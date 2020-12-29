@@ -1,5 +1,5 @@
 import pymysql
-from utils.custom_exceptions import UserUpdateDenied, UserCreateDenied, UserNotExist
+from utils.custom_exceptions import CartItemNotExist, CartItemCreateDenied, CartItemUpdateDenied
 
 
 class CartItemDao:
@@ -10,77 +10,142 @@ class CartItemDao:
         Author: 고수희
 
         History:
-            2020-12-28(고수희): 고수희
+            2020-12-28(고수희): 초기 생성
     """
 
-    def get_cart_item(self, connection, cart_ids):
-        cart_id = cart_ids
-        """장바구니 상품 정보 조회
+    def get_dao(self, connection, cart_id):
+        cart_id = cart_id
+        """장바구니 상품 정보 조회, 장바구니 상품 조회 시점에 상품이 품절되었는지 여부 체크
 
         Args:
             connection: 데이터베이스 연결 객체
-            cart_id   : 서비스 레이어에서 넘겨 받은 수정할 cart_id
+            data   : 서비스 레이어에서 넘겨 받아 조회할 data
 
         Author: 고수희
 
         Returns:
-            return [{'id': 12, 'name': '김기용', 'gender': '남자', 'age': '18'}]
+            return {totalPrice":"9000",
+                       {id": "3",
+                        "sellerName": "미우블랑"
+                        "productName": "회색 반팔티"
+                        "productImage": "https://img.freepik.com/free-psd/simple-black-men-s-tee-mockup_53876-57893.jpg?size=338&ext=jpg&ga=GA1.2.1060993109.1605750477",
+                        "productSize": "Free"
+                        "productColor": "Gray"
+                        "quantity": "1",
+                        "sale": "0.10",
+                        "originalPrice": "10000",
+                        "discountedPrice": "9000"
+                        }}
 
         History:
-            2020-12-28(고수): 초기 생성
+            2020-12-28(고수희): 초기 생성
 
         Raises:
-            400, {'message': 'user dose not exist', 'errorMessage': 'user_does_not_exist'} : 유저 정보 조회 실패
+            400, {'message': 'cart item does not exist',
+            'errorMessage': 'cart_item_does_not_exist'} : 장바구니 상품 정보 조회 실패
         """
-
         sql = """
-            SELECT * 
-            FROM users
-            WHERE id=%s;
+        SELECT 
+        id
+        , product_id
+        , stock_id
+        , quantity
+        , user_id
+        , sale
+        , original_price
+        , discounted_price
+        FROM 
+        cart_items
+        WHERE 
+        cart_id = $(cart_id)s
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, cart_id)
             result = cursor.fetchall()
             if not result:
-                raise UserNotExist('user_does_not_exist')
+                raise CartItemNotExist('cart_item_does_not_exist')
             return result
 
-    def post_dao(self, connection, data):
-        """장바구니  생성
+    def get_cart_item_soldout_dao(self, connection, cart_id):
+        """장바구니 상품 조회 시점에 상품이 품절되었는지 여부 체크
 
         Args:
-            connection: 데이터베이스 연결 객체
-            data      : service 에서 넘겨 받은 dict 객체
+            connection  : 데이터베이스 연결 객체
+            cart_id     : 서비스 레이어에서 넘겨 받아 조회할 cart_id
 
         Author: 고수희
 
-        Returns:
-            return (): 생성 성공
+        Returns: None
 
         Raises:
-            400, {'message': 'unable to create', 'errorMessage': 'unable_to_create'} : 유저 생성 실패
+            400, {'message': 'cart item does not exist',
+            'errorMessage': 'cart_item_does_not_exist'} : 장바구니 상품 정보 조회 실패
+
+        History:
+            2020-12-29(고수희): 초기 생성
+        """
+
+        sql = """
+        SELECT
+        *
+        FROM 
+        cart_items
+        WHERE 
+        id = %s
+        ;
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, cart_id)
+            result = cursor.fetchall()
+            if not result:
+                raise CartItemNotExist('cart_item_does_not_exist')
+            return result
+
+    def post_dao(self, connection, data):
+        """장바구니 상품 추가
+
+        Args:
+            connection: 데이터베이스 연결 객체
+            data      : 서비스 레이어에서 넘겨 받아 추가할 data
+
+        Author: 고수희
+
+        Returns: 생성된 cart의 id 반환
+
+        Raises:
+            400, {'message': 'unable to create',
+            'errorMessage': 'unable_to_create'} : 장바구니 상품 추가 실패
 
         History:
             2020-12-28(고수희): 초기 생성
         """
         sql = """
-        INSERT INTO users 
-        (
-            name,
-            gender,
-            age
-        )
-        VALUES(
-            %(name)s,
-            %(gender)s,
-            %(age)s
-            );
+        INSERT INTO
+        cart_items (
+        product_id
+        , stock_id
+        , quantity
+        , user_id
+        , sale
+        , original_price
+        , discounted_price
+        ) 
+        VALUES (
+        %(product_id)s
+        , %(stock_id)s
+        , %(quantity)s
+        , %(user_id)s
+        , %(sale)s
+        , %(original_price)s
+        , %(discounted_price)s
+        );
         """
 
         with connection.cursor() as cursor:
             cursor.execute(sql, data)
             result = cursor.lastrowid
             if not result:
-                raise UserCreateDenied('unable_to_create')
+                raise CartItemCreateDenied('unable_to_create')
             return result
