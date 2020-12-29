@@ -44,3 +44,14 @@ class GenderRule(AbstractRule):
         if value not in gender_set:
             errors.append('accept only male and female value')
         return value, errors
+
+
+class DecimalRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^\d*\.?\d*$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only decimal value')
+        return value, errors
