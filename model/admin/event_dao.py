@@ -54,7 +54,7 @@ class EventDao:
                 2020-12-29(강두연): 이벤트 검색조건별 조회 작성
 
             Raises:
-                404, {'message': 'event not exist', 'errorMessage': 'event does not exist'} : 이벤트 정보 조회 실패
+                400, {'message': 'event not exist', 'errorMessage': 'event does not exist'} : 이벤트 정보 조회 실패
         """
 
         sql = """
