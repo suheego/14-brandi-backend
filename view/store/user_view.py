@@ -1,5 +1,5 @@
 from flask.views import MethodView
-from flask import jsonify
+from flask import jsonify, request
 
 from flask_request_validator import (
     validate_params,
@@ -11,7 +11,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 
 from utils.connection import get_connection
-from utils.custom_exceptions import DatabaseCloseFail
+from utils.custom_exceptions import DatabaseCloseFail, InvalidToken
 from utils.rules import PasswordRule, PhoneRule, EmailRule, UsernameRule
 
 
@@ -19,8 +19,8 @@ class SignUpView(MethodView):
     """ Presentation Layer
 
         Attributes:
-            service : UserService 클래스
-            database: app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
+            service  : UserService 클래스
+            database : app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
 
         Author: 김민구
 
@@ -46,7 +46,7 @@ class SignUpView(MethodView):
             Author: 김민구
 
             Returns:
-                200, {'message': 'success'}                                                               : 유저 생성 성공
+                200, {'message': 'success'}                                                          : 유저 생성 성공
 
             Raises:
                 400, {'message': 'invalid_parameter', 'errorMessage': str(e)}                        : 잘못된 요청값
@@ -91,8 +91,8 @@ class SignInView(MethodView):
     """ Presentation Layer
 
         Attributes:
-            service : UserService 클래스
-            database: app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
+            service  : UserService 클래스
+            database : app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
 
         Author: 김민구
 
@@ -115,12 +115,13 @@ class SignInView(MethodView):
             Author: 김민구
 
             Returns:
-                200, {'message': 'success', 'token': access_token}                                   : 유저 생성 성공
+                200, {'message': 'success', 'token': token}                                          : 유저 생성 성공
 
             Raises:
                 400, {'message': 'invalid_parameter', 'errorMessage': str(e)}                        : 잘못된 요청값
                 400, {'message': 'key_error', 'errorMessage': 'key_error_' + format(e)}              : 잘못 입력된 키값
-                403, {'message': 'invalid_user', 'errorMessage': 'invalid_user'}                     : 로그인 실패s
+                403, {'message': 'invalid_user', 'errorMessage': 'invalid_user'}                     : 로그인 실패
+                500, {'message': 'create_token_denied', 'errorMessage': 'token_create_fail'}: 토큰 생성 실패
                 500, {'message': 'database_connection_fail', 'errorMessage': 'database_close_fail'}  : 커넥션 종료 실패
                 500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}    : 데이터베이스 에러
                 500, {'message': 'internal_server_error', 'errorMessage': format(e)})                : 서버 에러
@@ -135,11 +136,71 @@ class SignInView(MethodView):
                 'password': args[1]
             }
             connection = get_connection(self.database)
-            access_token = self.service.sign_in_service(data, connection)
-            return jsonify({'message': 'success', 'token': access_token}), 200
+            token = self.service.sign_in_service(data, connection)
+            return jsonify({'message': 'success', 'token': token}), 200
 
         except Exception as e:
             raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database_close_fail')
+
+class GoogleSocialSignInView:
+    """ Presentation Layer
+
+        Attributes:
+            service  : UserService 클래스
+            database : app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
+
+        Author: 김민구
+
+        History:
+            2020-20-29(김민구): 초기 생성
+    """
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+
+    def post(self):
+        """ POST 메소드: 유저 구글 소셜 로그인
+
+            Args: None
+
+            Headers:
+                Authorization : 구글 토큰
+
+            Author: 김민구
+
+            Returns:
+                200, {'message': 'success', 'token': token}                                          : 유저 생성 성공
+
+            Raises:
+                400, {'message': 'key_error', 'errorMessage': 'key_error_' + format(e)}              : 잘못 입력된 키값
+                403, {'message': 'invalid_token', 'errorMessage': 'invalid_google_token'}            : 유효하지 않은 토큰
+                500, {'message': 'create_token_denied', 'errorMessage': 'token_create_fail'}         : 토큰 생성 실패
+                500, {'message': 'database_connection_fail', 'errorMessage': 'database_close_fail'}  : 커넥션 종료 실패
+                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}    : 데이터베이스 에러
+                500, {'message': 'internal_server_error', 'errorMessage': format(e)})                : 서버 에러
+
+            History:
+                2020-20-29(김민구): 초기 생성
+        """
+        try:
+            token = request.headers.get('Authorization')
+            connection = get_connection(self.database)
+            user_info = id_token.verify_oauth2_token(token, requests.Request())
+            token = self.service.social_sign_in_service(connection, user_info)
+            return jsonify({'message': 'success', 'token': token}), 200
+
+        except Exception as e:
+            raise e
+
+        except ValueError:
+            raise InvalidToken('invalid_google_token')
 
         finally:
             try:

@@ -72,6 +72,20 @@ class InvalidUser(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+class InvalidToken(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_token'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class TokenCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'token_create_denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
 class UnauthorizedUser(CustomUserError):
     def __init__(self, error_message):
         status_code = 401

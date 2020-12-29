@@ -18,14 +18,14 @@ class UserDao:
         """ 유저 로그인아이디 중복 검사
 
             Args:
-                connection: 데이터베이스 연결 객체
-                data      : 서비스에서 넘겨 받은 dict 객체
+                connection : 데이터베이스 연결 객체
+                data       : 서비스에서 넘겨 받은 dict 객체
 
             Author: 김민구
 
             Returns:
-                return 0 : 해당 유저 없음
-                return 1 : 해당 유저 존재
+                0 : 해당 유저 없음
+                1 : 해당 유저 존재
 
             Raises:
                 500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
@@ -54,14 +54,14 @@ class UserDao:
         """ 유저 전화번호 중복 검사
 
             Args:
-                connection: 데이터베이스 연결 객체
-                data      : 서비스에서 넘겨 받은 dict 객체
+                connection : 데이터베이스 연결 객체
+                data       : 서비스에서 넘겨 받은 dict 객체
 
             Author: 김민구
 
             Returns:
-                return 0 : 해당 유저 없음
-                return 1 : 해당 유저 존재
+                0 : 해당 유저 없음
+                1 : 해당 유저 존재
 
             Raises:
                 500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
@@ -90,14 +90,14 @@ class UserDao:
         """ 유저 이메일 중복 검사
 
             Args:
-                connection: 데이터베이스 연결 객체
-                data      : 서비스에서 넘겨 받은 dict 객체
+                connection : 데이터베이스 연결 객체
+                data       : 서비스에서 넘겨 받은 dict 객체
 
             Author: 김민구
 
             Returns:
-                return 0 : 해당 유저 없음
-                return 1 : 해당 유저 존재
+                0 : 해당 유저 없음
+                1 : 해당 유저 존재
 
             Raises:
                 500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
@@ -126,13 +126,13 @@ class UserDao:
         """ account 생성
 
             Args:
-                connection: 데이터베이스 연결 객체
-                data      : 서비스에서 넘겨 받은 dict 객체
+                connection : 데이터베이스 연결 객체
+                data       : 서비스에서 넘겨 받은 dict 객체
 
             Author: 김민구
 
             Returns:
-                return account_id : account 생성 후 아이디 반환
+                account_id : account 생성 후 아이디 반환
 
             Raises:
                 500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
@@ -171,7 +171,8 @@ class UserDao:
             Author: 김민구
 
             Returns:
-                None
+                0 : 유저 생성 실패
+                1 : 유저 생성 성공
 
             Raises:
                 500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}       : 유저 생성 실패
@@ -196,18 +197,17 @@ class UserDao:
         try:
             with connection.cursor() as cursor:
                 result = cursor.execute(sql, data)
-                if not result:
-                    raise UserCreateDenied('user_create_fail')
+                return result
 
         except Exception as e:
             raise DatabaseError('database_error_' + format(e))
 
-    def get_username_password(self, connection, data):
+    def get_user_infomation(self, connection, data):
         """ 유저 로그인아이디, 비밀번호 조회
 
             Args:
-                connection: 데이터베이스 연결 객체
-                data      : 서비스에서 넘겨 받은 dict 객체
+                connection : 데이터베이스 연결 객체
+                data       : 서비스에서 넘겨 받은 dict 객체
 
             Author: 김민구
 
@@ -236,6 +236,44 @@ class UserDao:
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
                 cursor.execute(sql, data)
                 return cursor.fetchone()
+
+        except Exception as e:
+            raise DatabaseError('database_error_' + format(e))
+
+    def social_create_account(self, connection, data):
+        sql = """
+            INSERT INTO accounts (
+                username 
+                , permission_type_id
+            ) VALUES (
+                %(username)s 
+                , %(permission_type_id)s
+            );
+        """
+
+        try:
+            with connection.cursor() as cursor:
+                result = cursor.execute(sql, data)
+                return result
+
+        except Exception as e:
+            raise DatabaseError('database_error_' + format(e))
+
+    def social_create_user(self, connection, data):
+        sql = """
+            INSERT INTO users (
+                account_id
+                , email
+            ) VALUES (
+                %(account_id)s 
+                , %(email)s
+            );
+        """
+
+        try:
+            with connection.cursor() as cursor:
+                result = cursor.execute(sql, data)
+                return result
 
         except Exception as e:
             raise DatabaseError('database_error_' + format(e))

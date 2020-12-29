@@ -3,14 +3,14 @@ from datetime import datetime, timedelta
 import bcrypt
 import jwt
 
-from utils.custom_exceptions import UserAlreadyExist, UserCreateDenied, InvalidUser
+from utils.custom_exceptions import UserAlreadyExist, UserCreateDenied, InvalidUser, TokenCreateDenied
 
 
 class UserService:
     """ Business Layer
 
         Attributes:
-            user_dao: UserDao 클래스
+            user_dao : UserDao 클래스
 
         Author: 김민구
 
@@ -26,8 +26,8 @@ class UserService:
         """ 유저생성
 
             Args:
-                data      : View 에서 넘겨받은 dict 객체
-                connection: 데이터베이스 연결 객체
+                data       : View 에서 넘겨받은 dict 객체
+                connection : 데이터베이스 연결 객체
 
             Author: 김민구
 
@@ -38,6 +38,7 @@ class UserService:
                 400, {'message': 'key error', 'errorMessage': 'key_error' + format(e)}              : 잘못 입력된 키값
                 403, {'message': 'user already exist', 'errorMessage': 'already_exist' + _중복 데이터} : 중복 유저 존재
                 500, {'message': 'user_create_denied', 'errorMessage': 'account_create_fail'}       : account 생성 실패
+                500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}          : 유저 생성 실패
 
             History:
                 2020-20-28(김민구): 초기 생성
@@ -65,7 +66,10 @@ class UserService:
                 raise UserCreateDenied('account_create_fail')
 
             data['account_id'] = account_id
-            self.user_dao.create_user(connection, data)
+            result = self.user_dao.create_user(connection, data)
+
+            if not result:
+                raise UserCreateDenied('user_create_fail')
 
         except KeyError as e:
             raise KeyError('key_error_' + format(e))
@@ -74,8 +78,8 @@ class UserService:
         """ 유저 로그인
 
             Args:
-                data      : View 에서 넘겨받은 dict 객체
-                connection: 데이터베이스 연결 객체
+                data       : View 에서 넘겨받은 dict 객체
+                connection : 데이터베이스 연결 객체
 
             Author: 김민구
 
@@ -91,7 +95,7 @@ class UserService:
         """
 
         try:
-            user = self.user_dao.get_username_password(connection, data)
+            user = self.user_dao.get_userinfomation(connection, data)
 
             if not user or bcrypt.checkpw(data['password'].encode('utf-8'), user['password'].encode('utf-8')):
                 raise InvalidUser('invalid_user')
@@ -106,8 +110,8 @@ class UserService:
         """ 토근 생성기
 
             Args:
-                username      : 유저 이름
-
+                username   : 유저 이름
+                account_id : 유저 account_id
 
             Author: 김민구
 
@@ -115,7 +119,8 @@ class UserService:
                 token
 
             Raises:
-                400, {'message': 'key error', 'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키값
+                400, {'message': 'key error', 'errorMessage': 'key_error' + format(e)}      : 잘못 입력된 키값
+                500, {'message': 'create_token_denied', 'errorMessage': 'token_create_fail'}: 토큰 생성 실패
 
             History:
                 2020-20-29(김민구): 초기 생성
@@ -127,6 +132,33 @@ class UserService:
                 'exp': datetime.utcnow() + timedelta(hours=5)
             }
             token = jwt.encode(payload, self.config['JWT_SECRET_KEY'], self.config['JWT_ALGORITHM']).decode('utf-8')
+
+            if not token:
+                raise TokenCreateDenied('token_create_fail')
+
+            return token
+
+        except KeyError as e:
+            raise KeyError('key_error_' + format(e))
+
+    def social_sign_in_service(self, connection, data):
+        try:
+            email = data['email']
+            data['username'] = email.split('@')[0]
+            email_check = self.user_dao.email_exist_check(connection, email)
+
+            if not email_check:
+                data['permission_type_id'] = 3
+                account_id = self.user_dao.social_create_account(data)
+
+                data['account_id'] = account_id
+                result = self.user_dao.social_create_user(data)
+
+                if not result:
+                    raise UserCreateDenied('user_create_fail')
+
+            user = self.user_dao.get_username_password(data)
+            token = self.token_generator(user['account_id'], user['username'])
             return token
 
         except KeyError as e:

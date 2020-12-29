@@ -4,7 +4,7 @@ from flask import request, g, current_app
 
 import jwt
 
-from utils.custom_exceptions import UnauthorizedUser, InvalidUser
+from utils.custom_exceptions import UnauthorizedUser, InvalidToken
 
 def signin_degorator(func):
     """ 로그인 데코레이터
@@ -19,8 +19,8 @@ def signin_degorator(func):
             func(*args, **kwargs)    : g 객체를 사용해 account_id와 username을 로컬변수로 만들어 타겟 함수에서 사용 가능하게 설정
 
         Raises:
-            401, {'message': 'unauthorized_user', 'errorMessage': 'should_be_signin'}           : 로그인을 안한 유저
-            403, {'message': 'invalid_user', 'errorMessage': 'not_authorized_to_perform'}       : 해당 수행 권한이 없음
+            401, {'message': 'unauthorized_user', 'errorMessage': 'should_be_sign_in'}   : 로그인을 안한 유저
+            403, {'message': 'invalid_token', 'errorMessage': 'invalid_token'}           : 유효하지 않은 토큰
 
         History:
             2020-20-29(김민구): 초기 생성
@@ -38,12 +38,15 @@ def signin_degorator(func):
                 current_app.config['JWT_SECRET_KEY'],
                 current_app.config['JWT_ALGORITHM']
             )
-            username = payload['username']
-            g.username = username
+
+            g.username = payload['username']
             g.account_id = payload['account_id']
 
-        except jwt.InvalidTokenError:
-            raise InvalidUser('not_authorized_to_perform')
+        except (jwt.InvalidTokenError, jwt.exceptions.ExpiredSignatureError, jwt.exceptions.DecodeError):
+            raise InvalidToken('invalid_token')
+
+        except KeyError as e:
+            raise KeyError('key_error_' + format(e))
 
         return func(*args, **kwargs)
     return wrapper
