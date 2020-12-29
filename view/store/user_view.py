@@ -12,7 +12,7 @@ from google.auth.transport import requests
 
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail, InvalidToken
-from utils.rules import PasswordRule, EmailRule, UsernameRule
+from utils.rules import PasswordRule, EmailRule, UsernameRule, PhoneRule
 
 
 class SignUpView(MethodView):
@@ -36,7 +36,7 @@ class SignUpView(MethodView):
     @validate_params(
         Param('username', JSON, str, rules=[UsernameRule()]),
         Param('password', JSON, str, rules=[PasswordRule()]),
-        Param('phone', JSON, str),
+        Param('phone', JSON, str, rules=[PhoneRule()]),
         Param('email', JSON, str, rules=[EmailRule()])
     )
     def post(self, *args):
@@ -51,12 +51,12 @@ class SignUpView(MethodView):
 
             Raises:
                 400, {'message': 'invalid_parameter', 'errorMessage': str(e)}                        : 잘못된 요청값
-                400, {'message': 'key_error', 'errorMessage': 'key_error_' + format(e)}              : 잘못 입력된 키값
+                400, {'message': 'key_error', 'errorMessage': format(e)}                             : 잘못 입력된 키값
                 403, {'message': 'user_already_exist', errorMessage': 'already_exist' + _중복 데이터}   : 중복 유저 생성 실패
                 500, {'message': 'user_create_denied', 'errorMessage': 'account_create_fail'}        : 유저 생성 실패
                 500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}           : 유저 생성 실패
                 500, {'message': 'database_connection_fail', 'errorMessage': 'database_close_fail'}  : 커넥션 종료 실패
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}    : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': format(e)}                        : 데이터베이스 에러
                 500, {'message': 'internal_server_error', 'errorMessage': format(e)})                : 서버 에러
 
             History:
@@ -100,6 +100,7 @@ class SignInView(MethodView):
         History:
             2020-20-29(김민구): 초기 생성
     """
+
     def __init__(self, service, database):
         self.service = service
         self.database = database
@@ -120,11 +121,11 @@ class SignInView(MethodView):
 
             Raises:
                 400, {'message': 'invalid_parameter', 'errorMessage': str(e)}                        : 잘못된 요청값
-                400, {'message': 'key_error', 'errorMessage': 'key_error_' + format(e)}              : 잘못 입력된 키값
+                400, {'message': 'key_error', 'errorMessage': format(e)}                             : 잘못 입력된 키값
                 403, {'message': 'invalid_user', 'errorMessage': 'invalid_user'}                     : 로그인 실패
                 500, {'message': 'create_token_denied', 'errorMessage': 'token_create_fail'}         : 토큰 생성 실패
                 500, {'message': 'database_connection_fail', 'errorMessage': 'database_close_fail'}  : 커넥션 종료 실패
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}    : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': format(e)}                        : 데이터베이스 에러
                 500, {'message': 'internal_server_error', 'errorMessage': format(e)})                : 서버 에러
 
             History:
@@ -149,6 +150,7 @@ class SignInView(MethodView):
                     connection.close()
             except Exception:
                 raise DatabaseCloseFail('database_close_fail')
+
 
 class GoogleSocialSignInView(MethodView):
     """ Presentation Layer
@@ -180,11 +182,11 @@ class GoogleSocialSignInView(MethodView):
                 200, {'message': 'success', 'token': token}                                          : 유저 생성 성공
 
             Raises:
-                400, {'message': 'key_error', 'errorMessage': 'key_error_' + format(e)}              : 잘못 입력된 키값
+                400, {'message': 'key_error', 'errorMessage': format(e)}                             : 잘못 입력된 키값
                 403, {'message': 'invalid_token', 'errorMessage': 'invalid_google_token'}            : 유효하지 않은 토큰
                 500, {'message': 'create_token_denied', 'errorMessage': 'token_create_fail'}         : 토큰 생성 실패
                 500, {'message': 'database_connection_fail', 'errorMessage': 'database_close_fail'}  : 커넥션 종료 실패
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}    : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': format(e)}                        : 데이터베이스 에러
                 500, {'message': 'internal_server_error', 'errorMessage': format(e)})                : 서버 에러
 
             History:

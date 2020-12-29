@@ -47,6 +47,16 @@ class GenderRule(AbstractRule):
 
 
 class UsernameRule(AbstractRule):
+    """ 비밀번호 규칙
+
+    6~20 글자의 대소문자,숫자만 허용한다.
+
+    Author: 김민구
+
+    History:
+        2020-12-28(김민구): 초기생성
+    """
+
     def validate(self, value):
         pattern = '^[a-zA-Z0-9]{6,20}$'
         regex = re.compile(pattern)
@@ -78,8 +88,18 @@ class PhoneRule(AbstractRule):
 
 
 class PasswordRule(AbstractRule):
+    """ 비밀번호 규칙
+
+    8~20 자리 숫자, 대소문자, 특수문자를 모두 넣어야 허용한다.
+
+    Author: 김민구
+
+    History:
+        2020-12-28(김민구): 초기생성
+    """
+
     def validate(self, value):
-        pattern = '^.*(?=.{8,18})(?=.*[a-zA-Z])(?=.*?[A-Z])(?=.*\d)(?=.*[!@#£$%^&*()_+={}\-?:~\[\]])[a-zA-Z0-9!@#£$%^&*()_+={}\-?:~\[\]]+$'
+        pattern = '^.*(?=.{8,20})(?=.*[a-zA-Z])(?=.*?[A-Z])(?=.*\d)(?=.*[!@#£$%^&*()_+={}\-?:~\[\]])[a-zA-Z0-9!@#£$%^&*()_+={}\-?:~\[\]]+$'
         regex = re.compile(pattern)
         result = regex.match(value)
         errors = []
@@ -109,6 +129,18 @@ class PostalCodeRule(AbstractRule):
 
 
 class EmailRule(AbstractRule):
+    """ 이메일 규칙
+
+    @ 앞은 이메일의 아이디에 해당하며 대소문자, 숫자, 특수문자(-_)를 사용할 수 있다.
+    @ 다음은 도메인이며 대소문자, 숫자로 이루어져 있다.
+    . 다음은 최상위 도메인이며 대소문자 숫자로 이루어진다.
+
+    Author: 김민구
+
+    History:
+        2020-12-28(김민구): 초기생성
+    """
+
     def validate(self, value):
         pattern = '^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+$'
         regex = re.compile(pattern)
