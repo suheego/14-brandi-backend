@@ -1,6 +1,6 @@
 import pymysql
 
-from utils.custom_exceptions import DatabaseError, UserCreateDenied
+from utils.custom_exceptions import DatabaseError
 
 
 class UserDao:
@@ -28,7 +28,7 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
 
             History:
                 2020-20-28(김민구): 초기 생성
@@ -64,7 +64,7 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
 
             History:
                 2020-20-28(김민구): 초기 생성
@@ -100,7 +100,7 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
 
             History:
                 2020-20-28(김민구): 초기 생성
@@ -135,7 +135,7 @@ class UserDao:
                 account_id : account 생성 후 아이디 반환
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
 
             History:
                 2020-20-28(김민구): 초기 생성
@@ -175,8 +175,7 @@ class UserDao:
                 1 : 유저 생성 성공
 
             Raises:
-                500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}       : 유저 생성 실패
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
 
             History:
                 2020-20-28(김민구): 초기 생성
@@ -203,7 +202,7 @@ class UserDao:
             raise DatabaseError('database_error_' + format(e))
 
     def get_user_infomation(self, connection, data):
-        """ 유저 로그인아이디, 비밀번호 조회
+        """ 유저 account_id, 로그인아이디, 비밀번호 조회
 
             Args:
                 connection : 데이터베이스 연결 객체
@@ -224,12 +223,13 @@ class UserDao:
         sql = """
             SELECT 
                 id
-                , username
+                , username 
                 , password
             FROM 
                 accounts 
             WHERE 
-                username = %(username)s;
+                username = %(username)s
+                AND is_deleted=0;
         """
 
         try:
@@ -241,6 +241,24 @@ class UserDao:
             raise DatabaseError('database_error_' + format(e))
 
     def social_create_account(self, connection, data):
+        """ 소셜 회원 account 생성
+
+            Args:
+                connection : 데이터베이스 연결 객체
+                data       : 서비스에서 넘겨 받은 dict 객체
+
+            Author: 김민구
+
+            Returns:
+                account_id : account 생성 후 아이디 반환
+
+            Raises:
+                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
+
+            History:
+                2020-20-29(김민구): 초기 생성
+        """
+
         sql = """
             INSERT INTO accounts (
                 username 
@@ -260,6 +278,25 @@ class UserDao:
             raise DatabaseError('database_error_' + format(e))
 
     def social_create_user(self, connection, data):
+        """ 소셜 회원 user 생성
+
+            Args:
+                connection : 데이터베이스 연결 객체
+                data       : 서비스에서 넘겨 받은 dict 객체
+
+            Author: 김민구
+
+            Returns:
+                0 : 유저 생성 실패
+                1 : 유저 생성 성공
+
+            Raises:
+                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
+
+            History:
+                2020-20-29(김민구): 초기 생성
+        """
+
         sql = """
             INSERT INTO users (
                 account_id

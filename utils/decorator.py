@@ -16,7 +16,7 @@ def signin_degorator(func):
         Author: 김민구
 
         Returns:
-            func(*args, **kwargs)    : g 객체를 사용해 account_id와 username을 로컬변수로 만들어 타겟 함수에서 사용 가능하게 설정
+            func(*args, **kwargs)    : g 객체를 사용해 account_id와 username을 전역변수로 만들어 타겟 함수에서 사용 가능하게 설정
 
         Raises:
             401, {'message': 'unauthorized_user', 'errorMessage': 'should_be_sign_in'}   : 로그인을 안한 유저
@@ -31,7 +31,7 @@ def signin_degorator(func):
             access_token = request.headers.get('Authorization')
 
             if not access_token:
-                raise UnauthorizedUser('should_be_signin')
+                raise UnauthorizedUser('should_be_sign_in')
 
             payload = jwt.decode(
                 access_token,
@@ -44,9 +44,6 @@ def signin_degorator(func):
 
         except (jwt.InvalidTokenError, jwt.exceptions.ExpiredSignatureError, jwt.exceptions.DecodeError):
             raise InvalidToken('invalid_token')
-
-        except KeyError as e:
-            raise KeyError('key_error_' + format(e))
 
         return func(*args, **kwargs)
     return wrapper

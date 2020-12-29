@@ -48,6 +48,7 @@ class GenderRule(AbstractRule):
 
 class UsernameRule(AbstractRule):
     def validate(self, value):
+        print(value)
         pattern = '^[a-zA-Z0-9]{6,20}$'
         regex = re.compile(pattern)
         result = regex.match(value)
@@ -55,7 +56,6 @@ class UsernameRule(AbstractRule):
         if not result:
             errors.append('username_is_not_valid')
         return value, errors
-
 
 
 class PasswordRule(AbstractRule):
@@ -66,17 +66,6 @@ class PasswordRule(AbstractRule):
         errors = []
         if not result:
             errors.append('password_is_not_valid')
-        return value, errors
-
-
-class PhoneRule(AbstractRule):
-    def validate(self, value):
-        pattern = '(\d{3})(\d{3,4}\d{4})'
-        regex = re.compile(pattern)
-        result = regex.match(value)
-        errors = []
-        if not result:
-            errors.append('phone_is_not_valid')
         return value, errors
 
 
