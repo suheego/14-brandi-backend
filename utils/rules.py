@@ -46,9 +46,10 @@ class GenderRule(AbstractRule):
         return value, errors
 
 
-class RequiredFiledRule(AbstractRule):
-    def validate(self, value):
+class RequiredFieldRule(AbstractRule):
+    def validate(self, *args):
         errors = []
-        if not value:
+        if not all([str(value) for value in args]):
             errors.append('required value')
-        return value, errors
+        
+        return args, errors
