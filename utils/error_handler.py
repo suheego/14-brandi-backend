@@ -42,7 +42,7 @@ def error_handle(app):
     # pram customized exception
     @app.errorhandler(InvalidRequest)
     def handle_user_custom_rule(e):
-        return jsonify({'message': 'invalid parameter', 'errorMessage:': str(e)
+        return jsonify({'message': '잘못입력함..', 'errorMessage:': str(e)
                        .replace('{', '')
                        .replace('}', '')
                        .replace('\"', '')
@@ -52,3 +52,4 @@ def error_handle(app):
     @app.errorhandler(CustomUserError)
     def handle_error(e):
         return jsonify({"message": e.message, "errorMessage": e.error_message}), e.status_code
+

@@ -9,3 +9,4 @@ from .store.user_service import UserService
 from .store.destination_service import DestinationService
 from .store.cart_item_service import CartItemService
 from .store.sender_service import SenderService
+from .admin.event_service import EventService
