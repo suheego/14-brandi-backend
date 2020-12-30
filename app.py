@@ -1,9 +1,27 @@
+
+
+from flask.json import JSONEncoder
 from flask import Flask
 from flask_cors import CORS
 
-from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, ProductListDao
-from service import SampleUserService, UserService, DestinationService, CartItemService, ProductListService
+from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, EventDao, ProductListDao
+from service import SampleUserService, UserService, DestinationService, CartItemService, EventService, ProductListService
 from view import create_endpoints
+
+class CustomJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        import datetime
+        try:
+            if isinstance(obj, datetime.date):
+                return obj.isoformat(sep=' ')
+            if isinstance(obj, datetime.datetime):
+                return obj.isoformat(sep=' ')
+            iterable = iter(obj)
+        except TypeError:
+            pass
+        else:
+            return list(iterable)
+        return JSONEncoder.default(self, obj)
 
 
 # for getting multiple service classes
@@ -15,6 +33,7 @@ def create_app(test_config=None):
     app = Flask(__name__)
     app.debug = True
 
+    app.json_encoder = CustomJSONEncoder
     # By default, submission of cookies across domains is disabled due to the security implications.
     CORS(app, resources={r'*': {'origins': '*'}})
 
@@ -31,6 +50,7 @@ def create_app(test_config=None):
     destination_dao = DestinationDao()
     cart_item_dao = CartItemDao()
     product_list_dao = ProductListDao()
+    event_dao = EventDao()
 
     # business Layer
     services = Services
@@ -39,8 +59,10 @@ def create_app(test_config=None):
     services.destination_service = DestinationService(destination_dao)
     services.cart_item_service = CartItemService(cart_item_dao)
     services.product_list_service = ProductListService(product_list_dao)
+    services.event_service = EventService(event_dao)
 
     # presentation Layer
     create_endpoints(app, services, database)
 
     return app
+
