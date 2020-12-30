@@ -64,7 +64,7 @@ class UserNotExist(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-
+        
 class InvalidUser(CustomUserError):
     def __init__(self, error_message):
         status_code = 403
@@ -94,6 +94,33 @@ class UnauthorizedUser(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+class InvalidUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_user'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class InvalidToken(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_token'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class TokenCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'token_create_denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class UnauthorizedUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 401
+        message = 'unauthorized_user'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
 
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
@@ -140,6 +167,71 @@ class DestinationCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
+class RequiredFieldException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'required field is blank'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class CorrelationCheckException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'correlation check fail'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductCodeUpdatedDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product code update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductImageCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product image create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class StockCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'stock create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductHistoryCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product history create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ColorNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'color not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+class SizeNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'size not exist'
+        error_message = error_message
+        
+        super().__init__(status_code, message, error_message)
 
 class NotUser(CustomUserError):
     """ 유저가 아님

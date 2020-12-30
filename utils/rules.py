@@ -46,6 +46,15 @@ class GenderRule(AbstractRule):
         return value, errors
 
 
+class RequiredFieldRule(AbstractRule):
+    def validate(self, *args):
+        errors = []
+        if not all([str(value) for value in args]):
+            errors.append('required value')
+        
+        return args, errors
+
+
 class UsernameRule(AbstractRule):
     """ 비밀번호 규칙
 
@@ -212,4 +221,3 @@ class DateRule(AbstractRule):
         errors = []
         if not regex.match(value):
             errors.append('accept only alphabetic characters')
-

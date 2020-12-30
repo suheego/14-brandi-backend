@@ -50,5 +50,5 @@ def signin_decorator(func):
             raise InvalidToken('invalid_token')
 
         return func(*args, **kwargs)
-    return wrapper
 
+    return wrapper

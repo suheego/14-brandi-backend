@@ -1,5 +1,3 @@
-
-
 from flask.json import JSONEncoder
 from flask import Flask
 from flask_cors import CORS
@@ -8,6 +6,13 @@ from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, SenderDao
 from service import SampleUserService, UserService, DestinationService, CartItemService, SenderService, EventService, ProductListService
 from view import create_endpoints
 
+from model.admin import SellerDao
+from model.admin.create_product_dao import CreateProductDao
+
+from service.admin import SellerService
+from service.admin.create_product_service import CreateProductService
+
+from view import create_endpoints
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
@@ -44,9 +49,11 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     database = app.config['DB']
+    secret_key = app.config['SECRET_KEY']
 
     # persistence Layers
     sample_user_dao = SampleUserDao()
+    
     user_dao = UserDao()
     destination_dao = DestinationDao()
     cart_item_dao = CartItemDao()
@@ -54,9 +61,13 @@ def create_app(test_config=None):
     sender_dao = SenderDao()
     event_dao = EventDao()
 
+    seller_dao = SellerDao()
+    create_product_dao = CreateProductDao()
+
     # business Layer,   깔끔한 관리 방법을 생각하기
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
+
     services.user_service = UserService(user_dao, app.config)
     services.destination_service = DestinationService(destination_dao)
     services.cart_item_service = CartItemService(cart_item_dao)
@@ -64,8 +75,10 @@ def create_app(test_config=None):
     services.sender_service = SenderService(sender_dao)
     services.event_service = EventService(event_dao)
 
+    services.seller_service = SellerService(seller_dao,app.config)
+    services.create_product_service = CreateProductService(create_product_dao)
+    
     # presentation Layer
     create_endpoints(app, services, database)
 
     return app
-
