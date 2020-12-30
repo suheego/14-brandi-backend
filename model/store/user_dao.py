@@ -28,7 +28,7 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
 
             History:
                 2020-20-28(김민구): 초기 생성
@@ -48,7 +48,7 @@ class UserDao:
                 return result
 
         except Exception as e:
-            raise DatabaseError('database_error_' + format(e))
+            raise DatabaseError(format(e))
 
     def phone_exist_check(self, connection, data):
         """ 유저 전화번호 중복 검사
@@ -64,10 +64,10 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
 
             History:
-                2020-20-28(김민구): 초기 생성
+                2020-12-28(김민구): 초기 생성
         """
 
         sql = """
@@ -84,7 +84,7 @@ class UserDao:
                 return result
 
         except Exception as e:
-            raise DatabaseError('database_error_' + format(e))
+            raise DatabaseError(format(e))
 
     def email_exist_check(self, connection, data):
         """ 유저 이메일 중복 검사
@@ -100,10 +100,10 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
 
             History:
-                2020-20-28(김민구): 초기 생성
+                2020-12-28(김민구): 초기 생성
         """
 
         sql = """
@@ -120,7 +120,7 @@ class UserDao:
                 return result
 
         except Exception as e:
-            raise DatabaseError('database_error_' + format(e))
+            raise DatabaseError(format(e))
 
     def create_account(self, connection, data):
         """ account 생성
@@ -135,10 +135,10 @@ class UserDao:
                 account_id : account 생성 후 아이디 반환
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
 
             History:
-                2020-20-28(김민구): 초기 생성
+                2020-12-28(김민구): 초기 생성
         """
 
         sql = """
@@ -159,7 +159,7 @@ class UserDao:
                 return cursor.lastrowid
 
         except Exception as e:
-            raise DatabaseError('database_error_' + format(e))
+            raise DatabaseError(format(e))
 
     def create_user(self, connection, data):
         """ 유저 생성
@@ -175,10 +175,10 @@ class UserDao:
                 1 : 유저 생성 성공
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
 
             History:
-                2020-20-28(김민구): 초기 생성
+                2020-12-28(김민구): 초기 생성
         """
 
         sql = """
@@ -199,7 +199,7 @@ class UserDao:
                 return result
 
         except Exception as e:
-            raise DatabaseError('database_error_' + format(e))
+            raise DatabaseError(format(e))
 
     def get_user_infomation(self, connection, data):
         """ 유저 account_id, 로그인아이디, 비밀번호 조회
@@ -214,10 +214,10 @@ class UserDao:
                 {'account_id' : 1, 'username': 'kimminkoo', 'password' : 'hashed_password'}
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': format(e)}: 데이터베이스 에러
 
             History:
-                2020-20-29(김민구): 초기 생성
+                2020-12-29(김민구): 초기 생성
         """
 
         sql = """
@@ -238,7 +238,7 @@ class UserDao:
                 return cursor.fetchone()
 
         except Exception as e:
-            raise DatabaseError('database_error_' + format(e))
+            raise DatabaseError(format(e))
 
     def social_create_account(self, connection, data):
         """ 소셜 회원 account 생성
@@ -253,10 +253,10 @@ class UserDao:
                 account_id : account 생성 후 아이디 반환
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)}: 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': format(e)}: 데이터베이스 에러
 
             History:
-                2020-20-29(김민구): 초기 생성
+                2020-12-29(김민구): 초기 생성
         """
 
         sql = """
@@ -275,7 +275,7 @@ class UserDao:
                 return result
 
         except Exception as e:
-            raise DatabaseError('database_error_' + format(e))
+            raise DatabaseError(format(e))
 
     def social_create_user(self, connection, data):
         """ 소셜 회원 user 생성
@@ -291,10 +291,10 @@ class UserDao:
                 1 : 유저 생성 성공
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': 'database_error_' + format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
 
             History:
-                2020-20-29(김민구): 초기 생성
+                2020-12-29(김민구): 초기 생성
         """
 
         sql = """
@@ -313,4 +313,4 @@ class UserDao:
                 return result
 
         except Exception as e:
-            raise DatabaseError('database_error_' + format(e))
+            raise DatabaseError(format(e))
