@@ -172,6 +172,13 @@ class AccountNotExist(CustomUserError):
 
 
 class CartItemNotExist(CustomUserError):
+    """ 장바구니 상품 조회 실패 
+
+    Author: 고수희
+
+    History:
+        2020-12-28(고수희): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 400
         message = 'cart items not exist'
@@ -179,10 +186,17 @@ class CartItemNotExist(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-class CartItemCreateDenied(CustomUserError):
+class CartItemCreateFail(CustomUserError):
+    """ 장바구니 상품 추가 실패
+
+    Author: 고수희
+
+    History:
+        2020-12-28(고수희): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 400
-        message = 'cart item create denied'
+        message = 'cart item create'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -200,20 +214,33 @@ class DataLimitExceeded(CustomUserError):
         message = 'data_limit_reached'
         error_message = error_message
         super().__init__(status_code, message, error_message)
-        
-        
-class CartItemUpdateDenied(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 400
-        message = 'cart item update denied'
-        error_message = error_message
-        super().__init__(status_code, message, error_message)
 
 
 class CustomerPermissionDenied(CustomUserError):
+    """ 일반 유저 권한이 아님
+
+    Author: 고수희
+
+    History:
+        2020-12-28(고수희): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 400
         message = 'customer permissions denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductNotExist(CustomUserError):
+    """ 상품이 존재하지 않음
+
+    Author: 고수희
+
+    History:
+        2020-12-30(고수희): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'product does not exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -270,4 +297,3 @@ class EventDoesNotExist(CustomUserError):
         message = 'event not exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
-
