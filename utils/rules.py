@@ -65,6 +65,13 @@ class EventExposureRule(AbstractRule):
 
 
 class DateRule(AbstractRule):
+    """ 날짜 형식 벨리데이터 (YYYY-MM-DD)
+
+        Author: 강두연
+
+        History:
+            2020-12-29(강두연): 날짜 형식 벨리데이터 역할 규칙 작성
+    """
     def validate(self, value):
         pattern = '^([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))$'
         regex = re.compile(pattern)
