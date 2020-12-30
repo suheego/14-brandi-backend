@@ -9,14 +9,29 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 """
 
 from .sample_user_view import SampleUserView
+
+from .admin.order_view import OrderView
+from .admin.event_view import EventView
+
 from .store.user_view import SignUpView, SignInView, GoogleSocialSignInView
 from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
-from .admin.event_view import EventView
+
+
 from utils.error_handler import error_handle
 
 
 def create_endpoints(app, services, database):
+    sample_user_service = services.sample_user_service
+    order_service = services.order_service
+
+    """ 앤드 포인트 시작
+
+            Args:
+                app     : Flask 앱
+                services: Services 클래스:Service 클래스들을 담고 있는 클래스이다.
+                database: 데이터베이스
+=======
     """ 앤드 포인트 시작
 
         Args:
@@ -28,6 +43,15 @@ def create_endpoints(app, services, database):
 
         Returns: None
 
+            Raises: None
+
+            History:
+                2020-20-20(홍길동): 초기 생성
+                2020-20-21(홍길동): 1차 수정
+                2020-20-22(홍길동): 2차 수정
+            """
+
+=======
         Raises: None
             
         History:
@@ -40,6 +64,7 @@ def create_endpoints(app, services, database):
     destination_service = services.destination_service
     cart_item_service = services.cart_item_service
     
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Service Section(write your code under your name)
 # ----------------------------------------------------------------------------------------------------------------------
@@ -127,6 +152,7 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 김민서 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
+    app.add_url_rule('/admin/orders', view_func=OrderView.as_view('order_view', order_service, database))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 이성보 ◟( ˘ ³˘)◞ ♡

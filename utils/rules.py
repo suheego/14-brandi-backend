@@ -146,7 +146,6 @@ class IsDeleteRule(AbstractRule):
         if value not in gender_set:
             errors.append('accept only 0 and 1 value')
 
-
 class EventStatusRule(AbstractRule):
     def validate(self, value):
         status_set = ('progress', 'wait', 'end')
@@ -162,6 +161,14 @@ class EventExposureRule(AbstractRule):
         errors = []
         if value not in exposure_set:
             errors.append('event exposure value should be 0 or 1')
+        return value, errors
+
+class OrderStatusRule(AbstractRule):
+    def validate(self, value):
+        status_set = [1, 2, 3, 8]
+        errors = []
+        if value not in status_set:
+            errors.append('order status must be one of 1, 2, 3, 8')
         return value, errors
 
 

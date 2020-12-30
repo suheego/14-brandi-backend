@@ -1,4 +1,5 @@
 import json
+
 from flask import jsonify, request
 from flask.views import MethodView
 from utils.connection import get_connection

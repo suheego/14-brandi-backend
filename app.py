@@ -1,5 +1,3 @@
-
-
 from flask.json import JSONEncoder
 from flask import Flask
 from flask_cors import CORS
@@ -46,17 +44,21 @@ def create_app(test_config=None):
 
     # persistence Layers
     sample_user_dao = SampleUserDao()
+
     user_dao = UserDao()
     destination_dao = DestinationDao()
     cart_item_dao = CartItemDao()
+    order_dao = OrderDao()
     event_dao = EventDao()
 
     # business Layer
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
+
     services.user_service = UserService(user_dao, app.config)
     services.destination_service = DestinationService(destination_dao)
     services.cart_item_service = CartItemService(cart_item_dao)
+    services.order_service = OrderService(order_dao)
     services.event_service = EventService(event_dao)
 
     # presentation Layer

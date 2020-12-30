@@ -32,13 +32,13 @@ class SampleUserDao:
             2020-20-20(홍길동): 초기 생성
             2020-20-21(홍길동): 1차 수정
             2020-20-22(홍길동): 2차 수정
-            
+
         Raises:
             400, {'message': 'user dose not exist', 'errorMessage': 'user_does_not_exist'} : 유저 정보 조회 실패
         """
 
         sql = """
-            SELECT * 
+            SELECT *
             FROM users
             WHERE id=%s;
         """
@@ -64,7 +64,7 @@ class SampleUserDao:
             return [{'id': 12, 'name': '홍길동', 'gender': '남자', 'age': '18'}]: 해당 유저 존재
 
         Raises: None
-        
+
         History:
             2020-20-20(홍길동): 초기 생성
             2020-20-21(홍길동): 1차 수정
@@ -72,7 +72,7 @@ class SampleUserDao:
         """
 
         sql = """
-            SELECT * 
+            SELECT *
             FROM users
             WHERE name = %s;
         """
@@ -103,7 +103,7 @@ class SampleUserDao:
             2020-20-22(홍길동): 2차 수정
         """
         sql = """
-        INSERT INTO users 
+        INSERT INTO users
         (
             name,
             gender,
