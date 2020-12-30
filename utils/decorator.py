@@ -6,7 +6,7 @@ import jwt
 
 from utils.custom_exceptions import UnauthorizedUser, InvalidToken
 
-def signin_degorator(func):
+def signin_decorator(func):
     """ 로그인 데코레이터
 
         Args:
