@@ -15,7 +15,7 @@ class UserService:
         Author: 김민구
 
         History:
-            2020-20-28(김민구): 초기 생성
+            2020-12-28(김민구): 초기 생성
     """
 
     def __init__(self, user_dao, config):
@@ -35,13 +35,13 @@ class UserService:
                 None
 
             Raises:
-                400, {'message': 'key error', 'errorMessage': format(e)}                            : 잘못 입력된 키값
+                400, {'message': 'key_error', 'errorMessage': format(e)}                            : 잘못 입력된 키값
                 403, {'message': 'user already exist', 'errorMessage': 'already_exist' + _중복 데이터} : 중복 유저 존재
                 500, {'message': 'user_create_denied', 'errorMessage': 'account_create_fail'}       : account 생성 실패
                 500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}          : 유저 생성 실패
 
             History:
-                2020-20-28(김민구): 초기 생성
+                2020-12-28(김민구): 초기 생성
         """
 
         username_check = self.user_dao.username_exist_check(connection, data)
@@ -60,13 +60,11 @@ class UserService:
         data['password'] = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
         account_id = self.user_dao.create_account(connection, data)
-
         if not account_id:
             raise UserCreateDenied('account_create_fail_account_id_is_not_return_from_user_dao')
 
         data['account_id'] = account_id
         result = self.user_dao.create_user(connection, data)
-
         if not result:
             raise UserCreateDenied('user_create_fail_result_is_not_return_from_user_dao')
 
@@ -87,11 +85,10 @@ class UserService:
                 403, {'message': 'invalid_user', 'errorMessage': 'invalid_user'} : 로그인 실패
 
             History:
-                2020-20-29(김민구): 초기 생성
+                2020-12-29(김민구): 초기 생성
         """
 
         user = self.user_dao.get_user_infomation(connection, data)
-
         if not user or not bcrypt.checkpw(data['password'].encode('utf-8'), user['password'].encode('utf-8')):
             raise InvalidUser('user_not_exist_or_password_is_invalid')
 
@@ -111,11 +108,11 @@ class UserService:
                 token
 
             Raises:
-                400, {'message': 'key error', 'errorMessage': format(e)}                     : 잘못 입력된 키값
+                400, {'message': 'key_error', 'errorMessage': format(e)}                     : 잘못 입력된 키값
                 500, {'message': 'create_token_denied', 'errorMessage': 'token_create_fail'} : 토큰 생성 실패
 
             History:
-                2020-20-29(김민구): 초기 생성
+                2020-12-29(김민구): 초기 생성
         """
 
         payload = {
@@ -125,10 +122,8 @@ class UserService:
         }
 
         token = jwt.encode(payload, self.config['JWT_SECRET_KEY'], self.config['JWT_ALGORITHM']).decode('utf-8')
-
         if not token:
             raise TokenCreateDenied('jwt_encode_fail')
-
         return token
 
     def social_sign_in_service(self, connection, data):
@@ -144,12 +139,14 @@ class UserService:
                 token
 
             Raises:
-                400, {'message': 'key_error', 'errorMessage': format(e)}                   : 잘못 입력된 키값
-                403, {'message': 'invalid_user', 'errorMessage': 'invalid_user'}           : 유효하지 않은 유저
-                500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'} : 소셜 유저 등록 실패
+                400, {'message': 'key_error', 'errorMessage': format(e)}                      : 잘못 입력된 키값
+                403, {'message': 'invalid_user', 'errorMessage': 'invalid_user'}              : 유효하지 않은 유저
+                500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}    : 소셜 유저 등록 실패
+                500, {'message': 'user_create_denied', 'errorMessage': 'account_create_fail'} : account 생성 실패
+                500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}    : 유저 생성 실패
 
             History:
-                2020-20-29(김민구): 초기 생성
+                2020-12-29(김민구): 초기 생성
 
             Notes:
                 소셜이 구글 하나라고 가정한 상황이기 때문에 확장성이 떨어짐
@@ -168,15 +165,12 @@ class UserService:
         if not email_check:
             data['permission_type_id'] = 3
             account_id = self.user_dao.social_create_account(connection, data)
-
             data['account_id'] = account_id
             result = self.user_dao.social_create_user(connection, data)
-
             if not result:
                 raise UserCreateDenied('account_create_fail_account_id_is_not_return_from_user_dao')
 
         user = self.user_dao.get_user_infomation(connection, data)
-
         if not user:
             raise InvalidUser('user_create_fail_result_is_not_return_from_user_dao')
 

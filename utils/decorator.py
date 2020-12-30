@@ -24,7 +24,11 @@ def signin_decorator(func):
 
         History:
             2020-20-29(김민구): 초기 생성
+
+        Notes:
+            토큰 유효시간 : 5시간
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
