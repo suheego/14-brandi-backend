@@ -28,7 +28,6 @@ def create_endpoints(app, services, database):
     # ----------------------------------------------------------------------------------------------------------------------
     app.add_url_rule('/admin/<int:account_id>', view_func=SellerInfoView.as_view('SellerInfoView', seller_service, database))
     app.add_url_rule('/admin/<int:account_id>/history', view_func=SellerHistoryView.as_view('SellerHistoryView', seller_service, database))
-
     # ----------------------------------------------------------------------------------------------------------------------
     # Admin 2 Section
     # ----------------------------------------------------------------------------------------------------------------------

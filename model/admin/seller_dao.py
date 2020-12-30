@@ -3,14 +3,14 @@ from utils.custom_exceptions import SellerNotExist, SellerUpdateDenied
 
 
 class SellerInfoDao:
-    def get_dao(self, connection, account_id):
-        account_id = account_id
+
+    def get_seller_info(self, connection, account_id):
         """셀러 정보 조회
         Args:   
             connection : 데이터베이스 연결 객체
             account_id  : 해당 셀러 ID  
         """
-
+        account_id = account_id
         sql = """
         SELECT
             seller.`account_id` AS 'account_id'
@@ -21,6 +21,12 @@ class SellerInfoDao:
             ,seller.`english_name` AS 'seller_english_name'
             ,`account`.username AS 'username'
             ,seller.`background_image_url` AS 'background_image_url'
+            ,seller.`seller_title` AS 'seller_title'
+            ,seller.`seller_discription` AS 'seller_discription'
+            ,seller.`contact_phone` AS 'contact_phone'
+            ,seller.`contact_name` AS 'contact_name'
+            ,seller.`contact_email` AS 'contact_email'
+
 
         FROM
             sellers AS seller
@@ -40,13 +46,12 @@ class SellerInfoDao:
             return result
 
     def get_history_dao(self, connection, account_id):
-        account_id = account_id
         """셀러 상세 히스토리 조회
         Args:   
             connection : 데이터베이스 연결 객체
             account_id  : 해당 셀러 ID  
         """
-
+        account_id = account_id
         sql = """
         SELECT
           `history`.id AS 'id'
@@ -72,25 +77,24 @@ class SellerInfoDao:
                 raise SellerNotExist('seller_does_not_exist')
             return result
 
-    def patch_dao(self, connection, account_id):
-        account_id = account_id
-        """셀러 상세 히스토리 조회
+    def patch_seller_info(self, connection, data):
+        """셀러 상세 히스토리 변경
         Args:   
             connection : 데이터베이스 연결 객체
-            account_id  : 해당 셀러 ID  
+            data      : service 에서 넘겨받은 dict 객체
         """
         sql = """
-        UPDATE 
-            seller
-        SET 
-            seller_discription = %(discription)s
+        UPDATE sellers
+        SET seller_title = %(seller_title)s,
+            seller_discription = %(seller_discription)s
         WHERE
             is_deleted = 0 			# 고정 값
-            AND seller.account_id = %(seller_id)s;	
+            AND sellers.account_id = %(account_id)s;	
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            result = cursor.execute(sql, account_id)
-            if result == 0:
+            result = cursor.execute(sql, data)
+            if result == 0: ## 에러처리 확인예정
                 raise SellerUpdateDenied('unable_to_update')
             return result
+

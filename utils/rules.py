@@ -55,3 +55,14 @@ class SellerInfoRule(AbstractRule):
         if not result:
             errors.append('accept only number')
         return value, errors
+
+
+class DefaultRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^[0-9A-Za-z가-힣\s.\-_]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only number, text')
+        return value, errors
