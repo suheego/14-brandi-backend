@@ -53,7 +53,7 @@ class SenderView(MethodView):
 
         try:
             connection = get_connection(self.database)
-            sender_info = self.service.sender_info_service(connection, data)
+            sender_info = self.service.get_sender_info_service(connection, data)
             return jsonify({'message': 'success', 'result': sender_info})
 
         except Exception as e:

@@ -1,5 +1,5 @@
 import pymysql
-from utils.custom_exceptions import CartItemNotExist, CartItemCreateFail
+from utils.custom_exceptions import AccountNotExist
 
 
 class SenderDao:
@@ -38,7 +38,7 @@ class SenderDao:
         , sender_email as email
         FROM orders
         WHERE user_id = %s
-        ORDER BY created_at desc
+        ORDER BY id desc
         LIMIT 1
         ;
         """
@@ -46,6 +46,13 @@ class SenderDao:
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, data['user_id'])
             result = cursor.fetchone()
+            if not result:
+                result = {
+                            "name":"",
+                            "phone":"",
+                            "email":""
+                }
+                return result
             return result
 
     def get_user_permission_check_dao(self, connection, data):
