@@ -44,15 +44,15 @@ class UserAlreadyExist(CustomUserError):
 class UserUpdateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
-        message = 'user_update_denied'
+        message = 'user update denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
 class UserCreateDenied(CustomUserError):
     def __init__(self, error_message):
-        status_code = 500
-        message = 'user_creatation_denied'
+        status_code = 400
+        message = 'user create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -93,20 +93,62 @@ class UnauthorizedUser(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
-        status_code = 500
-        message = 'database_connection_failed'
+        status_code = 400
+        message = 'database connection fail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
-class DatabaseError(CustomUserError):
+# S - 상품 등록 관련 Exception Class ===============================================================
+class RequiredFieldException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'required field is blank'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class CorrelationCheckException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'correlation check fail'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
-        message = 'database_error'
+        message = 'product create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+class ProductCodeUpdatedDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product code update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
 
+class ProductImageCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product image create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class StockCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'stock create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductHistoryCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product history create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+# E - 상품 등록 관련 Exception Class ===============================================================
