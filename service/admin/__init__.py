@@ -1,1 +1,1 @@
-from .seller_service import SellerService
+from .seller_service import SellerInfoService, SellerService

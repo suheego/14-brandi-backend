@@ -1,1 +1,1 @@
-from .seller_dao import SellerDao
+from .seller_dao import SellerDao, SellerInfoDao

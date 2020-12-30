@@ -45,7 +45,29 @@ class GenderRule(AbstractRule):
             errors.append('accept only male and female value')
         return value, errors
 
+      
+class SellerInfoRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^[0-9]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only number')
+        return value, errors
 
+      
+class DefaultRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^[0-9A-Za-z가-힣\s.\-_]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only number, text')
+        return value, errors
+
+      
 class RequiredFieldRule(AbstractRule):
     def validate(self, *args):
         errors = []
@@ -53,3 +75,4 @@ class RequiredFieldRule(AbstractRule):
             errors.append('required value')
         
         return args, errors
+
