@@ -8,13 +8,16 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 
 """
 
-
 from .sample_user_view import SampleUserView
 from .store.user_view import SignUpView, SignInView, GoogleSocialSignInView
 from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
+from .admin.event_view import EventView
 from utils.error_handler import error_handle
 
+
+from utils.decorator import signin_degorator
+from flask import g, jsonify
 
 def create_endpoints(app, services, database):
     """ 앤드 포인트 시작
@@ -87,17 +90,12 @@ def create_endpoints(app, services, database):
                          database
                      ))
 
-    app.add_url_rule('/users/social',
+    app.add_url_rule('/users/social-signin',
                      view_func=GoogleSocialSignInView.as_view(
                          'google_social_sign_in_view',
                          user_service,
                          database
                      ))
-
-
-
-
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 고수희
@@ -121,7 +119,15 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# 이영주 ◟( ˘ ³˘)◞ ♡
+# 강두연 ◟( ˘ ³˘)◞ ♡
+# ----------------------------------------------------------------------------------------------------------------------
+    app.add_url_rule('/events', view_func=EventView.as_view('event_view', services.event_service, database))
+# ----------------------------------------------------------------------------------------------------------------------
+# 김민서 ◟( ˘ ³˘)◞ ♡
+# ----------------------------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------------------------
+# 이성보 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
