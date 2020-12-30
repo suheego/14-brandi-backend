@@ -4,7 +4,9 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
+import config
 from app import create_app
+from utils.connection import get_connection
 
 
 class TestUser(TestCase):
@@ -19,8 +21,17 @@ class TestUser(TestCase):
     """
 
     def setUp(self):
-        app = create_app()
+        app = create_app(config.test_config)
+        self.connection = get_connection(app.config['DB'])
         self.client = app.test_client()
+
+    def tearDown(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute('set foreign_key_checks=0')
+            cursor.execute('truncate accounts')
+            cursor.execute('truncate users')
+            cursor.execute('set foreign_key_checks=1')
+        self.connection.close()
 
     @mock.patch('view.store.user_view.id_token')
     def test_social_sign_in(self, mock_id_token):
@@ -48,5 +59,7 @@ class TestUser(TestCase):
              "email": "test_user@gmail.com"
         }
         response = self.client.post('/users/social-signin', headers={'Authorization': 'google_token'})
+        print(response)
+        print(response.data.decode('utf-8'))
         assert response.status_code == 200
         assert b'token' in response.data

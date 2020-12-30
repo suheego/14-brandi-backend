@@ -6,7 +6,7 @@ import jwt
 
 from utils.custom_exceptions import UnauthorizedUser, InvalidToken
 
-def signin_degorator(func):
+def signin_decorator(func):
     """ 로그인 데코레이터
 
         Args:
@@ -24,7 +24,11 @@ def signin_degorator(func):
 
         History:
             2020-20-29(김민구): 초기 생성
+
+        Notes:
+            토큰 유효시간 : 5시간
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:

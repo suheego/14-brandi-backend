@@ -63,7 +63,7 @@ class UsernameRule(AbstractRule):
         result = regex.match(value)
         errors = []
         if not result:
-            errors.append('username_is_not_valid')
+            errors.append('please_enter_6-20_letters_or_numbers')
         return value, errors
 
       
@@ -104,7 +104,7 @@ class PasswordRule(AbstractRule):
         result = regex.match(value)
         errors = []
         if not result:
-            errors.append('password_is_not_valid')
+            errors.append('enter_8~20_characters_including_numbers_uppercase_letters_lowercase_letters_special_characters')
         return value, errors
 
 
@@ -147,7 +147,7 @@ class EmailRule(AbstractRule):
         result = regex.match(value)
         errors = []
         if not result:
-            errors.append('email_is_not_valid')
+            errors.append('this_email_is_incorrect')
         return value, errors
 
 

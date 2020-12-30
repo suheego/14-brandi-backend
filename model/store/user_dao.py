@@ -67,7 +67,7 @@ class UserDao:
                 500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
 
             History:
-                2020-20-28(김민구): 초기 생성
+                2020-12-28(김민구): 초기 생성
         """
 
         sql = """
@@ -103,7 +103,7 @@ class UserDao:
                 500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
 
             History:
-                2020-20-28(김민구): 초기 생성
+                2020-12-28(김민구): 초기 생성
         """
 
         sql = """
@@ -138,7 +138,7 @@ class UserDao:
                 500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
 
             History:
-                2020-20-28(김민구): 초기 생성
+                2020-12-28(김민구): 초기 생성
         """
 
         sql = """
@@ -178,7 +178,7 @@ class UserDao:
                 500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
 
             History:
-                2020-20-28(김민구): 초기 생성
+                2020-12-28(김민구): 초기 생성
         """
 
         sql = """
@@ -217,7 +217,7 @@ class UserDao:
                 500, {'message': 'database_error', 'errorMessage': format(e)}: 데이터베이스 에러
 
             History:
-                2020-20-29(김민구): 초기 생성
+                2020-12-29(김민구): 초기 생성
         """
 
         sql = """
@@ -256,7 +256,7 @@ class UserDao:
                 500, {'message': 'database_error', 'errorMessage': format(e)}: 데이터베이스 에러
 
             History:
-                2020-20-29(김민구): 초기 생성
+                2020-12-29(김민구): 초기 생성
         """
 
         sql = """
@@ -294,7 +294,7 @@ class UserDao:
                 500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
 
             History:
-                2020-20-29(김민구): 초기 생성
+                2020-12-29(김민구): 초기 생성
         """
 
         sql = """
