@@ -16,6 +16,9 @@ from .store.cart_item_view import CartItemView, CartItemAddView
 from utils.error_handler import error_handle
 
 
+from utils.decorator import signin_degorator
+from flask import g, jsonify
+
 def create_endpoints(app, services, database):
     """ 앤드 포인트 시작
 
@@ -87,17 +90,12 @@ def create_endpoints(app, services, database):
                          database
                      ))
 
-    app.add_url_rule('/users/social',
+    app.add_url_rule('/users/social-signin',
                      view_func=GoogleSocialSignInView.as_view(
                          'google_social_sign_in_view',
                          user_service,
                          database
                      ))
-
-
-
-
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 고수희
