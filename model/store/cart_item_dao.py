@@ -120,7 +120,7 @@ class CartItemDao:
                 raise CartItemNotExist('cart_item_does_not_exist')
 
             #상품 재고가 0인지 확인하여, 상품이 품절되었는지 체크
-            if result['remain'] == 0:
+            if result['remain'] <= 0:
                 return {'soldOut': True}
             return {'soldOut': False}
 
@@ -190,7 +190,7 @@ class CartItemDao:
                 raise ProductNotExist('product_does_not_exist')
 
             #상품 재고가 0인지 확인하여, 상품이 품절되었는지 체크
-            if result['remain'] == 0:
+            if result['remain'] <= 0:
                 return {'soldOut': True}
             return {'soldOut': False}
 
