@@ -124,7 +124,6 @@ class SampleUserDao:
             return result
 
     def patch_dao(self, connection, data):
-
         """유저 정보 수정
 
         Args:
@@ -155,3 +154,4 @@ class SampleUserDao:
             affected_row = cursor.execute(sql, data)
             if affected_row == 0:
                 raise UserUpdateDenied('unable_to_update')
+
