@@ -5,4 +5,8 @@
 """
 
 from .sample_user_service import SampleUserService
+
+from .store.user_service import UserService
+from .store.destination_service import DestinationService
+from .store.cart_item_service import CartItemService
 from .admin.event_service import EventService

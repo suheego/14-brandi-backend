@@ -1,3 +1,5 @@
+import json
+
 from flask import jsonify, request
 from flask.views import MethodView
 from utils.connection import get_connection
@@ -11,6 +13,10 @@ from flask_request_validator import (
     validate_params
 )
 
+def date_converter(o):
+    import datetime
+    if isinstance(o, datetime.datetime):
+        return o.__str__()
 
 class EventView(MethodView):
 

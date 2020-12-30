@@ -136,7 +136,9 @@ class EventDao:
             events = cursor.fetchall()
             cursor.execute(total_count_sql, data)
             count = cursor.fetchall()
+
             print(count)
+
             if not events:
                 raise EventDoesNotExist('event does not exist')
             return {'events': events, 'total_count': count[0]['total_count']}
