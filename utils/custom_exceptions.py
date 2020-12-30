@@ -193,7 +193,7 @@ class CartItemCreateFail(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'cart item create denied'
+        message = 'cart item create'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 

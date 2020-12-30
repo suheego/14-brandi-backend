@@ -135,7 +135,7 @@ class CartItemDao:
         Returns: 조회된 권한 타입의 id 반환
 
         Raises:
-            400, {'message': 'accont_does_not_exist',
+            400, {'message': 'account_does_not_exist',
             'errorMessage': 'account_does_not_exist'} : 사용자 조회 실패
 
         History:
@@ -169,8 +169,8 @@ class CartItemDao:
             {'soldOut': false}: 상품이 품절되지 않음
 
         Raises:
-            400, {'message': 'cart item does not exist',
-            'errorMessage': 'cart_item_does_not_exist'} : 장바구니 상품 정보 조회 실패
+            400, {'message': 'product does not exist',
+            'errorMessage': 'product_does_not_exist'} : 상품을 조회할 수 없음
 
         History:
             2020-12-29(고수희): 초기 생성

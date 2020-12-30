@@ -32,8 +32,7 @@ class CartItemService:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
             403, {'message': 'key error',
-            'errorMessage': 'customer_permission_denied'} : 잘못 입력된 키값
-
+            'errorMessage': 'customer_permission_denied'} : 사용자 권한이 없음
         History:
             2020-12-28(고수희): 초기 생성
         """
@@ -73,7 +72,8 @@ class CartItemService:
             'errorMessage': 'key_error'} : 잘못 입력된 키값
             400, {'message': 'unable to create',
             'errorMessage': 'unable_to_create'} : 장바구니 상품 추가 실패
-
+            403, {'message': 'key error',
+            'errorMessage': 'customer_permission_denied'} : 사용자 권한이 없음
         History:
             2020-12-28(고수희): 초기 생성
         """

@@ -163,7 +163,7 @@ class CartItemAddView(MethodView):
             connection = get_connection(self.database)
             cart_id = self.service.post_cart_item_service(connection, data)
             connection.commit()
-            return {'message': 'success', 'result': {"cartId": cart_id}}
+            return {'message': 'success', 'result': {"cartId": cart_id}}, 201
 
         except Exception as e:
             connection.rollback()
