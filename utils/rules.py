@@ -22,7 +22,7 @@ class NumberRule(AbstractRule):
         result = regex.match(value)
         errors = []
         if not result:
-            errors.append('accept_only_number')
+            errors.append('오직 숫자만 받는다.')
         return value, errors
 
 
@@ -141,8 +141,8 @@ class IsDeleteRule(AbstractRule):
         2020-12-28(김기용): 초기생성
     """
     def validate(self, value):
-        gender_set = ['0', '1']
+        bool_set = ['0', '1']
         errors = []
-        if value not in gender_set:
-            errors.append('accept only 0 and 1 value')
+        if value not in bool_set:
+            errors.append('0 과 1 값만 받는다.')
         return value, errors

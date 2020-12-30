@@ -72,6 +72,7 @@ class InvalidUser(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class InvalidToken(CustomUserError):
     def __init__(self, error_message):
         status_code = 403
@@ -166,8 +167,10 @@ class AccountNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 401
         message = 'account_does_not_exist'
-        
-        
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
 class CartItemNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
@@ -211,5 +214,35 @@ class CustomerPermissionDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'customer permissions denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class DeleteDenied(CustomUserError):
+    """ 논리 삭제 거부
+
+    Author: 김기용
+
+    History:
+        2020-12-30(김기용): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'invalid_delete_command_access'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class UpdateDenied(CustomUserError):
+    """ 수정 거부
+
+    Author: 김기용
+
+    History:
+        2020-12-30(김기용): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable_to_update'
         error_message = error_message
         super().__init__(status_code, message, error_message)
