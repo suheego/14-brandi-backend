@@ -1,5 +1,5 @@
 import pymysql
-from utils.custom_exceptions import CartItemNotExist, CartItemCreateDenied, CartItemUpdateDenied
+from utils.custom_exceptions import CartItemNotExist, CartItemCreateFail
 
 
 class SenderDao:
