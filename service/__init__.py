@@ -5,11 +5,5 @@
 """
 
 from .sample_user_service import SampleUserService
-<<<<<<< HEAD
-from .store.user_service import UserService
-from .store.destination_service import DestinationService
-from .store.cart_item_service import CartItemService
-
-=======
 from .admin.event_service import EventService
->>>>>>> 374da8252600bfd0d7cadecdc297353ed4e1bd81
+from .admin.enquiry_service import EnquiryService

@@ -26,7 +26,8 @@ class EventView(MethodView):
         Param('page', GET, int, required=True),
         Param('length', GET, int, required=True),
         Param('start_date', JSON, str, required=False, rules=[DateRule()]),
-        Param('end_date', JSON, str, required=False, rules=[DateRule()])
+        Param('end_date', JSON, str, required=False, rules=[DateRule()]),
+        Param('response_date', JSON, int)
     )
     def get(self, *args):
         data = {
@@ -37,7 +38,8 @@ class EventView(MethodView):
             'page': args[4],
             'length': args[5],
             'start_date': args[6],
-            'end_date': args[7]
+            'end_date': args[7],
+            'response_date': args[8]
         }
         if (data['start_date'] and not data['end_date']) or (not data['start_date'] and data['end_date']):
             raise DateMissingOne('start_date or end_date is missing')

@@ -6,3 +6,4 @@
 
 from .sample_user_dao import SampleUserDao
 from .admin.event_dao import EventDao
+from .admin.enquiry_dao import EnquiryDao
