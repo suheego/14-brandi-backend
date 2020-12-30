@@ -5,7 +5,7 @@ from utils.custom_exceptions import (
     ProductImageCreateDenied,
     StockCreateDenied,
     ProductHistoryCreateDenied,
-    ProductCodeUpdatedDenied
+    ProductCodeUpdatedDenied, ColorNotExist, SizeNotExist
 )
 
 class CreateProductDao:
@@ -211,7 +211,7 @@ class CreateProductDao:
             
             if not result:
                 raise StockCreateDenied('unable_to_create_stocks')
-    
+            
     def insert_product_history(self, connection, data):
         """상품 이력 정보 등록
             
@@ -269,3 +269,42 @@ class CreateProductDao:
             
             if not result:
                 raise ProductHistoryCreateDenied('unable_to_create_product_history')
+            
+    def get_color_list(self, connection):
+        sql = """
+            SELECT
+                id
+                ,name
+            FROM
+                colors
+            WHERE
+                is_deleted = 0
+            ;
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            
+            if not result:
+                raise ColorNotExist('color_not_exist')
+            
+            return result
+    
+    def get_size_list(self, connection):
+        sql = """
+            SELECT
+                id
+                ,name
+            FROM
+                sizes
+            ;
+        """
+        
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            
+            if not result:
+                raise SizeNotExist('size_not_exist')
+        
+            return result

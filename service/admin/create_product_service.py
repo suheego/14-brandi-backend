@@ -251,7 +251,7 @@ class CreateProductService:
             History:
                 2020-12-29(심원두): 초기 생성
         """
-    
+        
         try:
             data['product_id']         = product_id
             data['discount_rate']      = float(data['discount_rate'])/100
@@ -261,3 +261,9 @@ class CreateProductService:
             
         except KeyError:
             raise KeyError('key_error')
+        
+    def get_color_list(self, connection):
+        return self.create_product_dao.get_color_list(connection)
+    
+    def get_size_list(self, connection):
+        return self.create_product_dao.get_size_list(connection)

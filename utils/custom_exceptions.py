@@ -151,4 +151,18 @@ class ProductHistoryCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-# E - 상품 등록 관련 Exception Class ===============================================================
+class ColorNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'color not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+class SizeNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'size not exist'
+        error_message = error_message
+        
+        super().__init__(status_code, message, error_message)

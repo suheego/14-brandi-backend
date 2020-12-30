@@ -13,11 +13,10 @@ from utils.rules             import (
 )
 from flask_request_validator import (
     Param,
-    JSON,
-    validate_params,
     FORM,
-    MinLength,
-    MaxLength
+    GET,
+    MaxLength,
+    validate_params,
 )
 
 
@@ -40,27 +39,84 @@ class CreateProductView(MethodView):
         self.database = database
     
     @validate_params(
-        Param('seller_id',              FORM, int,  required=True,  rules=[RequiredFieldRule()]),
-        Param('account_id',             FORM, int,  required=True,  rules=[RequiredFieldRule()]),
-        Param('is_sale',                FORM, bool, required=True,  rules=[RequiredFieldRule()]),
-        Param('is_display',             FORM, bool, required=True,  rules=[RequiredFieldRule()]),
-        Param('main_category_id',       FORM, int,  required=True,  rules=[RequiredFieldRule()]),
-        Param('sub_category_id',        FORM, int,  required=True,  rules=[RequiredFieldRule()]),
-        Param('is_product_notice',      FORM, bool, required=True,  rules=[RequiredFieldRule()]),
-        Param('manufacturer',           FORM, str,  required=False, rules=[MaxLength(30)]),
-        Param('manufacturing_date',     FORM, str,  required=False),
-        Param('product_origin_type_id', FORM, str,  required=False),
-        Param('product_name',           FORM, str,  required=True,  rules=[RequiredFieldRule(), MaxLength(100)]),
-        Param('description',            FORM, str,  required=True,  rules=[RequiredFieldRule(), MaxLength(200)]),
-        Param('detail_information',     FORM, str,  required=True,  rules=[RequiredFieldRule()]),
+        Param('seller_name',      GET, str, required=False),
+        Param('main_category_id', GET, int, required=False)
+    )
+    def get(self, *args):
+        """POST 메소드: 상품 정보 등록
+
+            Args:
+                seller_name'     : 사용자가 입력한 셀러명
+                main_category_id : 사용자가 선택한 메인 카테고리 아이디
+                
+            Author: 심원두
+            
+            Returns:
+                return {"message": "success", "result": [{}]}
+            
+            Raises:
+                400, {'message': 'invalid_parameter', 'errorMessage': str(e)}: 잘못된 요청값
+            
+            History:
+                2020-12-30(심원두): 초기생성
+        """
+        seller_name = request.args.get('seller_name', None)
+        main_category_id = request.args.get('main_category_id', None)
+        
+        try:
+            connection = get_connection(self.database)
+            
+            result = {}
+            
+            if seller_name:
+                # TODO
+                seller_info = self.service.get_color_list(connection)
+                
+                return jsonify({'message': 'success', 'result': result})
+            
+            if main_category_id:
+                # TODO
+                sub_category_info = self.service.get_color_list(connection)
+                
+                return jsonify({'message': 'success', 'result': result})
+            
+            colors = self.service.get_color_list(connection)
+            sizes  = self.service.get_size_list(connection)
+            
+            return jsonify({'message': 'success', 'result': result})
+        
+        except Exception as e:
+            raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+    
+    @validate_params(
+        Param('seller_id',              FORM, int, required=True,  rules=[RequiredFieldRule()]),
+        Param('account_id',             FORM, int, required=True,  rules=[RequiredFieldRule()]),
+        Param('is_sale',                FORM, int, required=True,  rules=[RequiredFieldRule()]),
+        Param('is_display',             FORM, int, required=True,  rules=[RequiredFieldRule()]),
+        Param('main_category_id',       FORM, int, required=True,  rules=[RequiredFieldRule()]),
+        Param('sub_category_id',        FORM, int, required=True,  rules=[RequiredFieldRule()]),
+        Param('is_product_notice',      FORM, int, required=True,  rules=[RequiredFieldRule()]),
+        Param('manufacturer',           FORM, str, required=False, rules=[MaxLength(30)]),
+        Param('manufacturing_date',     FORM, str, required=False),
+        Param('product_origin_type_id', FORM, str, required=False),
+        Param('product_name',           FORM, str, required=True,  rules=[RequiredFieldRule(), MaxLength(100)]),
+        Param('description',            FORM, str, required=True,  rules=[RequiredFieldRule(), MaxLength(200)]),
+        Param('detail_information',     FORM, str, required=True,  rules=[RequiredFieldRule()]),
         Param('options',                FORM, list, required=True),
-        Param('minimum_quantity',       FORM, int,  required=False, rules=[RequiredFieldRule()]),
-        Param('maximum_quantity',       FORM, int,  required=False, rules=[RequiredFieldRule()]),
-        Param('origin_price',           FORM, str,  required=True,  rules=[RequiredFieldRule()]),
-        Param('discount_rate',          FORM, str,  required=True),
-        Param('discounted_price',       FORM, str,  required=True),
-        Param('discount_start_date',    FORM, str,  required=False),
-        Param('discount_end_date',      FORM, str,  required=False)
+        Param('minimum_quantity',       FORM, int, required=False, rules=[RequiredFieldRule()]),
+        Param('maximum_quantity',       FORM, int, required=False, rules=[RequiredFieldRule()]),
+        Param('origin_price',           FORM, str, required=True,  rules=[RequiredFieldRule()]),
+        Param('discount_rate',          FORM, str, required=True),
+        Param('discounted_price',       FORM, str, required=True),
+        Param('discount_start_date',    FORM, str, required=False),
+        Param('discount_end_date',      FORM, str, required=False)
     )
     def post(self, *args):
         """POST 메소드: 상품 정보 등록
