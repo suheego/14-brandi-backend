@@ -3,9 +3,38 @@ from utils.custom_exceptions import UserUpdateDenied, UserCreateDenied, UserNotE
 
 
 class OrderDao:
+    """ Persistence Layer
+
+            Attributes: None
+
+            Author: 김민
+
+            History:
+                2020-2012-29(김민서): 초기 생성
+                2020-12-30(김민서): 1차 수정
+    """
     def get_order_list_dao(self, connection, data):
+        """주문 리스 조회
+
+                Args:
+                    connection: 데이터베이스 연결 객체
+                    user_id   : 서비스 레이어에서 넘겨 받은 수정할 user_id
+
+                Author: 김민서
+
+                Returns:
+                    return [{'id': 12, 'name': '김기용', 'gender': '남자', 'age': '18'}]
+
+                History:
+                    2020-12-29(김민서): 초기 생성
+                    2020-12-30(김민서): 1차 수정
+
+                Raises:
+                    400, {'message': 'user dose not exist', 'errorMessage': 'user_does_not_exist'} : 유저 정보 조회 실패
+                """
         sql = """
-            SELECT order_item.id,
+            SELECT 
+                order_item.id,
                 order_item.created_at AS purchased_date,
                 order_item.updated_at AS updated_at,
                 `order`.order_number AS order_number,
@@ -14,7 +43,7 @@ class OrderDao:
                 product.`name` AS product_name,
                 CONCAT(color.`name`, '/', size.`name`) AS option_information,
                 stock.extra_cost AS option_extra_cost,
-                order_item.quantity AS quantity,
+                order_item.quantity AS quantity, 
                 `order`.sender_name AS customer_name,
                 `order`.sender_phone AS customer_phone,
                 `order`.total_price AS total_price,

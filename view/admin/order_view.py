@@ -58,7 +58,7 @@ class OrderView(MethodView):
         account_id 에 해당되는 유저를 테이블에서 조회 후 가져온다.
 
         Args: args = ('account_id', 'status', 'number', 'detail_number', 'sender_name', 'sender_phone',
-        'seller_name', 'product_name')
+        'seller_name', 'product_name', 'start_date', 'end_date', 'seller_attributes', 'order_by', 'page', 'length')
 
         Author: 김민서
 
@@ -67,19 +67,18 @@ class OrderView(MethodView):
 
         Raises:
             400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
-            400, {'message': 'user does not exist error', 'errorMessage': 'user_does_not_exist'}    : 유저 정보 조회 실패
+            400, {'message': 'must be date inputs or filter inputs', 'errorMessage': 'must_be_date_inputs_or_filter_inputs'}: 필수 파라미터 값 없음
             400, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
             500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
 
         History:
-            2020-20-20(홍길동): 초기 생성
-            2020-20-21(홍길동): 1차 수정
-            2020-20-22(홍길동): 2차 수정
+            2020-12-29(김민서): 초기 생성
+            2020-12-30(김민서): 1차 수정
         """
 
         try:
             connection = get_connection(self.database)
-            contexts = self.service.get_prepare_product_service(connection, data)
+            contexts = self.service.get_orders_service(connection, data)
             result = []
 
             for context in contexts:
