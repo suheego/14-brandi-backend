@@ -64,7 +64,7 @@ class CartItemDao:
         INNER JOIN stocks as st ON st.id = stock_id
         INNER JOIN colors as co ON co.id = st.color_id
         INNER JOIN sizes as sz ON sz.id = st.size_id
-        INNER JOIN product_images as pi ON pi.product_id = ct.product_id
+        INNER JOIN product_images as pi ON pi.product_id = ct.product_id AND pi.order_index = 1
         INNER JOIN products as pd ON pd.id = ct.product_id 
         INNER JOIN sellers as se ON se.account_id = pd.seller_id
         WHERE ct.id = %s

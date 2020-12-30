@@ -39,7 +39,7 @@ class CartItemView(MethodView):
 
         cart_id에 해당되는 장바구니 상품을 테이블에서 조회 후 가져옴
 
-        Args: args = ('cart_id')
+        Args: args = ('account_id', 'cart_id')
 
         Author: 고수희
 
@@ -75,6 +75,7 @@ class CartItemView(MethodView):
 
         History:
             2020-12-28(고수희): 초기 생성
+            2020-12-30(고수희): 1차 수정 - 데코레이터 추가, 사용자 권한 체
         """
         data = {
             "cart_id": args[0],
@@ -146,6 +147,7 @@ class CartItemAddView(MethodView):
 
         History:
             2020-12-28(고수희): 초기 생성
+            2020-12-30(고수희): 1차 수정 - 데코레이터 추가, 사용자 권한 체크 추가
         """
         data = {
             'user_id': g.account_id,
