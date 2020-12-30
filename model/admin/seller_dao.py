@@ -16,7 +16,7 @@ class SellerDao:
 
     def create_account_dao(self, connection, data):
 
-        account_sql = """
+        sql = """
         INSERT INTO ACCOUNTS 
         (	 
             username,
@@ -31,60 +31,72 @@ class SellerDao:
         """
 
         with connection.cursor() as cursor:
-            cursor.execute(account_sql, data)
+            cursor.execute(sql, data)
             account_id = cursor.lastrowid
+
             if not account_id:
                 raise UserCreateDenied('unable_to_create_account_id')
+            return account_id
 
-        #data account_id 추가
-        data["account_id"] = account_id
-        print("첫번째")
-        print(data)
-        seller_sql = """
-        INSERT INTO sellers 
+    def create_seller_dao(self, connection, data):
+        sql = """
+        INSERT INTO SELLERS 
         (   
-            account_id,
-            seller_attribute_type_id,
-            name,
-            english_name,
-            contact_phone,
-            service_center_number
-        ) 
-        VALUES (
-            %(account_id)s,								
-            %(seller_attribute_type_id)s,							
-            %(name)s,			
-            %(english_name)s,
-            %(contact_phone)s,
-            %(service_center_number)s			
+            account_id
+            ,seller_attribute_type_id
+            ,name
+            ,english_name
+            ,contact_phone
+            ,service_center_number
+        ) VALUES (
+            %(account_id)s								
+            ,%(seller_attribute_type_id)s							
+            ,%(name)s
+            ,%(english_name)s
+            ,%(contact_phone)s
+            ,%(service_center_number)s			
         );
         """
-
         with connection.cursor() as cursor:
-            cursor.execute(seller_sql, data)
-            seller_id = cursor.lastrowid
-            if not seller_id:
-                raise UserCreateDenied('unable_to_create_seller_id')
+            result = cursor.execute(sql, data)
+            return result
 
-        # data seller_id 추가
-        data["seller_id"] = seller_id
-        print("두번째")
-        print(data)
-        seller_history_sql = """
-        INSERT INTO sellers_histories
+    def create_seller_history_dao(self, connection, data):
+        sql = """
+        INSERT INTO seller_histories
         (
-            seller_id,
-            seller_status_type_id
+            seller_id
+            ,seller_status_type_id
+            ,updater_id
         )
-        VALUES (
-            %(seller_id)s,
-            1
+        VALUES(
+            %(account_id)s
+            ,1
+            ,%(account_id)s
         );
         """
 
         with connection.cursor() as cursor:
-            cursor.execute(seller_history_sql, data)
-            seller_id = cursor.lastrowid
-            if not seller_id:
-                raise UserCreateDenied('unable_to_create_seller_id')
-            return seller_id
+            result = cursor.execute(sql, data)
+            return result
+
+
+    def get_seller_infomation(self, connection, data):
+
+        sql = """            
+        SELECT 
+            id
+            ,username
+            ,password
+        FROM 
+            accounts
+        WHERE 
+            is_deleted = 0				
+            AND username = %(username)s
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+            result = cursor.fetchone()
+            return result
+

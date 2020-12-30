@@ -10,7 +10,7 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 
 
 from .sample_user_view import SampleUserView
-from .admin.seller_view import SellerView
+from .admin.seller_view import SellerSignupView, SellerSigninView
 from utils.error_handler import error_handle
 
 
@@ -62,8 +62,8 @@ def create_endpoints(app, services, database):
 # Admin 2 Section
 # ----------------------------------------------------------------------------------------------------------------------
 # 김영환
-    app.add_url_rule('/admin/signup', view_func = SellerView.as_view('seller_view', seller_service, database))
-
+    app.add_url_rule('/admin/signup', view_func = SellerSignupView.as_view('seller_signup_view', seller_service, database))
+    app.add_url_rule('/admin/signin', view_func = SellerSigninView.as_view('seller_signin_view', seller_service, database))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 이성보 ◟( ˘ ³˘)◞ ♡

@@ -9,7 +9,7 @@ from flask_request_validator import (
     validate_params
 )
 
-class SellerView(MethodView):
+class SellerSignupView(MethodView):
     def __init__(self, service, database):
         self.service = service
         self.database = database
@@ -17,7 +17,6 @@ class SellerView(MethodView):
     @validate_params(
         Param('username', JSON, str),
         Param('password', JSON, str),
-        Param('permission_type_id', JSON, int),
         Param('seller_attribute_type_id', JSON, str),
         Param('name', JSON, str),
         Param('english_name', JSON, str),
@@ -29,23 +28,52 @@ class SellerView(MethodView):
         data = {
             'username' : args[0],
             'password' : args[1],
-            'permission_type_id' : args[2],
-            'seller_attribute_type_id': args[3],
-            'name': args[4],
-            'english_name': args[5],
-            'contact_phone': args[6],
-            'service_center_number': args[7],
+            'seller_attribute_type_id': args[2],
+            'name': args[3],
+            'english_name': args[4],
+            'contact_phone': args[5],
+            'service_center_number': args[6],
         }
+
         try:
             connection = get_connection(self.database)
-        #     self.service.post_account_insert_service(connection, data)
-        #     self.service.post_seller_insert_service(connection, data)
-        #     self.service.post_seller_history_insert_service(connection, data)
-            self.service.check_account_service(connection,data)
-        #    self.service.post_seller_insert_service(connection, data)
+            self.service.seller_signup_service(connection,data)
             connection.commit()
-            return {'message': 'success'}
+            return jsonify({'message': 'success'}),200
 
+        except Exception as e:
+            connection.rollback()
+            raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+class SellerSigninView(MethodView):
+
+    def __init__(self, service, databses):
+        self.service = service
+        self.database = databses
+
+    @validate_params(
+        Param('username', JSON, str),
+        Param('password', JSON, str)
+    )
+
+    def post(self, *args):
+        data = {
+            'username': args[0],
+            'password': args[1]
+        }
+
+        try:
+            connection = get_connection(self.database)
+            token = self.service.seller_signin_service(connection, data)
+            connection.commit()
+            return jsonify({'message':'login success','token': token}),200
 
         except Exception as e:
             connection.rollback()

@@ -5,7 +5,6 @@ from model.admin import SellerDao
 from service.admin import SellerService
 from view import create_endpoints
 
-
 # for getting multiple service classes
 class Services:
     pass
@@ -24,15 +23,18 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     database = app.config['DB']
+    secret_key = app.config['SECRET_KEY']
 
     # persistence Layer
     seller_dao = SellerDao()
 
     # business Layer
     services = Services
-    services.seller_service = SellerService(seller_dao)
+    services.seller_service = SellerService(seller_dao,app.config)
 
     # presentation Layer
     create_endpoints(app, services, database)
 
     return app
+
+
