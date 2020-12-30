@@ -1,3 +1,4 @@
+import json
 from flask import jsonify, request
 from flask.views import MethodView
 from utils.connection import get_connection
@@ -11,6 +12,10 @@ from flask_request_validator import (
     validate_params
 )
 
+def date_converter(o):
+    import datetime
+    if isinstance(o, datetime.datetime):
+        return o.__str__()
 
 class EventView(MethodView):
 
@@ -26,8 +31,7 @@ class EventView(MethodView):
         Param('page', GET, int, required=True),
         Param('length', GET, int, required=True),
         Param('start_date', JSON, str, required=False, rules=[DateRule()]),
-        Param('end_date', JSON, str, required=False, rules=[DateRule()]),
-        Param('response_date', JSON, int)
+        Param('end_date', JSON, str, required=False, rules=[DateRule()])
     )
     def get(self, *args):
         data = {
@@ -38,8 +42,7 @@ class EventView(MethodView):
             'page': args[4],
             'length': args[5],
             'start_date': args[6],
-            'end_date': args[7],
-            'response_date': args[8]
+            'end_date': args[7]
         }
         if (data['start_date'] and not data['end_date']) or (not data['start_date'] and data['end_date']):
             raise DateMissingOne('start_date or end_date is missing')
