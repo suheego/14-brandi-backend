@@ -1,19 +1,10 @@
 from flask import Flask
 from flask_cors import CORS
 
-<<<<<<< HEAD
-from model import SampleUserDao
-from model.admin.order_dao import (OrderListDao
-                                   )
 
-from service import SampleUserService
-from service.admin.order_service import (OrderListService
-                                         )
+from model import SampleUserDao, OrderDao, EventDao
+from service import SampleUserService, OrderService, EventService
 
-=======
-from model import SampleUserDao, EventDao
-from service import SampleUserService, EventService
->>>>>>> admin
 from view import create_endpoints
 
 
@@ -38,16 +29,16 @@ def create_app(test_config=None):
 
     # persistence Layer
     sample_user_dao = SampleUserDao()
+    order_dao = OrderDao()
     event_dao = EventDao()
-
-    order_list_dao  = OrderListDao()
 
     # business Layer
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
+    services.order_service = OrderService(order_dao)
     services.event_service = EventService(event_dao)
 
-    services.order_service = OrderListService(order_list_dao)
+
 
     # presentation Layer
     create_endpoints(app, services, database)

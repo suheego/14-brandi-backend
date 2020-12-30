@@ -3,7 +3,7 @@ from flask.views import MethodView
 
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
-from utils.rules import NumberRule, GenderRule, AlphabeticRule
+from utils.rules import NumberRule, GenderRule, AlphabeticRule, OrderStatusRule
 
 from flask_request_validator import (
     Param,
@@ -12,53 +12,55 @@ from flask_request_validator import (
     GET
 )
 
-class OrderListView(MethodView):
+
+class OrderView(MethodView):
     def __init__(self, service, database):
         self.service = service
         self.database = database
+        print("hello world")
 
     @validate_params(
-        Param('order_item_status_type_id', GET, str),
-        Param('order_number', GET, str, required=False),
-        Param('order_detail_number', GET, str, required=False),
+        Param('account', GET, int, required=True),
+        Param('status', GET, int, required=True, rules=[OrderStatusRule()]),
+        Param('number', GET, str, required=False),
+        Param('detail_number', GET, str, required=False),
         Param('sender_name', GET, str, required=False),
         Param('sender_phone', GET, str, required=False),
         Param('seller_name', GET, str, required=False),
         Param('product_name', GET, str, required=False),
         Param('start_date', GET, str, required=False),
         Param('end_date', GET, str, required=False),
-        Param('seller_attribute_type_ids', GET, list, required=False),
-        Param('g', GET, str, required=False),
-        Param('order_by', GET, str, required=False),
-        Param('offset', GET, str, required=False),
-        Param('limit', GET, str, required=False)
+        Param('seller_attributes', JSON, list, required=False),
+        Param('order_by', GET, str, required=True),
+        Param('page', GET, int, required=True),
+        Param('length', GET, int, required=True)
     )
-
     def get(self, *args):
         data = {
-            'order_item_status_type_id': args[0],
-            'order_number'             : args[1],
-            'order_detail_number'      : args[2],
-            'sender_name'              : args[3],
-            'sender_phone'             : args[4],
-            'seller_name'              : args[5],
-            'product_name'             : args[6],
-            'start_date'               : args[7],
-            'end_date'                 : args[8],
-            'seller_attribute_type_ids': args[9],
-            'g'                        : args[10],
-            'order_by'                 : args[11],
-            'offset'                   : args[12],
-            'limit'                    : args[13]
+            'account': args[0],
+            'status': args[1],
+            'number': args[2],
+            'detail_number': args[3],
+            'sender_name': args[4],
+            'sender_phone': args[5],
+            'seller_name': args[6],
+            'product_name': args[7],
+            'start_date': args[8],
+            'end_date': args[9],
+            'seller_attributes': args[10],
+            'order_by': args[11],
+            'page': args[12],
+            'length': args[13]
         }
 
-        """GET 메소드: 해당 유저의 정보를 조회.
+        """GET 메소드: 주문 정보를 조회.
 
-        user_id 에 해당되는 유저를 테이블에서 조회 후 가져온다.
+        account_id 에 해당되는 유저를 테이블에서 조회 후 가져온다.
 
-        Args: args = ('user_id, )
+        Args: args = ('account_id', 'status', 'number', 'detail_number', 'sender_name', 'sender_phone',
+        'seller_name', 'product_name')
 
-        Author: 홍길동
+        Author: 김민서
 
         Returns:
             return {"message": "success", "result": [{"age": "18", "gender": "남자", "id": 12, "name": "홍길동"}]}

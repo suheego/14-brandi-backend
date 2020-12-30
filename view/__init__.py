@@ -9,13 +9,9 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 """
 
 from .sample_user_view import SampleUserView
-<<<<<<< HEAD
-from .admin.order_view import OrderListView
-from service.admin import order_service
-
-=======
+from .admin.order_view import OrderView
 from .admin.event_view import EventView
->>>>>>> admin
+
 from utils.error_handler import error_handle
 
 
@@ -67,7 +63,7 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 김민서 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-    app.add_url_rule('/admin/orders/list', view_func=OrderListView.as_view('order_view', order_service, database))
+    app.add_url_rule('/admin/orders', view_func=OrderView.as_view('order_view', order_service, database))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 이성보 ◟( ˘ ³˘)◞ ♡

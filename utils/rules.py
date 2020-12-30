@@ -63,6 +63,14 @@ class EventExposureRule(AbstractRule):
             errors.append('event exposure value should be 0 or 1')
         return value, errors
 
+class OrderStatusRule(AbstractRule):
+    def validate(self, value):
+        status_set = [1, 2, 3, 8]
+        errors = []
+        if value not in status_set:
+            errors.append('order status must be one of 1, 2, 3, 8')
+        return value, errors
+
 
 class DateRule(AbstractRule):
     """ 날짜 형식 벨리데이터 (YYYY-MM-DD)
