@@ -14,7 +14,7 @@ class SenderDao:
     """
 
     def get_sender_info_dao(self, connection, data):
-        """ 주문자 정보 조회, 결제 완료 테이블을 조회하여, 가장 최신에 등록된
+        """ 주문자 정보 조회
 
         Args:
             connection: 데이터베이스 연결 객체
@@ -23,9 +23,9 @@ class SenderDao:
         Author: 고수희
 
         Returns:
-            return {"name":"고수희",
-                    "phone":"01012341234",
-                    "email":"gosuhee@gmail.com",
+            return {"name": "고수희",
+                    "phone": "01012341234",
+                    "email": "gosuhee@gmail.com",
                     }
 
         History:
@@ -33,13 +33,11 @@ class SenderDao:
         """
         sql = """
         SELECT
-        sender_name as name
-        , sender_phone as phone
-        , sender_email as email
-        FROM orders
-        WHERE user_id = %s
-        ORDER BY id desc
-        LIMIT 1
+        name 
+        , phone 
+        , email 
+        FROM customer_information
+        WHERE account_id = %s
         ;
         """
 
