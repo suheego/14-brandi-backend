@@ -51,7 +51,7 @@ def create_app(test_config=None):
     cart_item_dao = CartItemDao()
     event_dao = EventDao()
 
-    # business Layer
+    # business Layer,   깔끔한 관리 방법을 생각하기
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
     services.user_service = UserService(user_dao, app.config)
