@@ -13,9 +13,13 @@ from .store.user_view import SignUpView, SignInView, GoogleSocialSignInView
 from .store.product_list_view import ProductListView, CategoryListView
 from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
+from .store.sender_view import SenderView
 from .admin.event_view import EventView
 from utils.error_handler import error_handle
 
+
+from utils.decorator import signin_decorator
+from flask import g, jsonify
 
 def create_endpoints(app, services, database):
     """ 앤드 포인트 시작
@@ -42,6 +46,7 @@ def create_endpoints(app, services, database):
     destination_service = services.destination_service
     cart_item_service = services.cart_item_service
     product_list_service = services.product_list_service
+    sender_service = services.sender_service
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Service Section(write your code under your name)
@@ -50,6 +55,8 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 김기용 example ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
+
+    # services 넘겨주기...
     app.add_url_rule('/test',
                      view_func=SampleUserView.as_view(
                          'sample_user_view',
@@ -110,6 +117,7 @@ def create_endpoints(app, services, database):
                          product_list_service,
                          database
                      ))
+
 # ----------------------------------------------------------------------------------------------------------------------
 # 고수희
 # ----------------------------------------------------------------------------------------------------------------------
@@ -124,6 +132,13 @@ def create_endpoints(app, services, database):
                     view_func=CartItemView.as_view(
                         'cart_item_view',
                         cart_item_service,
+                        database
+                    ))
+
+    app.add_url_rule('/checkout/sender',
+                    view_func=SenderView.as_view(
+                        'sender_view',
+                        sender_service,
                         database
                     ))
 

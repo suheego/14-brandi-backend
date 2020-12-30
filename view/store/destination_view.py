@@ -1,3 +1,4 @@
+from flask.globals import g
 from utils.rules import NumberRule, PhoneRule, PostalCodeRule, IsDeleteRule
 from utils.custom_exceptions import DatabaseCloseFail
 from utils.connection import get_connection
@@ -7,6 +8,8 @@ from flask_request_validator import(
         JSON,
         validate_params
 )
+
+from utils.decorator import signin_decorator
 
 
 class DestinationDetailView(MethodView):
@@ -19,8 +22,7 @@ class DestinationDetailView(MethodView):
         """GET 메소드: 배송지 상세정보 조회
 
         Args:
-            args:
-                destination_id : url pass_parameter로 입력받은 값
+            destination_id : url pass_parameter 로 입력받은 값
 
         Author: 김기용
 
@@ -59,11 +61,12 @@ class DestinationView(MethodView):
         self.service = service
         self.database = database
 
+    @signin_decorator
     def get(self):
         """GET 메소드:   해당 유저에 대한 배송지 정보 받아오기
 
         Args:
-            account_id: 데코레이터에서 넘겨받은 유저 정보
+            g.account_id: 데코레이터에서 넘겨받은 유저 정보
 
 
         Author: 김기용
@@ -82,9 +85,8 @@ class DestinationView(MethodView):
         """
 
         # 로그인 데코레이터 달리면 그때 account_id 를 받아올예정
-        account_id = 120
         data = dict()
-        data['account_id'] = account_id
+        data['account_id'] = g.account_id
 
         try:
             connection = get_connection(self.database)
@@ -101,8 +103,8 @@ class DestinationView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database_close_failed')
 
+    @signin_decorator
     @validate_params(
-        Param('user_id', JSON, str, rules=[NumberRule()]),
         Param('recipient', JSON, str),
         Param('phone', JSON, str, rules=[PhoneRule()]),
         Param('address1', JSON, str),
@@ -110,7 +112,7 @@ class DestinationView(MethodView):
         Param('post_number', JSON, str, rules=[PostalCodeRule()]),
     )
     def post(self, *args):
-        """POST 메소드:  유저생성
+        """POST 메소드:  배송지 추가
 
         Args:
             args =('user_id',
@@ -127,25 +129,26 @@ class DestinationView(MethodView):
         Returns: 201, {'message': 'success'}: 배송지 생성 성공
 
         Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}                                        : 잘못 입력된 키값
-            400, {'message': 'destination_creatation_denied', 'errorMessage': 'destination_creatation_denied'}: 배송지 생성 실패
-            400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                                      : 유저 불일치 
-            400, {'message': 'data_limit_reached', 'errorMessage': 'max_destination_limit_reached'}           : 최대 생성 개수 초과
-            401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}               : 계정 정보 없음
-            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}          : 커넥션 종료 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                             : 서버 에러
+            400, {'message': 'key error', 'errorMessage': 'key_error'}                                      : 잘못 입력된 키값
+            400, {'message': 'destination_creatation_denied', 'errorMessage': 'destination_creation_denied'}: 배송지 생성 실패
+            400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                                    : 유저 불일치
+            400, {'message': 'data_limit_reached', 'errorMessage': 'max_destination_limit_reached'}         : 최대 생성 개수 초과
+            401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}             : 계정 정보 없음
+            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}        : 커넥션 종료 실패
+            500, {'message': 'internal server error', 'errorMessage': format(e)})                           : 서버 에러
 
         History:
             2020-12-28(김기용): 초기 생성
+            2020-12-29(김기용): 데코레이터 추가
         """
 
         data = {
-            'user_id': args[0],
-            'recipient': args[1],
-            'phone': args[2],
-            'address1': args[3],
-            'address2': args[4],
-            'post_number': args[5],
+            'user_id': g.account_id,
+            'recipient': args[0],
+            'phone': args[1],
+            'address1': args[2],
+            'address2': args[3],
+            'post_number': args[4],
         }
 
         try:
@@ -165,19 +168,84 @@ class DestinationView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database close fail')
 
-    def patch(self):
-        pass
-
+    @signin_decorator
     @validate_params(
         Param('destination_id', JSON, str, rules=[NumberRule()]),
+        Param('recipient', JSON, str),
+        Param('phone', JSON, str, rules=[PhoneRule()]),
+        Param('address1', JSON, str),
+        Param('address2', JSON, str),
+        Param('post_number', JSON, str, rules=[PostalCodeRule()]),
+        Param('default_location', JSON, str, rules=[IsDeleteRule()])
+    )
+    def patch(self, *args):
+        """ PATCH 메소드: 배송지 정보 수정
+            
+            Args: destination_id
+
+            Author: 김기용
+
+            Returns: {'message':'success'}
+
+            Raises: 
+                400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
+                500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
+                500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
+        """
+        data = dict()
+        data['destination_id'] = args[0]
+        data['recipient'] = args[1]
+        data['phone'] = args[2]
+        data['address1'] = args[3]
+        data['address2'] = args[4]
+        data['post_number'] = args[5]
+        data['default_location'] = args[6]
+        data['account_id'] = g.account_id
+
+        try:
+            connection = get_connection(self.database)
+            self.service.update_destination_info_service(connection, data)
+            connection.commit()
+            return {'message': 'success'}
+
+        except Exception as e:
+            connection.rollback()
+            raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+    @signin_decorator
+    @validate_params(
+        Param('destination_id', JSON, str, rules=[NumberRule()])
     )
     def delete(self, *args):
-        # 데코레이터에서 넘겨 받은 account_id
-        account_id = 120
-        data = {
-                'destination_id': args[0],
-                'account_id': account_id
-                }
+        """DELETE 메소드:  배송지 삭제
+
+        Args:
+            args =('user_id')
+
+        Author: 김기용
+
+        Returns: 200, {'message': 'success'}: 배송지 삭제 성공
+
+        Raises:
+            400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
+            401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}     : 계정 정보 없음
+            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
+            500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
+
+        History:
+            2020-12-29(김기용): 초기 생성
+            2020-12-30(김기용): 데코레이터 추가
+        """
+        data = dict()
+        data['destination_id'] = args[0]
+        data['account_id'] = g.account_id
         
         try:
             connection = get_connection(self.database)

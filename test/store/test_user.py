@@ -59,7 +59,6 @@ class TestUser(TestCase):
              "email": "test_user@gmail.com"
         }
         response = self.client.post('/users/social-signin', headers={'Authorization': 'google_token'})
-        print(response)
-        print(response.data.decode('utf-8'))
+
         assert response.status_code == 200
         assert b'token' in response.data

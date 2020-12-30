@@ -4,9 +4,10 @@ from flask.json import JSONEncoder
 from flask import Flask
 from flask_cors import CORS
 
-from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, EventDao, ProductListDao
-from service import SampleUserService, UserService, DestinationService, CartItemService, EventService, ProductListService
+from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, SenderDao, EventDao, ProductListDao
+from service import SampleUserService, UserService, DestinationService, CartItemService, SenderService, EventService, ProductListService
 from view import create_endpoints
+
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
@@ -50,15 +51,17 @@ def create_app(test_config=None):
     destination_dao = DestinationDao()
     cart_item_dao = CartItemDao()
     product_list_dao = ProductListDao()
+    sender_dao = SenderDao()
     event_dao = EventDao()
 
-    # business Layer
+    # business Layer,   깔끔한 관리 방법을 생각하기
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
     services.user_service = UserService(user_dao, app.config)
     services.destination_service = DestinationService(destination_dao)
     services.cart_item_service = CartItemService(cart_item_dao)
     services.product_list_service = ProductListService(product_list_dao)
+    services.sender_service = SenderService(sender_dao)
     services.event_service = EventService(event_dao)
 
     # presentation Layer
