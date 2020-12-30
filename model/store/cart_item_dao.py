@@ -13,7 +13,7 @@ class CartItemDao:
             2020-12-28(고수희): 초기 생성
     """
 
-    def get_dao(self, connection, data):
+    def get_cart_item_dao(self, connection, data):
         """장바구니 상품 정보 조회
 
         Args:
@@ -194,7 +194,7 @@ class CartItemDao:
                 return {'soldOut': True}
             return {'soldOut': False}
 
-    def post_dao(self, connection, data):
+    def post_cart_item_dao(self, connection, data):
         """장바구니 상품 추가
 
         Args:

@@ -46,7 +46,7 @@ class CartItemService:
             sold_out = self.cart_item_dao.get_cart_item_soldout_dao(connection, data)
 
             #상품 정보 조회
-            cart_item = self.cart_item_dao.get_dao(connection, data)
+            cart_item = self.cart_item_dao.get_cart_item_dao(connection, data)
 
             # 상품 정보 조회에 상품 품절 여부 결과 병합하여 리턴
             cart_item.update(sold_out)
@@ -88,7 +88,7 @@ class CartItemService:
             sold_out = self.cart_item_dao.product_soldout_dao(connection, data)
             if sold_out['soldOut'] is True:
                 raise CartItemCreateFail('unable_to_create')
-            return self.cart_item_dao.post_dao(connection, data)
+            return self.cart_item_dao.post_cart_item_dao(connection, data)
 
         except KeyError:
             raise KeyError('key_error')
