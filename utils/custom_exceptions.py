@@ -28,15 +28,15 @@ class CustomUserError(Exception):
 class InvalidUserId(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
-        message = 'user_id must be integer'
+        message = 'id_must_be_integer'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
 class UserAlreadyExist(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
-        message = 'user already exist'
+        status_code = 403
+        message = 'user_already_exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -59,12 +59,39 @@ class UserCreateDenied(CustomUserError):
 
 class UserNotExist(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
-        message = 'user not exist'
+        status_code = 404
+        message = 'user_not_exist'
         error_message = error_message
-
         super().__init__(status_code, message, error_message)
 
+
+class InvalidUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_user'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class InvalidToken(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_token'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class TokenCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'token_create_denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class UnauthorizedUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 401
+        message = 'unauthorized_user'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
 
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
@@ -123,5 +150,5 @@ class ProductHistoryCreateDenied(CustomUserError):
         message = 'product history create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
-        
+
 # E - 상품 등록 관련 Exception Class ===============================================================

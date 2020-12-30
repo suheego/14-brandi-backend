@@ -10,7 +10,6 @@ from service import SampleUserService
 from service.admin.create_product_service import CreateProductService
 from view import create_endpoints
 
-
 # for getting multiple service classes
 class Services:
     pass
@@ -29,6 +28,7 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     database = app.config['DB']
+    secret_key = app.config['SECRET_KEY']
 
     # persistence Layer
     sample_user_dao = SampleUserDao()
@@ -37,12 +37,14 @@ def create_app(test_config=None):
 
     # business Layer
     services = Services
+
+    services.seller_service = SellerService(seller_dao,app.config)
     services.sample_user_service = SampleUserService(sample_user_dao)
-    
-    services.seller_service = SellerService(seller_dao)
     services.create_product_service = CreateProductService(create_product_dao)
 
     # presentation Layer
     create_endpoints(app, services, database)
 
     return app
+
+
