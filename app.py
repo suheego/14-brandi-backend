@@ -10,6 +10,7 @@ from service.admin import SellerInfoService, SellerService, CreateProductService
 from view.admin    import create_endpoints
 from view          import create_endpoints
 
+
 # for getting multiple service classes
 class Services:
     pass

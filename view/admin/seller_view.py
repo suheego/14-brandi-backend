@@ -7,10 +7,12 @@ from utils.rules             import NumberRule, DefaultRule
 
 from flask_request_validator import (
     Param,
+    PATH,
     JSON,
     PATH,
     validate_params
 )
+
 
 class SellerSignupView(MethodView):
     def __init__(self, service, database):
@@ -43,6 +45,7 @@ class SellerSignupView(MethodView):
             self.service.seller_signup_service(connection,data)
             connection.commit()
             return jsonify({'message': 'success'}),200
+
 
         except Exception as e:
             connection.rollback()
@@ -79,15 +82,7 @@ class SellerSigninView(MethodView):
             return jsonify({'message':'login success','token': token}),200
 
         except Exception as e:
-            connection.rollback()
-            raise e
-
-        finally:
-            try:
-                if connection:
-                    connection.close()
-            except Exception:
-                raise DatabaseCloseFail('database close fail')
+            connection.rollback()                
 
 
 class SellerInfoView(MethodView):

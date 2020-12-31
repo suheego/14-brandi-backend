@@ -115,7 +115,7 @@ class SellerInfoDao:
         """셀러 정보 조회
         Args:
             connection : 데이터베이스 연결 객체
-            account_id  : 해당 셀러 ID
+            account_id : 해당 셀러 ID
         """
         account_id = account_id
         sql = """
@@ -143,8 +143,7 @@ class SellerInfoDao:
         WHERE
             seller.is_deleted = 0	 	# 고정 값
             AND seller.account_id = %s;	# 변수 (화면 입력 값)
-
-                """
+        """
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, account_id)
             result = cursor.fetchall()
@@ -173,7 +172,6 @@ class SellerInfoDao:
                 ON `history`.seller_status_type_id = `status_type`.id
         WHERE
             `history`.id = %s;	# 변수 (화면 입력 값)
-
 #        ORDER BY
 #            `history`.id DESC;
                 """
@@ -186,7 +184,7 @@ class SellerInfoDao:
 
     def patch_seller_info(self, connection, data):
         """셀러 상세 히스토리 변경
-        Args:
+        Args:   
             connection : 데이터베이스 연결 객체
             data      : service 에서 넘겨받은 dict 객체
         """
@@ -196,7 +194,7 @@ class SellerInfoDao:
             seller_discription = %(seller_discription)s
         WHERE
             is_deleted = 0 			# 고정 값
-            AND sellers.account_id = %(account_id)s;
+            AND sellers.account_id = %(account_id)s;	
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:

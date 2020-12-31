@@ -70,7 +70,7 @@ class SellerService:
 
         return token
 
-
+      
 class SellerInfoService:
 
     def __init__(self, seller_dao):
@@ -136,9 +136,11 @@ class SellerInfoService:
             return
         Raises:
             400, {'message': 'key error', 'errorMessage': 'key_error'}: 잘못 입력된 키값
+
         History:
-            2020-12-29(이영주): 초기 생성
+            2020-12-29(이영주): 초기 생성/ 작업중
         """
+
         try:
             return self.seller_dao.patch_seller_info(connection, data)
 
