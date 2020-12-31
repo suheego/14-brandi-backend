@@ -79,20 +79,15 @@ class SellerInfoService:
     def get_seller_info(self, connection, data):
         """해당 아이디를 가진 셀러 상세정보 검색 함수
         seller_dao 의 get_seller_info 함수로 전달
-
         Args:
             connection : 데이터베이스 연결 객체
             data       : seller 계정
-
         Author:
             이영주
-
         Returns:
             result_seller_info(dao로 전달)
-
         Raises:
             400, {'message': 'key error', 'errorMessage': 'key_error'}: 잘못 입력된 키값
-
         History:
             2020-12-28(이영주): 초기 생성
         """
@@ -106,13 +101,10 @@ class SellerInfoService:
 
     def get_seller_history(self, connection, data):
         """해당 아이디를 가진 셀러 히스토리 검색 함수
-
         Args:
             connection: 데이터베이스 연결 객체
             data      : View 에서 넘겨받은 dict 객체
-
         Author: 이영주
-
         Returns:
                 "result": [
                     {
@@ -122,10 +114,8 @@ class SellerInfoService:
                         "updater_name": "seller50"
                     }
                 ]
-
         Raises:
             400, {'message': 'key error', 'errorMessage': 'key_error'}: 잘못 입력된 키값
-
         History:
             2020-12-29(이영주): 초기 생성/ 작업중
         """
@@ -138,22 +128,19 @@ class SellerInfoService:
 
     def patch_seller_info(self, connection, data):
         """해당 아이디를 가진 셀러 정보 업데이트
-
         Args:
             connection: 데이터베이스 연결 객체
             data      : View 에서 넘겨받은 dict 객체
-
         Author: 이영주
-
         Returns:
             return
-
         Raises:
             400, {'message': 'key error', 'errorMessage': 'key_error'}: 잘못 입력된 키값
 
         History:
-            2020-12-29(이영주): 초기 생성
+            2020-12-29(이영주): 초기 생성/ 작업중
         """
+
         try:
             return self.seller_dao.patch_seller_info(connection, data)
 

@@ -1,13 +1,15 @@
+from flask                   import jsonify, request
+from flask.views             import MethodView
 
-from flask import jsonify, request
-from flask.views import MethodView
-from utils.connection import get_connection
+from utils.connection        import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
-from utils.rules import NumberRule, GenderRule, AlphabeticRule, DefaultRule
+from utils.rules             import NumberRule, DefaultRule
+
 from flask_request_validator import (
     Param,
     PATH,
     JSON,
+    PATH,
     validate_params
 )
 
@@ -56,18 +58,17 @@ class SellerSignupView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database close fail')
 
-                
+
 class SellerSigninView(MethodView):
 
-    def __init__(self, service, databses):
+    def __init__(self, service, database):
         self.service = service
-        self.database = databses
+        self.database = database
 
     @validate_params(
         Param('username', JSON, str),
         Param('password', JSON, str)
     )
-
     def post(self, *args):
         data = {
             'username': args[0],
@@ -83,10 +84,9 @@ class SellerSigninView(MethodView):
         except Exception as e:
             connection.rollback()                
 
-            
+
 class SellerInfoView(MethodView):
     """ Presentation Layer
-
     Attributes:
         database: app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
         service : SellerInfoService 클래스
@@ -101,19 +101,17 @@ class SellerInfoView(MethodView):
       Param('account_id', PATH, str, required=True, rules=[NumberRule()])
     )
     def get(self, *args):
-        """GET 메소드: 
+        """GET 메소드:
             해당 셀러의 정보를 조회.
             account_id 에 해당되는 셀러를 테이블에서 조회 후 가져온다.
-
-        Args: 
+        Args:
             account_id
-
-        Author: 
+        Author:
             이영주
-        
+
         Returns:
             result seller
-            
+
         Raises:
             400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
             400, {'message': 'seller does not exist error', 'errorMessage': 'seller_does_not_exist'}: 셀러 정보 조회 실패
@@ -148,16 +146,15 @@ class SellerInfoView(MethodView):
         Param('status_id', PATH, str, required=False, rules=[NumberRule()])
     )
     def patch(self, *args):
-        """PATCH 메소드: 
+        """PATCH 메소드:
                 셀러 정보 수정
+        Args:
 
-        Args: 
-
-        Author: 
-            이영주 
+        Author:
+            이영주
 
         Returns:
-            200, {'message': 'success'}                                                             : 셀러 정보변경   
+            200, {'message': 'success'}                                                             : 셀러 정보변경
 
         Raises:
             400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
@@ -179,6 +176,16 @@ class SellerInfoView(MethodView):
             self.service.patch_seller_info(connection, data)
             connection.commit()
             return jsonify({'message': 'success'}), 200
+
+        except Exception as e:
+            raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
 
 
 class SellerHistoryView(MethodView):
@@ -221,7 +228,7 @@ class SellerHistoryView(MethodView):
             seller_history = self.service.get_seller_history(connection, data)
             return jsonify({'message' : 'success', 'result' : seller_history}), 200
 
-        except exception as e:
+        except Exception as e:
             raise e
 
         finally:

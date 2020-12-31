@@ -58,7 +58,7 @@ class SampleUserView(MethodView):
             2020-20-21(홍길동): 1차 수정
             2020-20-22(홍길동): 2차 수정
         """
-
+        
         try:
             connection = get_connection(self.database)
             user = self.service.get_sample_user_service(connection, data)
