@@ -1,11 +1,11 @@
-
+import decimal
 
 from flask.json import JSONEncoder
 from flask import Flask
 from flask_cors import CORS
 
-from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, SenderDao, EventDao, ProductListDao
-from service import SampleUserService, UserService, DestinationService, CartItemService, SenderService, EventService, ProductListService
+from model import SampleUserDao, DestinationDao, CartItemDao, SenderDao, EventDao
+from service import SampleUserService, UserService, DestinationService, CartItemService, SenderService, EventService, ProductListService, CategoryListService
 from view import create_endpoints
 
 
@@ -17,6 +17,8 @@ class CustomJSONEncoder(JSONEncoder):
                 return obj.isoformat(sep=' ')
             if isinstance(obj, datetime.datetime):
                 return obj.isoformat(sep=' ')
+            if isinstance(obj, decimal.Decimal):
+                return float(obj)
             iterable = iter(obj)
         except TypeError:
             pass
@@ -47,20 +49,19 @@ def create_app(test_config=None):
 
     # persistence Layers
     sample_user_dao = SampleUserDao()
-    user_dao = UserDao()
     destination_dao = DestinationDao()
     cart_item_dao = CartItemDao()
-    product_list_dao = ProductListDao()
     sender_dao = SenderDao()
     event_dao = EventDao()
 
     # business Layer,   깔끔한 관리 방법을 생각하기
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
-    services.user_service = UserService(user_dao, app.config)
+    services.user_service = UserService(app.config)
     services.destination_service = DestinationService(destination_dao)
     services.cart_item_service = CartItemService(cart_item_dao)
-    services.product_list_service = ProductListService(product_list_dao)
+    services.product_list_service = ProductListService()
+    services.category_list_service = CategoryListService()
     services.sender_service = SenderService(sender_dao)
     services.event_service = EventService(event_dao)
 

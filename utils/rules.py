@@ -104,7 +104,7 @@ class PasswordRule(AbstractRule):
         result = regex.match(value)
         errors = []
         if not result:
-            errors.append('enter_8~20_characters_including_numbers_uppercase_letters_lowercase_letters_special_characters')
+            errors.append('8~20_characters_including_numbers_uppercase_letters_lowercase_letters_special_characters')
         return value, errors
 
 

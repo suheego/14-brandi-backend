@@ -35,7 +35,7 @@ def signin_decorator(func):
             access_token = request.headers.get('Authorization')
 
             if not access_token:
-                raise UnauthorizedUser('should_be_sign_in')
+                raise UnauthorizedUser('로그인이 필요합니다.')
 
             payload = jwt.decode(
                 access_token,
@@ -45,9 +45,10 @@ def signin_decorator(func):
 
             g.username = payload['username']
             g.account_id = payload['account_id']
+            g.permission_type_id = payload['permission_type_id']
 
         except (jwt.InvalidTokenError, jwt.exceptions.ExpiredSignatureError, jwt.exceptions.DecodeError):
-            raise InvalidToken('invalid_token')
+            raise InvalidToken('잘못된 사용자입니다.')
 
         return func(*args, **kwargs)
     return wrapper
