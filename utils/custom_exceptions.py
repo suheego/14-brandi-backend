@@ -380,6 +380,25 @@ class EventSearchTwoInput(CustomUserError):
         status_code = 400
         message = 'event search inputs must be only one'
         error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class DateMissingOne(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'date inputs should be start_date and end_date'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class EventSearchTwoInput(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'event search inputs must be only one'
+        error_message = error_message
+
         super().__init__(status_code, message, error_message)
 
 
@@ -388,4 +407,15 @@ class EventDoesNotExist(CustomUserError):
         status_code = 404
         message = 'event not exist'
         error_message = error_message
+
         super().__init__(status_code, message, error_message)
+
+class OrderFilterNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'must be date inputs or filter inputs'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+

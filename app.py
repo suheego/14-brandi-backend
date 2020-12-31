@@ -2,8 +2,8 @@ from flask.json import JSONEncoder
 from flask import Flask
 from flask_cors import CORS
 
-from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, SenderDao, EventDao, ProductListDao
-from service import SampleUserService, UserService, DestinationService, CartItemService, SenderService, EventService, ProductListService
+from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, SenderDao, EventDao, ProductListDao, OrderDao
+from service import SampleUserService, UserService, DestinationService, CartItemService, SenderService, EventService, ProductListService, OrderService
 from view import create_endpoints
 
 from model.admin import SellerDao
@@ -53,6 +53,12 @@ def create_app(test_config=None):
 
     # persistence Layers
     sample_user_dao = SampleUserDao()
+
+
+    user_dao = UserDao()
+    destination_dao = DestinationDao()
+    cart_item_dao = CartItemDao()
+    order_dao = OrderDao()
     
     user_dao = UserDao()
     destination_dao = DestinationDao()
@@ -71,6 +77,7 @@ def create_app(test_config=None):
     services.user_service = UserService(user_dao, app.config)
     services.destination_service = DestinationService(destination_dao)
     services.cart_item_service = CartItemService(cart_item_dao)
+    services.order_service = OrderService(order_dao)
     services.product_list_service = ProductListService(product_list_dao)
     services.sender_service = SenderService(sender_dao)
     services.event_service = EventService(event_dao)
