@@ -6,7 +6,7 @@ from utils.custom_exceptions import (
     ProductImageCreateDenied,
     StockCreateDenied,
     ProductHistoryCreateDenied,
-    ProductSalesVolume,
+    ProductSalesVolumeCreateDenied,
     ProductOriginTypesNotExist,
     ColorNotExist,
     SizeNotExist,
@@ -14,7 +14,7 @@ from utils.custom_exceptions import (
     SubCategoryNotExist
 )
 
-class CreateProductDao:
+class ProductCreateDao:
     """ Persistence Layer
 
         Attributes: None
@@ -30,19 +30,20 @@ class CreateProductDao:
 
         Args:
             connection: 데이터베이스 연결 객체
-            data      : 서비스 레이어에서 넘겨 받은 상품등록에 사용될 데이터
+            data      : 서비스 레이어에서 넘겨 받은 products 테이블 등록에 사용될 데이터
 
         Author: 심원두
 
         Returns:
-            return product_id # products 테이블에 신규 등록된 데이터의 pk (id) 값
+            product_id : products 테이블에 신규 등록된 id 값
 
         History:
             2020-12-29(심원두): 초기 생성
-
+            2020-12-31(심원두): Docstring 수정
+        
         Raises:
-            500, {'message': 'product create denied', 'errorMessage': 'unable_to_create_product'}
-            : 상품 정보 등록 실패
+            500, {'message': 'product create denied',
+                  'errorMessage': 'unable_to_create_product'} : 상품 정보 등록 실패
         """
 
         sql = """
@@ -90,34 +91,36 @@ class CreateProductDao:
                 ,%(account_id)s
             );
         """
-
+        
         with connection.cursor() as cursor:
             cursor.execute(sql, data)
             product_id = cursor.lastrowid
-
+            
             if not product_id:
                 raise ProductCreateDenied('unable_to_create_product')
-
+            
             return product_id
-
+    
     def update_product_code(self, connection, data):
-        """상품 정보 갱신
-
+        """상품 정보 갱신 (product_code 갱신)
+            
             Args:
                 connection: 데이터베이스 연결 객체
-                data      : 서비스 레이어에서 넘겨 받은 상품 정보 갱신에 사용될 데이터
-
+                data      : 서비스 레이어에서 넘겨 받은 products 테이블 갱신에 사용될 데이터
+            
             Author: 심원두
-
+            
             Returns:
-                return None
-
+                0 : products 테이블 갱신 실패
+                1 : products 테이블 갱신 성공 (product_code)
+            
             History:
                 2020-12-29(심원두): 초기 생성
-
+                2020-12-31(심원두): Docstring 수정
+            
             Raises:
-                500, {'message': 'product code update denied', 'errorMessage': 'unable_to_update_product_code'}
-                : 상품 코드 갱신 실패
+                500, {'message': 'product code update denied',
+                      'errorMessage': 'unable_to_update_product_code'} : 상품 코드 갱신 실패
         """
 
         sql = """
@@ -136,25 +139,29 @@ class CreateProductDao:
 
             if not result:
                 raise ProductCodeUpdatedDenied('unable_to_update_product_code')
-
+            
+            return result
+    
     def insert_product_image(self, connection, data):
         """상품 이미지 정보 등록
-
+            
             Args:
                 connection: 데이터베이스 연결 객체
-                data      : 서비스 레이어에서 넘겨 받은 상품 이미지 등록에 사용될 데이터
+                data      : 서비스 레이어에서 넘겨 받은 product_images 테이블 등록에 사용될 데이터
 
             Author: 심원두
 
             Returns:
-                return None
+                0 : products_images 테이블 데이터 생성 실패
+                1 : products_images 테이블 데이터 생성 성공
 
             History:
                 2020-12-29(심원두): 초기 생성
+                2020-12-31(심원두): Docstring 수정
 
             Raises:
-                500, {'message': 'product image create denied', 'errorMessage': 'unable_to_create_product_image'}
-                : 상품 이미지 정보 등록 실패
+                500, {'message': 'product image create denied',
+                      'errorMessage': 'unable_to_create_product_image'} : 상품 이미지 정보 등록 실패
         """
 
         sql = """
@@ -175,6 +182,8 @@ class CreateProductDao:
 
             if not result:
                 raise ProductImageCreateDenied('unable_to_create_product_image')
+            
+            return result
 
     def insert_stock(self, connection, data):
         """상품 옵션 정보 등록
@@ -186,10 +195,12 @@ class CreateProductDao:
             Author: 심원두
 
             Returns:
-                return None
+                0 : stocks 테이블 데이터 생성 실패
+                1 : stocks 테이블 데이터 생성 성공
 
             History:
                 2020-12-29(심원두): 초기 생성
+                2020-12-31(심원두): Docstring 수정
 
             Raises:
                 500, {'message': 'stock create denied', 'errorMessage': 'unable_to_create_stocks'}
@@ -217,6 +228,8 @@ class CreateProductDao:
 
             if not result:
                 raise StockCreateDenied('unable_to_create_stocks')
+            
+            return result
 
     def insert_product_history(self, connection, data):
         """상품 이력 정보 등록
@@ -228,14 +241,16 @@ class CreateProductDao:
             Author: 심원두
 
             Returns:
-                return None
+                0 : product_histories 테이블 데이터 생성 실패
+                1 : product_histories 테이블 데이터 생성 성공
 
             History:
                 2020-12-29(심원두): 초기 생성
+                2020-12-31(심원두): Docstring 수정
 
             Raises:
-                500, {'message': 'product history create denied', 'errorMessage': 'unable_to_create_product_history'}
-                : 상품 이미지 정보 등록 실패
+                500, {'message': 'product history create denied',
+                      'errorMessage': 'unable_to_create_product_history'} : 상품 이미지 정보 등록 실패
         """
 
         sql = """
@@ -274,9 +289,32 @@ class CreateProductDao:
             result = cursor.execute(sql, data)
 
             if not result:
-                raise ProductSalesVolume('unable_to_create_product_history')
+                raise ProductHistoryCreateDenied('unable_to_create_product_history')
+            
+            return result
 
     def insert_product_sales_volumes(self, connection, product_id):
+        """상품 판매량 정보 초기 등록
+
+            Args:
+                connection : 데이터베이스 연결 객체
+                product_id : 서비스 레이어에서 넘겨 받은 product_sales_volumes 테이블 데이터 생성에 사용될 값
+
+            Author: 심원두
+
+            Returns:
+                0 : product_sales_volumes 테이블 데이터 생성 실패
+                1 : product_sales_volumes 테이블 데이터 생성 성공
+
+            History:
+                2020-12-29(심원두): 초기 생성
+                2020-12-31(심원두): Docstring 수정
+
+            Raises:
+                500, {'message': 'product sales volume create denied',
+                      'errorMessage': 'unable_to_create_product_sales_volumes'} : 상품 판매량 정보 생성 실패
+        """
+        
         sql = """
             INSERT INTO product_sales_volumes (
                 `product_id`
@@ -284,13 +322,35 @@ class CreateProductDao:
                 %s
             );
         """
+        
         with connection.cursor() as cursor:
             result = cursor.execute(sql, product_id)
 
             if not result:
-                raise ProductHistoryCreateDenied('unable_to_create_product_sales_volumes')
-
+                raise ProductSalesVolumeCreateDenied('unable_to_create_product_sales_volumes')
+        
+            return result
+    
     def get_product_origin_types(self, connection):
+        """원산지 정보 취득
+
+            Args:
+                connection : 데이터베이스 연결 객체
+
+            Author: 심원두
+
+            Returns:
+                result : product_origin_types 테이블의 키, 원산지명
+
+            History:
+                2020-12-29(심원두): 초기 생성
+                2020-12-31(심원두): Docstring 수정
+
+            Raises:
+                500, {'message': 'fail to get product origin types',
+                      'errorMessage': 'fail_to_get_product_origin_types'} : 원산지 정보 취득 실패
+        """
+        
         sql = """
             SELECT
                 id
@@ -299,14 +359,14 @@ class CreateProductDao:
                 product_origin_types
             ;
         """
-
+        
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql)
             result = cursor.fetchall()
-
+            
             if not result:
                 raise ProductOriginTypesNotExist('fail_to_get_product_origin_types')
-
+            
             return result
 
     def get_size_list(self, connection):
@@ -317,14 +377,15 @@ class CreateProductDao:
             Author: 심원두
 
             Returns:
-                return None
+                result : 테이블에서 취득한 사이즈 정보의 키, 사이즈명
 
             History:
                 2020-12-30(심원두): 초기 생성
-
+                2020-12-31(심원두): 메세지 수정
+            
             Raises:
-                500, {'message': 'cannot read size information', 'errorMessage': 'size_not_exist'}
-                : 상품 이미지 정보 등록 실패
+                500, {'message': 'fail to get size list',
+                      'errorMessage': 'fail_to_get_size_list'} : 사이즈 정보 취득 실패
         """
         sql = """
             SELECT
@@ -352,14 +413,15 @@ class CreateProductDao:
             Author: 심원두
 
             Returns:
-                return None
+                result : colors 테이블에서 취득한 색상 정보의 키, 색상명
 
             History:
                 2020-12-30(심원두): 초기 생성
-
+                2020-12-31(심원두): 메세지 수정
+            
             Raises:
-                500, {'message': 'cannot read color information', 'errorMessage': 'color_not_exist'}
-                : 상품 이미지 정보 등록 실패
+                500, {'message': 'fail to get color list',
+                      'errorMessage': 'fail_to_get_color_list'}: 색상 정보 취득 실패
         """
         sql = """
             SELECT
@@ -374,13 +436,28 @@ class CreateProductDao:
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql)
             result = cursor.fetchall()
-
+            
             if not result:
                 raise ColorNotExist('fail_to_get_color_list')
 
             return result
 
     def search_seller_list(self, connection, data):
+        """셀러 정보 취득 (전방 일치 검색)
+            Args:
+                connection: 데이터베이스 연결 객체
+                data      : 셀러 검색에 사용될 데이터
+
+            Author: 심원두
+
+            Returns:
+                result : sellers 테이블에서 취득한 셀러 정보
+
+            History:
+                2020-12-30(심원두): 초기 생성
+                2020-12-31(심원두): 메세지 수정
+            
+        """
         sql = """
             SELECT
                 account_id
@@ -399,6 +476,24 @@ class CreateProductDao:
             return result
 
     def get_main_category_list(self, connection):
+        """메인 카테고리 정보 취득
+            Args:
+                connection: 데이터베이스 연결 객체
+
+            Author: 심원두
+
+            Returns:
+                result : main_categories 테이블에서 취득한 키, 카테고리명
+
+            History:
+                2020-12-30(심원두): 초기 생성
+                2020-12-31(심원두): 메세지 수정
+            
+            Raises:
+                500, {'message': 'fail to get main category list',
+                      'errorMessage': 'fail_to_get_main_category_list'}: 색상 정보 취득 실패
+        """
+        
         sql = """
             SELECT
                 id
@@ -418,6 +513,24 @@ class CreateProductDao:
             return result
 
     def get_sub_category_list(self, connection, data):
+        """메인 카테고리에 따른 서브 카테고리 정보 취득
+            Args:
+                connection: 데이터베이스 연결 객체
+                data      : 메인 카테고리에 따른 서브 카테고리 정보를 얻기 위한 데이터
+            Author: 심원두
+
+            Returns:
+                result : sub_categories 테이블에서 취득한 키, 카테고리명
+
+            History:
+                2020-12-30(심원두): 초기 생성
+                2020-12-31(심원두): 메세지 수정
+
+            Raises:
+                500, {'message': 'fail to get sub category list',
+                      'errorMessage': 'fail_to_get_sub_category_list'}: 색상 정보 취득 실패
+        """
+        
         sql = """
             SELECT
                 sub_category.id

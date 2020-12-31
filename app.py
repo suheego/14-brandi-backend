@@ -7,18 +7,12 @@ from flask_cors    import CORS
 from view import create_endpoints
 
 #admin
-from model import OrderDao
-from model import SellerDao
-from model import CreateProductDao
-
+from model   import OrderDao
 from service import OrderService
-from service import SellerService
-from service import CreateProductService
-from service import EventService
 
 #admin2
-from model.admin   import SellerInfoDao, SellerDao, CreateProductDao
-from service.admin import SellerInfoService, SellerService, CreateProductService
+from model   import SellerInfoDao, SellerDao, ProductCreateDao, ProductManageDao
+from service import SellerService, SellerInfoService, ProductCreateService, ProductManageService
 
 #service
 from model import (
@@ -95,7 +89,8 @@ def create_app(test_config=None):
     # admin2
     seller_dao         = SellerDao()
     seller_info_dao    = SellerInfoDao()
-    create_product_dao = CreateProductDao()
+    product_create_dao = ProductCreateDao()
+    product_manage_dao = ProductManageDao()
     
     # business Layer,   깔끔한 관리 방법을 생각하기
     # service
@@ -116,7 +111,8 @@ def create_app(test_config=None):
     #admin2
     services.seller_service         = SellerService(seller_dao, app.config)
     services.seller_info_service    = SellerInfoService(seller_info_dao)
-    services.create_product_service = CreateProductService(create_product_dao)
+    services.product_create_service = ProductCreateService(product_create_dao)
+    services.product_manage_service = ProductManageService(product_manage_dao)
     
     # presentation Layer
     create_endpoints(app, services, database)

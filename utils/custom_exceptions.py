@@ -257,7 +257,7 @@ class ProductHistoryCreateDenied(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-class ProductSalesVolume(CustomUserError):
+class ProductSalesVolumeCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
         message = 'product sales volume create denied'
@@ -268,7 +268,7 @@ class ProductSalesVolume(CustomUserError):
 class ProductOriginTypesNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
-        message = 'cannot read product origin type information'
+        message = 'fail to get product origin types'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -276,7 +276,7 @@ class ProductOriginTypesNotExist(CustomUserError):
 class SizeNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
-        message = 'cannot read size information'
+        message = 'fail to get size list'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -284,7 +284,7 @@ class SizeNotExist(CustomUserError):
 class ColorNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
-        message = 'cannot read color information'
+        message = 'fail to get color list'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -292,7 +292,7 @@ class ColorNotExist(CustomUserError):
 class MainCategoryNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
-        message = 'cannot get main category list'
+        message = 'fail to get main category list'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -300,7 +300,7 @@ class MainCategoryNotExist(CustomUserError):
 class SubCategoryNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
-        message = 'cannot get sub category list'
+        message = 'fail to get sub category list'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
