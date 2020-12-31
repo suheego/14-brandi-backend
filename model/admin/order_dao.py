@@ -112,4 +112,3 @@ class OrderDao:
             count = cursor.fetchall()
 
             return {'total_count': count[0]['total_count'],'order_lists': list}
-
