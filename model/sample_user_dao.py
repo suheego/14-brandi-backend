@@ -50,6 +50,7 @@ class SampleUserDao:
                 raise UserNotExist('user_does_not_exist')
             return result
 
+
     def get_username(self, connection, data):
         """유저 이름 중복 검사
 
@@ -81,6 +82,39 @@ class SampleUserDao:
             cursor.execute(sql, data['name'])
             result = cursor.fetchall()
             return result
+
+    # def get_username(self, connection, data):
+    #     """유저 이름 중복 검사
+    #
+    #     Args:
+    #         connection: 데이터베이스 연결 객체
+    #         data      : 서비스에서 넘겨 받은 dict 객체
+    #
+    #     Author: 홍길동
+    #
+    #     Returns:
+    #         return ()                                                        : 해당 유저 없음
+    #         return [{'id': 12, 'name': '홍길동', 'gender': '남자', 'age': '18'}]: 해당 유저 존재
+    #
+    #     Raises: None
+    #
+    #     History:
+    #         2020-20-20(홍길동): 초기 생성
+    #         2020-20-21(홍길동): 1차 수정
+    #         2020-20-22(홍길동): 2차 수정
+    #     """
+    #
+    #     sql = """
+    #         SELECT *
+    #         FROM users
+    #         WHERE name = %s;
+    #     """
+    #
+    #     with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+    #         cursor.execute(sql, data['name'])
+    #         result = cursor.fetchall()
+    #         return result
+
 
     def post_dao(self, connection, data):
         """유저 정보 생성

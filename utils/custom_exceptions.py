@@ -64,6 +64,35 @@ class UserNotExist(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+        
+class InvalidUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_user'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class InvalidToken(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_token'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class TokenCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'token_create_denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class UnauthorizedUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 401
+        message = 'unauthorized_user'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
 
 class InvalidUser(CustomUserError):
     def __init__(self, error_message):
@@ -92,7 +121,6 @@ class UnauthorizedUser(CustomUserError):
         message = 'unauthorized_user'
         error_message = error_message
         super().__init__(status_code, message, error_message)
-
 
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
@@ -140,6 +168,71 @@ class DestinationCreateDenied(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
+class RequiredFieldException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'required field is blank'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class CorrelationCheckException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'correlation check fail'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductCodeUpdatedDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product code update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductImageCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product image create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class StockCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'stock create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductHistoryCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product history create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ColorNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'color not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+class SizeNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'size not exist'
+        error_message = error_message
+        
+        super().__init__(status_code, message, error_message)
+
 class NotUser(CustomUserError):
     """ 유저가 아님
 
@@ -166,9 +259,18 @@ class AccountNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 401
         message = 'account_does_not_exist'
-        
-        
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
 class CartItemNotExist(CustomUserError):
+    """ 장바구니 상품 조회 실패 
+
+    Author: 고수희
+
+    History:
+        2020-12-28(고수희): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 400
         message = 'cart items not exist'
@@ -176,10 +278,17 @@ class CartItemNotExist(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-class CartItemCreateDenied(CustomUserError):
+class CartItemCreateFail(CustomUserError):
+    """ 장바구니 상품 추가 실패
+
+    Author: 고수희
+
+    History:
+        2020-12-28(고수희): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 400
-        message = 'cart item create denied'
+        message = 'cart item create'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -197,20 +306,48 @@ class DataLimitExceeded(CustomUserError):
         message = 'data_limit_reached'
         error_message = error_message
         super().__init__(status_code, message, error_message)
-        
-        
-class CartItemUpdateDenied(CustomUserError):
+
+
+class CustomerPermissionDenied(CustomUserError):
+    """ 일반 유저 권한이 아님
+
+    Author: 고수희
+
+    History:
+        2020-12-28(고수희): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 400
-        message = 'cart item update denied'
+        message = 'customer permissions denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductNotExist(CustomUserError):
+    """ 상품이 존재하지 않음
+
+    Author: 고수희
+
+    History:
+        2020-12-30(고수희): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'product does not exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
-class CustomerPermissionDenied(CustomUserError):
+class DeleteDenied(CustomUserError):
+    """ 논리 삭제 거부
+
+    Author: 김기용
+
+    History:
+        2020-12-30(김기용): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 400
-        message = 'customer permissions denied'
+        message = 'invalid_delete_command_access'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -219,6 +356,21 @@ class DateMissingOne(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'date inputs should be start_date and end_date'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class UpdateDenied(CustomUserError):
+    """ 수정 거부
+
+    Author: 김기용
+
+    History:
+        2020-12-30(김기용): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable_to_update'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -265,4 +417,5 @@ class OrderFilterNotExist(CustomUserError):
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
+
 

@@ -2,8 +2,16 @@ from flask.json import JSONEncoder
 from flask import Flask
 from flask_cors import CORS
 
-from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, EventDao
-from service import SampleUserService, UserService, DestinationService, CartItemService, EventService
+from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, SenderDao, EventDao, ProductListDao, OrderDao
+from service import SampleUserService, UserService, DestinationService, CartItemService, SenderService, EventService, ProductListService, OrderService
+from view import create_endpoints
+
+from model.admin import SellerDao
+from model.admin.create_product_dao import CreateProductDao
+
+from service.admin import SellerService
+from service.admin.create_product_service import CreateProductService
+
 from view import create_endpoints
 
 class CustomJSONEncoder(JSONEncoder):
@@ -41,17 +49,28 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     database = app.config['DB']
+    secret_key = app.config['SECRET_KEY']
 
     # persistence Layers
     sample_user_dao = SampleUserDao()
+
 
     user_dao = UserDao()
     destination_dao = DestinationDao()
     cart_item_dao = CartItemDao()
     order_dao = OrderDao()
+    
+    user_dao = UserDao()
+    destination_dao = DestinationDao()
+    cart_item_dao = CartItemDao()
+    product_list_dao = ProductListDao()
+    sender_dao = SenderDao()
     event_dao = EventDao()
 
-    # business Layer
+    seller_dao = SellerDao()
+    create_product_dao = CreateProductDao()
+
+    # business Layer,   깔끔한 관리 방법을 생각하기
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
 
@@ -59,8 +78,13 @@ def create_app(test_config=None):
     services.destination_service = DestinationService(destination_dao)
     services.cart_item_service = CartItemService(cart_item_dao)
     services.order_service = OrderService(order_dao)
+    services.product_list_service = ProductListService(product_list_dao)
+    services.sender_service = SenderService(sender_dao)
     services.event_service = EventService(event_dao)
 
+    services.seller_service = SellerService(seller_dao,app.config)
+    services.create_product_service = CreateProductService(create_product_dao)
+    
     # presentation Layer
     create_endpoints(app, services, database)
 
