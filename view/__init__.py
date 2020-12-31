@@ -15,6 +15,7 @@ from .store.category_list_view import CategoryListView
 from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
 from .store.sender_view import SenderView
+from .store.order_view import OrderView, OrderAddView
 from .admin.event_view import EventView
 from utils.error_handler import error_handle
 
@@ -43,6 +44,7 @@ def create_endpoints(app, services, database):
     destination_service = services.destination_service
     cart_item_service = services.cart_item_service
     sender_service = services.sender_service
+    order_service = services.order_service
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Service Section(write your code under your name)
@@ -135,6 +137,20 @@ def create_endpoints(app, services, database):
                     view_func=SenderView.as_view(
                         'sender_view',
                         sender_service,
+                        database
+                    ))
+
+    app.add_url_rule('/checkout',
+                    view_func=OrderAddView.as_view(
+                        'order_add_view',
+                        order_service,
+                        database
+                    ))
+
+    app.add_url_rule('/checkout/<int:order_id>',
+                    view_func=OrderView.as_view(
+                        'order_view',
+                        order_service,
                         database
                     ))
 

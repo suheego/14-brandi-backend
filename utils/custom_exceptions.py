@@ -299,3 +299,18 @@ class EventDoesNotExist(CustomUserError):
         message = 'event not exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class CheckoutDenied(CustomUserError):
+    """ 상품 결제 거부
+
+    Author: 고수희
+
+    History:
+        2020-12-31(고수희): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable_to_checkout'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)

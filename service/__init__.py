@@ -11,4 +11,5 @@ from .store.category_list_service import CategoryListService
 from .store.destination_service import DestinationService
 from .store.cart_item_service import CartItemService
 from .store.sender_service import SenderService
+from .store.order_service import OrderService
 from .admin.event_service import EventService
