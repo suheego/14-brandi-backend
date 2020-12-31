@@ -24,7 +24,8 @@ from .admin.event_view import EventView, EventDetailView, EventProductsCategoryV
 
 # admin2
 from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView
-from .admin.create_product_view import MainCategoriesListView, CreateProductView
+from .admin.product_create_view import MainCategoriesListView, CreateProductView
+from .admin.product_manage_view import SearchProductView
 
 from utils.error_handler import error_handle
 
@@ -36,16 +37,17 @@ def create_endpoints(app, services, database):
                 services: Services 클래스:Service 클래스들을 담고 있는 클래스이다.
                 database: 데이터베이스
 
-            Author: 홍길동
+            Author: 김기용
         
             Returns: None
 
             Raises: None
             
             History:
-                2020-20-20(홍길동): 초기 생성
-                2020-20-21(홍길동): 1차 수정
-                2020-20-22(홍길동): 2차 수정
+                2020-12-28(김기용): 초기 생성
+                2020-12-29(김기용): 1차 수정
+                2020-12-31(강두연): 2차 수정
+                2020-12-31(심원두): 3차 수정
     """
     
     # service
@@ -61,8 +63,9 @@ def create_endpoints(app, services, database):
     
     # admin2
     seller_service         = services.seller_service
-    create_product_service = services.create_product_service
-
+    product_create_service = services.product_create_service
+    product_manage_service = services.product_manage_service
+    
 # ----------------------------------------------------------------------------------------------------------------------
 # Service Section(write your code under your name)
 # ----------------------------------------------------------------------------------------------------------------------
@@ -251,17 +254,24 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 심원두 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-    app.add_url_rule('/product/productRegist/main_category',
+    app.add_url_rule('/admin/product/productRegist/main_category',
                      view_func=MainCategoriesListView.as_view(
                          'main_category_view',
-                         create_product_service,
+                         product_create_service,
                          database
                      ))
     
-    app.add_url_rule('/product/productRegist',
+    app.add_url_rule('/admin/product/productRegist',
                      view_func=CreateProductView.as_view(
-                         'create_product_view',
-                         create_product_service,
+                         'product_create_view',
+                         product_create_service,
+                         database
+                     ))
+    
+    app.add_url_rule('/admin/products',
+                     view_func=SearchProductView.as_view(
+                         'search_product_view',
+                         product_manage_service,
                          database
                      ))
 

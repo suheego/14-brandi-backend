@@ -1,5 +1,3 @@
-import os
-
 import fleep
 from werkzeug.utils          import secure_filename
 
@@ -12,7 +10,7 @@ from utils.custom_exceptions import (
     FileExtensionException
 )
 
-class CreateProductService:
+class ProductCreateService:
     """ Business Layer
 
         Attributes:
@@ -38,7 +36,7 @@ class CreateProductService:
             Author: 심원두
 
             Returns:
-                product_id : create_product_dao.insert_product 의 리턴 값
+                product_id : 생성한 products 테이블의 키 값
 
             Raises:
                 400, {'message': 'key error',
@@ -330,7 +328,7 @@ class CreateProductService:
     def get_product_origin_types_service(self, connection):
         try:
             return self.create_product_dao.get_product_origin_types(connection)
-
+        
         except Exception as e:
             raise e
 
