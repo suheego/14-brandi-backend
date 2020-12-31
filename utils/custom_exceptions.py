@@ -1,10 +1,10 @@
-"""사용자 제작 예외 처리
+"""사용자 제작 예외 w처리
 
 앱 관련 사용자 제작 예외처리는 모두 이곳에 Exception 클래스를 상속받아 작성한다.
 작성한 사용제 제작 예외 처리는 error_handler.py 에서 사용된다.
 
 기본적인 사용 예시:
-  class IamException(Exception):
+class IamException(Exception):
         def __init__(self, error_message):
         self.status_code = 400
         self.message = 'your message goes here'
@@ -72,12 +72,14 @@ class InvalidUser(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class InvalidToken(CustomUserError):
     def __init__(self, error_message):
         status_code = 403
         message = 'invalid_token'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class TokenCreateDenied(CustomUserError):
     def __init__(self, error_message):
@@ -86,12 +88,14 @@ class TokenCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class UnauthorizedUser(CustomUserError):
     def __init__(self, error_message):
         status_code = 401
         message = 'unauthorized_user'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
@@ -101,13 +105,29 @@ class DatabaseCloseFail(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-# S - 상품 등록 관련 Exception Class ===============================================================
+class SellerNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'seller not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class SellerUpdateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'user update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
 class RequiredFieldException(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'required field is blank'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class CorrelationCheckException(CustomUserError):
     def __init__(self, error_message):
@@ -116,12 +136,14 @@ class CorrelationCheckException(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class ProductCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
         message = 'product create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class ProductCodeUpdatedDenied(CustomUserError):
     def __init__(self, error_message):
@@ -130,12 +152,14 @@ class ProductCodeUpdatedDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class ProductImageCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
         message = 'product image create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class StockCreateDenied(CustomUserError):
     def __init__(self, error_message):
@@ -144,6 +168,7 @@ class StockCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class ProductHistoryCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
@@ -151,18 +176,74 @@ class ProductHistoryCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-class ColorNotExist(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 400
-        message = 'color not exist'
-        error_message = error_message
 
+class ProductSalesVolume(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product sales volume create denied'
+        error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class ProductOriginTypesNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'cannot read product origin type information'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
 
 class SizeNotExist(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
-        message = 'size not exist'
+        status_code = 500
+        message = 'cannot read size information'
         error_message = error_message
-        
+        super().__init__(status_code, message, error_message)
+
+
+class ColorNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'cannot read color information'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class MainCategoryNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'cannot get main category list'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class SubCategoryNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'cannot get sub category list'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class NotValidFileException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'invalid file'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class FileSizeException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 413
+        message = 'file size too large'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class FileExtensionException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'only allowed jpg type'
+        error_message = error_message
         super().__init__(status_code, message, error_message)

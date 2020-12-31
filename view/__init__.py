@@ -7,19 +7,17 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
     app.add_url_rule('/test', view_func=TestUserView.as_view('test_user_view', test_user_service, database))
 
 """
-from .sample_user_view import SampleUserView
-from .admin.create_product_view import CreateProductView
-from .sample_user_view import SampleUserView
-
-from .admin.seller_view import SellerSignupView, SellerSigninView
-from utils.error_handler import error_handle
+from .sample_user_view          import SampleUserView
+from .admin.seller_view         import SellerSignupView, SellerSigninView
+from .admin.create_product_view import MainCategoriesListView, CreateProductView
+from utils.error_handler        import error_handle
 
 
 def create_endpoints(app, services, database):
-    sample_user_service = services.sample_user_service
-    seller_service = services.seller_service
+    sample_user_service    = services.sample_user_service
+    seller_service         = services.seller_service
     create_product_service = services.create_product_service
-
+    
     """ 앤드 포인트 시작
             Args:
                 app     : Flask 앱
@@ -69,6 +67,7 @@ def create_endpoints(app, services, database):
                          seller_service,
                          database
                      ))
+    
     app.add_url_rule('/admin/signin',
                      view_func = SellerSigninView.as_view(
                          'seller_signin_view',
@@ -78,12 +77,20 @@ def create_endpoints(app, services, database):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 심원두
+    app.add_url_rule('/product/productRegist/main_category',
+                     view_func=MainCategoriesListView.as_view(
+                         'main_category_view',
+                         create_product_service,
+                         database
+                     ))
+    
     app.add_url_rule('/product/productRegist',
                      view_func=CreateProductView.as_view(
                          'create_product_view',
                          create_product_service,
                          database
                      ))
+
 # ----------------------------------------------------------------------------------------------------------------------
 # 이성보 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------

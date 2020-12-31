@@ -29,7 +29,7 @@ def signin_degorator(func):
 
             if not access_token:
                 raise UnauthorizedUser('should_be_sign_in')
-
+            
             payload = jwt.decode(
                 access_token,
                 current_app.config['SECRET_KEY'],
