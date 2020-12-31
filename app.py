@@ -12,7 +12,6 @@ from model.admin.create_product_dao import CreateProductDao
 from service.admin import SellerService
 from service.admin.create_product_service import CreateProductService
 
-from view import create_endpoints
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):

@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, g
 from flask.views import MethodView
 
 from utils.connection import get_connection
@@ -17,10 +17,8 @@ class OrderView(MethodView):
     def __init__(self, service, database):
         self.service = service
         self.database = database
-        print("hello world")
 
     @validate_params(
-        Param('account', GET, int, required=True),
         Param('status', GET, int, required=True, rules=[OrderStatusRule()]),
         Param('number', GET, str, required=False),
         Param('detail_number', GET, str, required=False),
@@ -37,43 +35,80 @@ class OrderView(MethodView):
     )
     def get(self, *args):
         data = {
-            'account': args[0],
-            'status': args[1],
-            'number': args[2],
-            'detail_number': args[3],
-            'sender_name': args[4],
-            'sender_phone': args[5],
-            'seller_name': args[6],
-            'product_name': args[7],
-            'start_date': args[8],
-            'end_date': args[9],
-            'seller_attributes': args[10],
-            'order_by': args[11],
-            'page': args[12],
-            'length': args[13]
+            'permission': g.permission_id,
+            'account': g.acount_id,
+            'status': args[0],
+            'number': args[1],
+            'detail_number': args[2],
+            'sender_name': args[3],
+            'sender_phone': args[4],
+            'seller_name': args[5],
+            'product_name': args[6],
+            'start_date': args[7],
+            'end_date': args[8],
+            'seller_attributes': args[9],
+            'order_by': args[10],
+            'page': args[11],
+            'length': args[12]
         }
 
-        """GET 메소드: 주문 정보를 조회.
+        """GET 메소드: 주문 정보 조회
 
-        account_id 에 해당되는 유저를 테이블에서 조회 후 가져온다.
-
-        Args: args = ('account_id', 'status', 'number', 'detail_number', 'sender_name', 'sender_phone',
-        'seller_name', 'product_name', 'start_date', 'end_date', 'seller_attributes', 'order_by', 'page', 'length')
+        Args: 
+            args = ('status', 'number', 'detail_number', 'sender_name', 'sender_phone', 'seller_name', 
+                'product_name', 'start_date', 'end_date', 'seller_attributes', 'order_by', 'page', 'length')
 
         Author: 김민서
 
         Returns:
-            return {"message": "success", "result": [{"age": "18", "gender": "남자", "id": 12, "name": "홍길동"}]}
+            return {
+                    "message": "success", 
+                    "totalCount": 2,
+                    "results": [{
+                        "id": 1,
+                        "created_at_date": 2020-12-30 10:05:19,
+                        "updated_at_date": 2020-12-30 10:05:19,
+                        "order_number": 20201225000000001,
+                        "order_detail_number": oidt00002,
+                        "seller_name": 나는셀러8,
+                        "product_name": 성보의하루2,
+                        "option_information": "Black/L",
+                        "option_extra_cost": 0
+                        "quantity": 1
+                        "customer_name": user1,  
+                        "customer_phone": 01099990102, 
+                        "total_price": 18000, 
+                        "status": 상품준비
+                    }, {
+                        "id": 2,
+                        "created_at_date": 2020-12-30 10:05:19,
+                        "updated_at_date": 2020-12-30 10:05:19,
+                        "order_number": 20201225000000001,
+                        "order_detail_number": oidt00002,
+                        "seller_name": 나는셀러2,
+                        "product_name": 성보의하루1,
+                        "option_information": "Black/S",
+                        "option_extra_cost": 0,
+                        "quantity": 8,
+                        "customer_name": user4,
+                        "customer_phone": 01099990102, 
+                        "total_price": 18000, 
+                        "status": 상품준비
+                    }]
+                }
 
         Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
-            400, {'message': 'must be date inputs or filter inputs', 'errorMessage': 'must_be_date_inputs_or_filter_inputs'}: 필수 파라미터 값 없음
+            400, {'message': 'key error', 'errorMessage': 'key_error'} : 잘못 입력된 키값
+            400, {'message': 'must be date inputs or filter inputs', 'errorMessage': 'must_be_date_inputs_or_filter_inputs'}: 필수 파라미터 값
+            403, {'message': 'no permission to get order list', 'errorMessage': 'no_permission_to_get_order_list'} : 주문 리스트 조회 권한 없음
+            404, {'message': 'order does not exist', 'errorMessage': 'order_does_not_exist'} : 주문 리스트 없음
             400, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
             500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
 
         History:
             2020-12-29(김민서): 초기 생성
             2020-12-30(김민서): 1차 수정
+            2020-12-31(김민서): 2차 수정
         """
 
         try:
@@ -85,10 +120,11 @@ class OrderView(MethodView):
                 context["option_extra_cost"] = str(context["option_extra_cost"])
                 context["total_price"] = str(context["total_price"])
                 result.append(context)
+            return jsonify({'message': 'success', 'totalCount': contexts['total_count'], 'results': result})
 
-            return jsonify({'message': 'success', 'result': result})
         except Exception as e:
             raise e
+
         finally:
             try:
                 if connection:
