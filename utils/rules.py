@@ -188,6 +188,7 @@ class IsDeleteRule(AbstractRule):
             errors.append('0 과 1 값만 받는다.')
         return value, errors
 
+
 class EventStatusRule(AbstractRule):
     def validate(self, value):
         status_set = ('progress', 'wait', 'end')
@@ -204,6 +205,7 @@ class EventExposureRule(AbstractRule):
         if value not in exposure_set:
             errors.append('event exposure value should be 0 or 1')
         return value, errors
+
 
 class OrderStatusRule(AbstractRule):
     def validate(self, value):
@@ -228,3 +230,43 @@ class DateRule(AbstractRule):
         errors = []
         if not regex.match(value):
             errors.append('accept only alphabetic characters')
+        return value, errors
+
+
+class ProductMenuRule(AbstractRule):
+    """ 상품 분류 메뉴 규칙 (트렌드, 브랜드, 뷰티) id는 (4, 5, 6)
+
+        Author: 강두연
+
+        History:
+            2020-12-31(강두연): 작성
+    """
+    def validate(self, value):
+        menu_set = (4, 5, 6)
+        errors = []
+        if value not in menu_set:
+            errors.append('accept only id of trend, brand, beauty')
+        return value, errors
+
+
+class CategoryFilterRule(AbstractRule):
+    """ 카테고리 불러올 때 필터 규칙
+
+    """
+    def validate(self, value):
+        filter_set = ('menu', 'both', 'none')
+        errors = []
+        if value not in filter_set:
+            errors.append('accept only (menu, both, none) as a filter value')
+        return value, errors
+
+
+class PageRule(AbstractRule):
+    """ 페이지네이션 page는 1이상
+
+    """
+    def validate(self, value):
+        errors = []
+        if value <= 0:
+            errors.append('page cannot be less than 1')
+        return value, errors

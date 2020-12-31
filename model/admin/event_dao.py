@@ -1,5 +1,6 @@
 import pymysql
-from utils.custom_exceptions import EventDoesNotExist
+from utils.custom_exceptions import EventDoesNotExist, CategoryMenuDoesNotMatch, CategoryDoesNotExist
+
 
 
 class EventDao:
@@ -301,7 +302,7 @@ class EventDao:
                 , product.product_code AS product_number
                 , product.`name` AS product_name
                 , seller.`name` AS seller_name
-                , product.created_at AS product_created_at
+                 , product.created_at AS product_created_at
                 , product.origin_price AS original_price
                 , product.discounted_price AS discounted_price
                 , CASE WHEN product.is_sale = 0 THEN '미판매' ELSE '판매' END AS is_sale
@@ -315,10 +316,10 @@ class EventDao:
                     ON event_product.product_id = product_image.product_id AND product_image.order_index = 1
                 INNER JOIN sellers AS seller
                     ON product.seller_id = seller.account_id
-            WHERE 
+            WHERE
                 event_product.event_id = %(event_id)s
                 AND event_product.is_deleted = 0
-            ORDER BY 
+            ORDER BY
                 event_product.id DESC;
         """
 
@@ -343,9 +344,9 @@ class EventDao:
         """
 
         sql = """
-            SELECT 
+            SELECT
                 COUNT(*) AS total_count
-            FROM 
+            FROM
                 events_products
             WHERE
                 event_id = %(event_id)s;
@@ -356,3 +357,153 @@ class EventDao:
             count = cursor.fetchone()
 
             return count['total_count']
+
+    def get_products_list_to_post(self, connection, data):
+        """ 기획전에 추가할 상품 조회
+
+        Args:
+            connection:
+            data:
+
+        Returns:
+
+        """
+        total_count_sql = """
+            SELECT
+                COUNT(*) AS total_count
+        """
+
+        sql = """
+            SELECT
+                product.id
+                , product.original_price AS original_price
+                , product.discounted_price AS discounted_price
+                , product_image.image_url AS thumbnail_image_url
+                , product.product_code AS product_number
+                , product.`name` AS product_name
+                , seller.`name` AS seller_name
+                , product.origin_price AS original_price
+                , product.discounted_price AS discounted_price
+                , product.discount_rate AS discount_rate
+                , product.is_sale AS is_sale
+                , product.is_display AS is_display
+        """
+        extra_sql = """
+            FROM 
+                products AS product
+                INNER JOIN product_images AS product_image
+                    ON product.id = product_image.product_id AND product_image.order_index = 1
+                INNER JOIN sellers AS seller
+                    ON product.seller_id = seller.account_id
+            WHERE 
+                product.is_deleted = 0
+        """
+
+        # 상품명, 상품번호
+        if data['product_name']:
+            extra_sql += ' AND product.name LIKE %(product_name)s'
+        elif data['product_number']:
+            extra_sql += ' AND product.product_code = %(product_number)s'
+
+        # 셀러명, 셀러번호
+        if data['seller_name']:
+            extra_sql += ' AND seller.`name` = %(seller_name)s'
+        elif data['seller_number']:
+            extra_sql += ' AND seller.account_id = %(seller_number)s'
+
+        # 상품 등록일
+        if data['start_date'] and data['end_date']:
+            extra_sql += """
+                AND product.created_at BETWEEN CONCAT(%(start_date)s, " 00:00:00") AND CONCAT(%(end_date)s, " 23:59:59")
+            """
+
+        # 상품분류 -- 구분파트 트랜드, 브랜드, 뷰티 순서
+        if data['menu_id'] == 4:
+            extra_sql += ' AND seller.seller_attribute_type_id IN (1, 2, 3)'
+        elif data['menu_id'] == 5:
+            extra_sql += ' AND seller.seller_attribute_type_id IN (4, 5, 6)'
+        elif data['menu_id'] == 6:
+            extra_sql += ' AND seller.seller_attribute_type_id = 7'
+
+        # 1차 카테고리
+        if data['main_category_id']:
+            extra_sql += ' AND product.main_category_id = %(main_category_id)s'
+
+        # 2차 카테고리
+        if data['sub_category_id']:
+            extra_sql += ' AND product.sub_category_id = %(sub_category_id)s'
+
+        sql += extra_sql
+        total_count_sql += extra_sql
+
+        sql += ' ORDER BY product.id DESC LIMIT %(page)s, %(length)s;'
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+            products = cursor.fetchall()
+            if not products:
+                return {'products': products, 'total_count': 0}
+            cursor.execute(total_count_sql, data)
+            count = cursor.fetchone()
+            return {'products': products, 'total_count': count['total_count']}
+
+    def get_product_category(self, connection, data):
+        """  기획전에 추가될 상품 조회 검색조건에서 카테고리 불러오기
+
+        Args:
+            connection:
+            data:
+
+        Returns:
+
+       """
+        if not data['menu_id'] and not data['first_category_id']:
+            sql = """
+                SELECT
+                     id
+                     , CASE WHEN id=4 THEN '트렌드' ELSE `name` END AS `name` 
+                 FROM 
+                    menus WHERE id = 4 OR id = 5 OR id = 6;
+            """
+        elif data['menu_id'] and not data['first_category_id']:
+            sql = """
+                SELECT 
+                    id
+                    , `name` 
+                FROM 
+                    main_categories 
+                WHERE 
+                    menu_id = %(menu_id)s;
+            """
+        elif data['menu_id'] and data['first_category_id']:
+            validate_sql = """
+                SELECT
+                    id
+                FROM
+                    main_categories
+                WHERE
+                    menu_id = %(menu_id)s
+                AND id = %(first_category_id)s;
+            """
+
+            sql = """
+                SELECT
+                    id
+                    , `name`
+                FROM
+                    sub_categories
+                WHERE
+                    main_category_id = %(first_category_id)s;
+            """
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(validate_sql, data)
+                result = cursor.fetchone()
+                if not result:
+                    raise CategoryMenuDoesNotMatch('category and menu does not match')
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+            result = cursor.fetchall()
+            if not result:
+                raise CategoryDoesNotExist
+            return result
