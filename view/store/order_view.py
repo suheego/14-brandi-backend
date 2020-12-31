@@ -9,7 +9,7 @@ from flask_request_validator import (
 
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
-from utils.rules import NumberRule, DecimalRule
+from utils.rules import NumberRule, DecimalRule, EmailRule, PostalCodeRule, PhoneRule
 from utils.decorator import signin_decorator
 
 
@@ -47,21 +47,7 @@ class OrderView(MethodView):
             return {
             "message": "success",
             "result": {"totalPrice"":9000,
-                        "soldOut": true,
-                        "cartItem":
-                            {id: 3,
-                            "sellerName": "미우블랑",
-                            "productId": 3,
-                            "productName": "회색 반팔티",
-                            "productImage": "https://img.freepik.com/free-psd/simple-black-men-s-tee-mockup_53876-57893.jpg?size=338&ext=jpg&ga=GA1.2.1060993109.1605750477",
-                            "stockId": 3,
-                            "size": "Free",
-                            "color": "Gray",
-                            "quantity": 1,
-                            "sale": 10,
-                            "originalPrice": 10000,
-                            "discountedPrice": 9000
-                        }}
+
 
         Raises:
             400, {'message': 'key error',
@@ -121,7 +107,20 @@ class OrderAddView(MethodView):
         Param('quantity', JSON, str, rules=[NumberRule()]),
         Param('originalPrice', JSON, str, rules=[DecimalRule()]),
         Param('sale', JSON, str, rules=[DecimalRule()]),
-        Param('discountedPrice', JSON, str, rules=[DecimalRule()])
+        Param('discountedPrice', JSON, str, rules=[DecimalRule()]),
+        Param('soldOut', JSON, bool),
+        Param('senderName', JSON, str),
+        Param('senderPhone', JSON, str, rules=[DecimalRule()]),
+        Param('senderEmail', JSON, str, rules=[EmailRule()]),
+        Param('recipientName', JSON, str, rules=[DecimalRule()]),
+        Param('recipientPhone', JSON, str, rules=[PhoneRule()]),
+        Param('recipientEmail', JSON, str, rules=[EmailRule()]),
+        Param('address1', JSON, str),
+        Param('address2', JSON, str),
+        Param('postNumber', JSON, str, rules=[PostalCodeRule()]),
+        Param('deliveryId', JSON, str, rules=[NumberRule()]),
+        Param('deliveryMemo', JSON, str, required=False),
+        Param('deliveryMemoDefault', JSON, str, rules=[NumberRule()])
     )
     def post(self, *args):
         """POST 메소드: 장바구니 상품 생성
@@ -131,13 +130,13 @@ class OrderAddView(MethodView):
         Author: 고수희
 
         Returns:
-            200, {'message': 'success'} : 장바구니 상품 추가 성공
+            200, {'message': 'success'} : 결제 성공
 
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
             400, {'message': 'cart item create error',
-            'errorMessage': 'cart_item_create_error'} : 장바구니 상품 추가 실패
+            'errorMessage': 'cart_item_create_error'} : 결제 실패
             400, {'message': 'unable to close database',
             'errorMessage': 'unable_to_close_database'} : 커넥션 종료 실패
             403, {'message': 'customer permission denied',
@@ -146,8 +145,7 @@ class OrderAddView(MethodView):
             'errorMessage': format(e)}) : 서버 에러
 
         History:
-            2020-12-28(고수희): 초기 생성
-            2020-12-30(고수희): 1차 수정 - 데코레이터 추가, 사용자 권한 체크 추가
+            2020-12-30(고수희): 초기 생성
         """
         data = {
             'user_id': g.account_id,
@@ -156,9 +154,22 @@ class OrderAddView(MethodView):
             'quantity': args[2],
             'original_price': args[3],
             'sale': args[4],
-            'discounted_price': args[5]
+            'discounted_price': args[5],
+            'sold_out': args[6],
+            'sender_name': args[7],
+            'sender_phone': args[8],
+            'sender_email': args[9],
+            'recipient_name': args[10],
+            'recipient_phone': args[11],
+            'recipient_email': args[12],
+            'address1': args[13],
+            'address2': args[14],
+            'post_number': args[15],
+            'delivery_memo_type_id': args[16],
+            'delivery_content': args[17],
+            'delivery_default': args[18]
         }
-
+        print(data)
         try:
             connection = get_connection(self.database)
             cart_id = self.service.post_cart_item_service(connection, data)
