@@ -1,3 +1,5 @@
+import traceback
+
 import pymysql
 
 from utils.custom_exceptions import DatabaseError
@@ -28,7 +30,7 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-20-28(김민구): 초기 생성
@@ -47,8 +49,9 @@ class UserDao:
                 result = cursor.fetchone()[0]
                 return result
 
-        except Exception as e:
-            raise DatabaseError(format(e))
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def phone_exist_check(self, connection, data):
         """ 유저 전화번호 중복 검사
@@ -64,7 +67,7 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-28(김민구): 초기 생성
@@ -83,8 +86,9 @@ class UserDao:
                 result = cursor.fetchone()[0]
                 return result
 
-        except Exception as e:
-            raise DatabaseError(format(e))
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def email_exist_check(self, connection, data):
         """ 유저 이메일 중복 검사
@@ -100,7 +104,7 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-28(김민구): 초기 생성
@@ -119,8 +123,9 @@ class UserDao:
                 result = cursor.fetchone()[0]
                 return result
 
-        except Exception as e:
-            raise DatabaseError(format(e))
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def create_account(self, connection, data):
         """ account 생성
@@ -135,7 +140,7 @@ class UserDao:
                 account_id : account 생성 후 아이디 반환
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-28(김민구): 초기 생성
@@ -158,15 +163,16 @@ class UserDao:
                 cursor.execute(sql, data)
                 return cursor.lastrowid
 
-        except Exception as e:
-            raise DatabaseError(format(e))
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def create_user(self, connection, data):
         """ 유저 생성
 
             Args:
-                connection: 데이터베이스 연결 객체
-                data      : 서비스에서 넘겨 받은 dict 객체
+                connection : 데이터베이스 연결 객체
+                data       : 서비스에서 넘겨 받은 dict 객체
 
             Author: 김민구
 
@@ -175,7 +181,7 @@ class UserDao:
                 1 : 유저 생성 성공
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-28(김민구): 초기 생성
@@ -198,11 +204,12 @@ class UserDao:
                 result = cursor.execute(sql, data)
                 return result
 
-        except Exception as e:
-            raise DatabaseError(format(e))
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_user_infomation(self, connection, data):
-        """ 유저 account_id, 로그인아이디, 비밀번호 조회
+        """ 유저 account_id, 로그인아이디, 비밀번호, permission_type 조회
 
             Args:
                 connection : 데이터베이스 연결 객체
@@ -211,10 +218,10 @@ class UserDao:
             Author: 김민구
 
             Returns:
-                {'account_id' : 1, 'username': 'kimminkoo', 'password' : 'hashed_password'}
+                {'account_id': 1, 'username': 'brandi', 'password': 'hashed_password', permission_type_id: 3}
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': format(e)}: 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-29(김민구): 초기 생성
@@ -225,8 +232,9 @@ class UserDao:
                 id
                 , username 
                 , password
+                , permission_type_id
             FROM 
-                accounts 
+                accounts
             WHERE 
                 username = %(username)s
                 AND is_deleted=0;
@@ -237,8 +245,9 @@ class UserDao:
                 cursor.execute(sql, data)
                 return cursor.fetchone()
 
-        except Exception as e:
-            raise DatabaseError(format(e))
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def social_create_account(self, connection, data):
         """ 소셜 회원 account 생성
@@ -253,7 +262,7 @@ class UserDao:
                 account_id : account 생성 후 아이디 반환
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': format(e)}: 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-29(김민구): 초기 생성
@@ -274,8 +283,9 @@ class UserDao:
                 result = cursor.execute(sql, data)
                 return result
 
-        except Exception as e:
-            raise DatabaseError(format(e))
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def social_create_user(self, connection, data):
         """ 소셜 회원 user 생성
@@ -291,7 +301,7 @@ class UserDao:
                 1 : 유저 생성 성공
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': format(e)} : 데이터베이스 에러
+                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-29(김민구): 초기 생성
@@ -312,5 +322,6 @@ class UserDao:
                 result = cursor.execute(sql, data)
                 return result
 
-        except Exception as e:
-            raise DatabaseError(format(e))
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')

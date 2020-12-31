@@ -1,3 +1,5 @@
+import traceback
+
 from flask.views import MethodView
 from flask import jsonify, request
 
@@ -11,7 +13,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 
 from utils.connection import get_connection
-from utils.custom_exceptions import DatabaseCloseFail, InvalidToken
+from utils.custom_exceptions import InvalidToken, DatabaseCloseFail
 from utils.rules import PasswordRule, EmailRule, UsernameRule, PhoneRule
 
 
@@ -19,18 +21,19 @@ class SignUpView(MethodView):
     """ Presentation Layer
 
         Attributes:
-            service  : UserService 클래스
-            database : app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
+            user_service  : UserService 클래스
+            database      : app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
 
         Author: 김민구
 
         History:
             2020-12-28(김민구): 초기 생성 / bcrypt 까지 완료
             2020-12-29(김민구): 각 Param에 rules 추가, 에러 구문 수정
+            2020-12-31(김민구): 모든 service를 담고 있는 services 클래스로 유연하게 처리
     """
 
-    def __init__(self, service, database):
-        self.service = service
+    def __init__(self, services, database):
+        self.user_service = services.user_service
         self.database = database
 
     @validate_params(
@@ -42,7 +45,8 @@ class SignUpView(MethodView):
     def post(self, *args):
         """POST 메소드: 유저생성
 
-            Args: args = ('username', 'password', 'phone', 'email')
+            Args:
+                args = ('username', 'password', 'phone', 'email')
 
             Author: 김민구
 
@@ -63,6 +67,7 @@ class SignUpView(MethodView):
                 2020-12-28(김민구): 초기 생성
         """
 
+        connection = None
         try:
             data = {
                 'username': args[0],
@@ -72,7 +77,7 @@ class SignUpView(MethodView):
             }
 
             connection = get_connection(self.database)
-            self.service.sign_up_service(data, connection)
+            self.user_service.sign_up_logic(data, connection)
             connection.commit()
             return jsonify({'message': 'success'}), 200
 
@@ -82,18 +87,18 @@ class SignUpView(MethodView):
 
         finally:
             try:
-                if connection:
+                if connection is not None:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database_close_fail')
+                raise DatabaseCloseFail('서버에 알 수 없는 에러가 발생했습니다.')
 
 
 class SignInView(MethodView):
     """ Presentation Layer
 
         Attributes:
-            service  : UserService 클래스
-            database : app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
+            user_service : UserService 클래스
+            database     : app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
 
         Author: 김민구
 
@@ -101,8 +106,8 @@ class SignInView(MethodView):
             2020-12-29(김민구): 초기 생성
     """
 
-    def __init__(self, service, database):
-        self.service = service
+    def __init__(self, services, database):
+        self.user_service = services.user_service
         self.database = database
 
     @validate_params(
@@ -132,13 +137,14 @@ class SignInView(MethodView):
                 2020-12-29(김민구): 초기 생성
         """
 
+        connection = None
         try:
             data = {
                 'username': args[0],
                 'password': args[1]
             }
             connection = get_connection(self.database)
-            token = self.service.sign_in_service(data, connection)
+            token = self.user_service.sign_in_logic(data, connection)
             return jsonify({'message': 'success', 'token': token}), 200
 
         except Exception as e:
@@ -146,26 +152,27 @@ class SignInView(MethodView):
 
         finally:
             try:
-                if connection:
+                if connection is not None:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database_close_fail')
+                raise DatabaseCloseFail('서버에 알 수 없는 에러가 발생했습니다.')
 
 
 class GoogleSocialSignInView(MethodView):
     """ Presentation Layer
 
         Attributes:
-            service  : UserService 클래스
-            database : app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
+            user_service  : UserService 클래스
+            database      : app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
 
         Author: 김민구
 
         History:
             2020-12-29(김민구): 초기 생성
     """
-    def __init__(self, service, database):
-        self.service = service
+
+    def __init__(self, services, database):
+        self.user_service = services.user_service
         self.database = database
 
     def post(self):
@@ -194,11 +201,13 @@ class GoogleSocialSignInView(MethodView):
             History:
                 2020-12-29(김민구): 초기 생성
         """
+
+        connection = None
         try:
             google_token = request.headers.get('Authorization')
             connection = get_connection(self.database)
             user_info = id_token.verify_oauth2_token(google_token, requests.Request())
-            token = self.service.social_sign_in_service(connection, user_info)
+            token = self.user_service.social_sign_in_logic(connection, user_info)
             connection.commit()
             return jsonify({'message': 'success', 'token': token}), 200
 
@@ -208,11 +217,11 @@ class GoogleSocialSignInView(MethodView):
 
         except ValueError:
             connection.rollback()
-            raise InvalidToken('invalid_google_token')
+            raise InvalidToken('구글 소셜 로그인에 실패하였습니다.')
 
         finally:
             try:
-                if connection:
+                if connection is not None:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database_close_fail')
+                raise DatabaseCloseFail('서버에 알 수 없는 에러가 발생했습니다.')
