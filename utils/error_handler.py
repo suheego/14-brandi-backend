@@ -29,27 +29,23 @@ def error_handle(app):
 
     @app.errorhandler(Exception)
     def handle_internal_server_error(e):
-        return jsonify({'message': 'internal_server_error', 'errorMessage': format(e)}), 500
+        return jsonify({'message': 'internal_server_error', 'error_message': format(e)}), 500
 
     @app.errorhandler(KeyError)
     def handle_key_error(e):
-        return jsonify({'message': 'key_error', 'errorMessage': format(e)}), 400
+        return jsonify({'message': 'key_error', 'error_message': format(e)}), 400
 
     @app.errorhandler(NotImplementedError)
-    def handle_key_error(e):
-        return jsonify({'message': format(e), 'errorMessage': format(e)}), 400
+    def handle_not_implemented_error(e):
+        return jsonify({'message': 'not_implemented_error', 'error_message': format(e)}), 501
 
     # pram customized exception
     @app.errorhandler(InvalidRequest)
     def handle_user_custom_rule(e):
-        return jsonify({'message': '잘못입력함..', 'errorMessage:': str(e)
-                       .replace('{', '')
-                       .replace('}', '')
-                       .replace('\"', '')
-                       .replace('\\', '')}), 400
+        return jsonify({'message': e.errors, 'error_message:': ", ".join(e.errors.keys()) + '이 유효하지 않습니다.'}), 400
 
     # customized exception
     @app.errorhandler(CustomUserError)
     def handle_error(e):
-        return jsonify({"message": e.message, "errorMessage": e.error_message}), e.status_code
+        return jsonify({"message": e.message, "error_message": e.error_message}), e.status_code
 

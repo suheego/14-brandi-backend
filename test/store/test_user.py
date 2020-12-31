@@ -52,7 +52,8 @@ class TestUser(TestCase):
 
             Notes:
                 소셜 로그인 구조상 Integration Test를 하기 힘들기 때문에 간략하게 성공 케이스를 확인하는 용도로 작성
-
+                토큰, 토큰을 확인하는 구글 라이브러리 함수를 mocking으로 사용해 테스트 진행
+                구글 라이브러리 함수의 리턴 값은 이메일이 담겨있는 딕셔너리 (소셜 로그인시 이메일만 필요하기 때문)
         """
 
         mock_id_token.verify_oauth2_token.return_value = {
