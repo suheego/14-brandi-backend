@@ -1,7 +1,7 @@
 from utils.custom_exceptions import CustomerPermissionDenied, CheckoutDenied
 
 
-class OrderService:
+class StoreOrderService:
     """ Business Layer
 
         Attributes:
