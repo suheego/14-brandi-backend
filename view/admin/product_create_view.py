@@ -1,5 +1,4 @@
 import json
-import flask
 
 from flask                   import jsonify, request
 from flask.views             import MethodView
@@ -104,6 +103,9 @@ class CreateProductView(MethodView):
 
             Raises:
                 400, {'message': 'invalid_parameter', 'errorMessage': str(e)}: 잘못된 요청값
+                400, {'message': 'invalid_parameter', 'errorMessage': str(e)}: 잘못된 요청값
+                400, {'message': 'invalid_parameter', 'errorMessage': str(e)}: 잘못된 요청값
+                400, {'message': 'invalid_parameter', 'errorMessage': str(e)}: 잘못된 요청값
 
             History:
                 2020-12-30(심원두): 초기생성
@@ -125,13 +127,12 @@ class CreateProductView(MethodView):
                 )
 
                 return jsonify({'message': 'success', 'result': sellers})
-
+            
             if data['main_category_id']:
-                sub_categories = \
-                    self.service.get_sub_category_list_service(
-                        connection,
-                        data
-                    )
+                sub_categories = self.service.get_sub_category_list_service(
+                    connection,
+                    data
+                )
 
                 return jsonify({'message': 'success', 'result': sub_categories})
 
@@ -139,17 +140,17 @@ class CreateProductView(MethodView):
                 = self.service.get_product_origin_types_service(
                     connection
                 )
-
+            
             result['color_list'] \
                 = self.service.get_color_list_service(
                     connection
                 )
-
+            
             result['size_list'] \
                 = self.service.get_size_list_service(
                     connection
                 )
-
+            
             return jsonify({'message': 'success', 'result': result})
 
         except Exception as e:
@@ -289,12 +290,12 @@ class CreateProductView(MethodView):
             'discount_end_date'      : request.form.get('discount_end_date', None),
         }
 
-        product_images = flask.request.files.getlist("imageFiles")
+        product_images = request.files.getlist("imageFiles")
         stocks = json.loads(request.form.get('options'))
 
         try:
             connection = get_connection(self.database)
-
+            
             # products 테이블 insert
             product_id = self.service.create_product_service(
                 connection,
