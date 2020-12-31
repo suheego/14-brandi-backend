@@ -5,11 +5,15 @@
 """
 
 from .sample_user_dao import SampleUserDao
+
+from .admin.event_dao import EventDao
+from .admin.order_dao import OrderDao
+
 from .store.user_dao import UserDao
 from .store.product_list_dao import ProductListDao
+from .store.category_list_dao import CategoryListDao
 from .store.destination_dao import DestinationDao
 from .store.cart_item_dao import CartItemDao
 from .store.sender_dao import SenderDao
 from .store.order_dao import OrderDao
 from .admin.event_dao import EventDao
-

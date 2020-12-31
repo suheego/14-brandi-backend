@@ -4,6 +4,7 @@ import bcrypt
 import jwt
 
 from utils.custom_exceptions import UserAlreadyExist, UserCreateDenied, InvalidUser, TokenCreateDenied
+from model import UserDao
 
 
 class UserService:
@@ -16,13 +17,14 @@ class UserService:
 
         History:
             2020-12-28(김민구): 초기 생성
+            2020-12-31(김민구): 수정 (user_dao를 import 해서 사용하는 방법으로 수정)
     """
 
-    def __init__(self, user_dao, config):
-        self.user_dao = user_dao
+    def __init__(self, config):
         self.config = config
+        self.user_dao = UserDao()
 
-    def sign_up_service(self, data, connection):
+    def sign_up_logic(self, data, connection):
         """ 유저생성
 
             Args:
@@ -47,13 +49,14 @@ class UserService:
         username_check = self.user_dao.username_exist_check(connection, data)
         email_check = self.user_dao.email_exist_check(connection, data)
         phone_check = self.user_dao.phone_exist_check(connection, data)
-
+        print(' email' * email_check)
         if username_check or email_check or phone_check:
             raise UserAlreadyExist(
-                'already_exist' +
-                '_username' * username_check +
-                '_email' * email_check +
-                '_phone' * phone_check
+                '이미 사용중인' +
+                ' username' * username_check +
+                ' email' * email_check +
+                ' phone' * phone_check +
+                ' 입니다.'
             )
 
         data['permission_type_id'] = 3
@@ -61,14 +64,14 @@ class UserService:
 
         account_id = self.user_dao.create_account(connection, data)
         if not account_id:
-            raise UserCreateDenied('account_create_fail_account_id_is_not_return_from_user_dao')
+            raise UserCreateDenied('회원 가입에 실패했습니다.')
 
         data['account_id'] = account_id
         result = self.user_dao.create_user(connection, data)
         if not result:
-            raise UserCreateDenied('user_create_fail_result_is_not_return_from_user_dao')
+            raise UserCreateDenied('회원 가입에 실패했습니다.')
 
-    def sign_in_service(self, data, connection):
+    def sign_in_logic(self, data, connection):
         """ 유저 로그인
 
             Args:
@@ -92,15 +95,14 @@ class UserService:
         if not user or not bcrypt.checkpw(data['password'].encode('utf-8'), user['password'].encode('utf-8')):
             raise InvalidUser('user_not_exist_or_password_is_invalid')
 
-        token = self.token_generator(user['id'], user['username'])
+        token = self.token_generator(user)
         return token
 
-    def token_generator(self, account_id, username):
+    def token_generator(self, user):
         """ 토근 생성기
 
             Args:
-                username   : 유저 이름
-                account_id : 유저 account_id
+                user : 유저
 
             Author: 김민구
 
@@ -116,17 +118,18 @@ class UserService:
         """
 
         payload = {
-            'account_id': account_id,
-            'username': username,
+            'account_id': user['id'],
+            'username': user['username'],
+            'permission_type_id': user['permission_type_id'],
             'exp': datetime.utcnow() + timedelta(hours=5)
         }
 
         token = jwt.encode(payload, self.config['JWT_SECRET_KEY'], self.config['JWT_ALGORITHM']).decode('utf-8')
         if not token:
-            raise TokenCreateDenied('jwt_encode_fail')
+            raise TokenCreateDenied('로그인에 실패했습니다.')
         return token
 
-    def social_sign_in_service(self, connection, data):
+    def social_sign_in_logic(self, connection, data):
         """ 소셜 유저 로그인
 
             Args:
@@ -168,11 +171,11 @@ class UserService:
             data['account_id'] = account_id
             result = self.user_dao.social_create_user(connection, data)
             if not result:
-                raise UserCreateDenied('account_create_fail_account_id_is_not_return_from_user_dao')
+                raise UserCreateDenied('구글 소셜 로그인에 실패했습니다.')
 
         user = self.user_dao.get_user_infomation(connection, data)
         if not user:
-            raise InvalidUser('user_create_fail_result_is_not_return_from_user_dao')
+            raise InvalidUser('구글 소셜 로그인에 실패했습니다.')
 
         token = self.token_generator(user['id'], user['username'])
         return token
