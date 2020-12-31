@@ -419,3 +419,35 @@ class OrderFilterNotExist(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
+class OrderDoesNotExist(CustomUserError):
+    """ 주문 리스트 없음
+
+        Author: 김민서
+
+        History:
+            2020-12-31(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'order does not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class NoPermissionGetOrderList(CustomUserError):
+    """ 주문 리스트 조회 권한 없음
+
+        Author: 김민서
+
+        History:
+            2020-12-31(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'no permission to get order list'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
