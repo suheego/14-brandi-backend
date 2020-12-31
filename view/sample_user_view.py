@@ -30,7 +30,7 @@ class SampleUserView(MethodView):
         self.database = database
 
     @validate_params(
-        Param('user_id', JSON, str, rules=[NumberRule()])
+        Param('user_id', JSON, str, rules=[NumberRule()]),
     )
     def get(self, *args):
         data = {

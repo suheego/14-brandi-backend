@@ -1,9 +1,9 @@
-import fleep
-from werkzeug.utils import secure_filename
-from io import BytesIO
 import os
 
-from utils.amazon_s3 import S3FileManager, GenerateFilePath
+import fleep
+from werkzeug.utils          import secure_filename
+
+from utils.amazon_s3         import S3FileManager, GenerateFilePath
 from utils.custom_exceptions import (
     CorrelationCheckException,
     RequiredFieldException,
