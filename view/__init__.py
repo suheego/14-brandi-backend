@@ -10,16 +10,14 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 
 from .sample_user_view import SampleUserView
 from .store.user_view import SignUpView, SignInView, GoogleSocialSignInView
-from .store.product_list_view import ProductListView, CategoryListView
+from .store.product_list_view import ProductListView
+from .store.category_list_view import CategoryListView
 from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
 from .store.sender_view import SenderView
 from .admin.event_view import EventView
 from utils.error_handler import error_handle
 
-
-from utils.decorator import signin_decorator
-from flask import g, jsonify
 
 def create_endpoints(app, services, database):
     """ 앤드 포인트 시작
@@ -42,10 +40,8 @@ def create_endpoints(app, services, database):
     """
 
     sample_user_service = services.sample_user_service
-    user_service = services.user_service
     destination_service = services.destination_service
     cart_item_service = services.cart_item_service
-    product_list_service = services.product_list_service
     sender_service = services.sender_service
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -86,35 +82,35 @@ def create_endpoints(app, services, database):
     app.add_url_rule('/users/signup',
                      view_func=SignUpView.as_view(
                          'sign_up_view',
-                         user_service,
+                         services,
                          database
                      ))
 
     app.add_url_rule('/users/signin',
                      view_func=SignInView.as_view(
                          'sign_in_view',
-                         user_service,
+                         services,
                          database
                      ))
 
     app.add_url_rule('/users/social-signin',
                      view_func=GoogleSocialSignInView.as_view(
                          'google_social_sign_in_view',
-                         user_service,
+                         services,
                          database
                      ))
 
     app.add_url_rule('/products',
                      view_func=ProductListView.as_view(
                          'product_list_view',
-                         product_list_service,
+                         services,
                          database
                      ))
 
     app.add_url_rule('/categories',
                      view_func=CategoryListView.as_view(
                          'category_list_view',
-                         product_list_service,
+                         services,
                          database
                      ))
 

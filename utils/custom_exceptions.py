@@ -12,7 +12,6 @@
         super().__init__(self.status_code, self.message, self.error_message)
 
 """
-import pymysql
 
 # don't touch
 class CustomUserError(Exception):
@@ -36,7 +35,7 @@ class InvalidUserId(CustomUserError):
 class UserAlreadyExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 403
-        message = 'user_already_exist'
+        message = "user_already_exist"
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -52,7 +51,7 @@ class UserUpdateDenied(CustomUserError):
 class UserCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
-        message = 'user_creatation_denied'
+        message = 'user_create_denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -80,6 +79,7 @@ class InvalidToken(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class TokenCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
@@ -87,10 +87,11 @@ class TokenCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class UnauthorizedUser(CustomUserError):
     def __init__(self, error_message):
         status_code = 401
-        message = 'unauthorized_user'
+        message = error_message
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -98,7 +99,7 @@ class UnauthorizedUser(CustomUserError):
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
-        message = 'database_connection_failed'
+        message = "database_close_fail"
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -106,7 +107,7 @@ class DatabaseCloseFail(CustomUserError):
 class DatabaseError(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
-        message = 'database_error'
+        message = "database_error"
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -229,6 +230,7 @@ class CustomerPermissionDenied(CustomUserError):
         message = 'customer permissions denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class ProductNotExist(CustomUserError):
     """ 상품이 존재하지 않음
