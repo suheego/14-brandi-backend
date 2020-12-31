@@ -10,8 +10,11 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 
 from .sample_user_view import SampleUserView
 from .store.user_view import SignUpView, SignInView, GoogleSocialSignInView
-from .store.product_list_view import ProductListView
+
+from .store.product_list_view import ProductListView, ProductSearchView, ProductDetailView
+
 from .store.category_list_view import CategoryListView
+
 from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
 from .store.sender_view import SenderView
@@ -53,12 +56,26 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 김기용 example ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-
     # services 넘겨주기...
     app.add_url_rule('/test',
                      view_func=SampleUserView.as_view(
                          'sample_user_view',
                          sample_user_service,
+                         database
+                     ))
+
+    # product_detail_view
+    app.add_url_rule('/products/<product_id>',
+                     view_func=ProductDetailView.as_view(
+                         'product_detail_view',
+                         product_list_service,
+                         database
+                     ))
+    # product_search
+    app.add_url_rule('/products/search',
+                     view_func=ProductSearchView.as_view(
+                         'product_search',
+                         product_list_service,
                          database
                      ))
 
