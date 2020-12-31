@@ -10,7 +10,7 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 from .sample_user_view import SampleUserView
 
 from .admin.order_view import OrderView
-from .admin.event_view import EventView, EventDetailView
+from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
 from .admin.seller_view import SellerSignupView, SellerSigninView
 from .admin.create_product_view import CreateProductView
 
@@ -197,6 +197,20 @@ def create_endpoints(app, services, database):
     app.add_url_rule('/event/<int:event_id>',
                      view_func=EventDetailView.as_view(
                          'event_detail_view',
+                         services.event_service,
+                         database
+                     ))
+
+    app.add_url_rule('/event/products/category',
+                     view_func=EventProductsCategoryView.as_view(
+                         'event_product_category_view',
+                         services.event_service,
+                         database
+                     ))
+
+    app.add_url_rule('/event/products',
+                     view_func=EventProductsToAddView.as_view(
+                         'event_product_to_add_view',
                          services.event_service,
                          database
                      ))

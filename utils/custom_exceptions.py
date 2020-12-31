@@ -395,10 +395,10 @@ class DateMissingOne(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-class EventSearchTwoInput(CustomUserError):
+class SearchTwoInput(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
-        message = 'event search inputs must be only one'
+        message = 'search inputs must be only one'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
@@ -411,6 +411,7 @@ class EventDoesNotExist(CustomUserError):
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
+
 
 class OrderFilterNotExist(CustomUserError):
     def __init__(self, error_message):
@@ -432,6 +433,12 @@ class OrderDoesNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 404
         message = 'order does not exist'
+
+
+class CategoryMenuDoesNotMatch(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'menu id does not match with category id'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
@@ -480,4 +487,31 @@ class OrderCreateDenied(CustomUserError):
         message = 'order create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
-        
+
+
+class CategoryDoesNotExist(CustomUserError):
+    def __init__(self, error_massage):
+        status_code = 400
+        message = 'category not exist'
+        error_massage = error_massage
+
+        super().__init__(status_code, message, error_massage)
+
+
+class FilterDoesNotMatch(CustomUserError):
+    def __init__(self, error_massage):
+        status_code = 400
+        message = 'filter does not match'
+        error_massage = error_massage
+
+        super().__init__(status_code, message, error_massage)
+
+
+class SearchFilterRequired(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'filter must be at least one'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
