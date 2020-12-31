@@ -63,7 +63,7 @@ class UserNotExist(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-
+        
 class InvalidUser(CustomUserError):
     def __init__(self, error_message):
         status_code = 403
@@ -95,6 +95,33 @@ class UnauthorizedUser(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+class InvalidUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_user'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class InvalidToken(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'invalid_token'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class TokenCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'token_create_denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class UnauthorizedUser(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 401
+        message = 'unauthorized_user'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
 
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
@@ -141,6 +168,71 @@ class DestinationCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
+class RequiredFieldException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'required field is blank'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class CorrelationCheckException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'correlation check fail'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductCodeUpdatedDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product code update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductImageCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product image create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class StockCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'stock create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductHistoryCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product history create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ColorNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'color not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+class SizeNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'size not exist'
+        error_message = error_message
+        
+        super().__init__(status_code, message, error_message)
 
 class NotUser(CustomUserError):
     """ 유저가 아님
@@ -290,6 +382,25 @@ class EventSearchTwoInput(CustomUserError):
         status_code = 400
         message = 'event search inputs must be only one'
         error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class DateMissingOne(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'date inputs should be start_date and end_date'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class EventSearchTwoInput(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'event search inputs must be only one'
+        error_message = error_message
+
         super().__init__(status_code, message, error_message)
 
 
@@ -298,6 +409,31 @@ class EventDoesNotExist(CustomUserError):
         status_code = 404
         message = 'event not exist'
         error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+class OrderFilterNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'must be date inputs or filter inputs'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class OrderDoesNotExist(CustomUserError):
+    """ 주문 리스트 없음
+
+        Author: 김민서
+
+        History:
+            2020-12-31(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'order does not exist'
+        error_message = error_message
+
         super().__init__(status_code, message, error_message)
 
 
@@ -312,5 +448,20 @@ class CheckoutDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'unable_to_checkout'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+        
+        
+class NoPermissionGetOrderList(CustomUserError):
+    """ 주문 리스트 조회 권한 없음
+
+        Author: 김민서
+
+        History:
+            2020-12-31(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'no permission to get order list'
         error_message = error_message
         super().__init__(status_code, message, error_message)

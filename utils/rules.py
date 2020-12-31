@@ -46,6 +46,15 @@ class GenderRule(AbstractRule):
         return value, errors
 
 
+class RequiredFieldRule(AbstractRule):
+    def validate(self, *args):
+        errors = []
+        if not all([str(value) for value in args]):
+            errors.append('required value')
+        
+        return args, errors
+
+
 class UsernameRule(AbstractRule):
     """ 비밀번호 규칙
 
@@ -179,7 +188,6 @@ class IsDeleteRule(AbstractRule):
             errors.append('0 과 1 값만 받는다.')
         return value, errors
 
-
 class EventStatusRule(AbstractRule):
     def validate(self, value):
         status_set = ('progress', 'wait', 'end')
@@ -197,6 +205,14 @@ class EventExposureRule(AbstractRule):
             errors.append('event exposure value should be 0 or 1')
         return value, errors
 
+class OrderStatusRule(AbstractRule):
+    def validate(self, value):
+        status_set = [1, 2, 3, 8]
+        errors = []
+        if value not in status_set:
+            errors.append('order status must be one of 1, 2, 3, 8')
+        return value, errors
+
 
 class DateRule(AbstractRule):
     """ 날짜 형식 벨리데이터 (YYYY-MM-DD)
@@ -212,4 +228,3 @@ class DateRule(AbstractRule):
         errors = []
         if not regex.match(value):
             errors.append('accept only alphabetic characters')
-

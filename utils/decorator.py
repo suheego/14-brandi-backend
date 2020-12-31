@@ -51,5 +51,5 @@ def signin_decorator(func):
             raise InvalidToken('잘못된 사용자입니다.')
 
         return func(*args, **kwargs)
-    return wrapper
 
+    return wrapper
