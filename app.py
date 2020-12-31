@@ -7,15 +7,17 @@ from flask_cors import CORS
 
 from view import create_endpoints
 
+#admin
 from model import OrderDao
 from model import SellerDao
 from model import CreateProductDao
 
 from service import OrderService
-from service.admin import SellerService
-from service.admin.create_product_service import CreateProductService
+from service import SellerService
+from service import CreateProductService
 from service import EventService
 
+#service
 from model import (
     SampleUserDao,
     UserDao,
