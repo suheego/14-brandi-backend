@@ -16,7 +16,7 @@ from .store.cart_item_view import CartItemView, CartItemAddView
 from .store.sender_view import SenderView
 
 from .admin.order_view import OrderView
-from .admin.event_view import EventView
+from .admin.event_view import EventView, EventDetailView
 from .admin.seller_view import SellerSignupView, SellerSigninView
 from .admin.create_product_view import CreateProductView
 
@@ -50,7 +50,6 @@ def create_endpoints(app, services, database):
     user_service = services.user_service
     destination_service = services.destination_service
     cart_item_service = services.cart_item_service
-
     product_list_service = services.product_list_service
     sender_service = services.sender_service
     seller_service = services.seller_service
@@ -131,18 +130,18 @@ def create_endpoints(app, services, database):
 # 고수희
 # ----------------------------------------------------------------------------------------------------------------------
     app.add_url_rule('/checkout/cart',
-                    view_func=CartItemAddView.as_view(
-                        'cart_item_add_view',
-                        cart_item_service,
-                        database
-                    ))
+                     view_func=CartItemAddView.as_view(
+                         'cart_item_add_view',
+                         cart_item_service,
+                         database
+                     ))
 
     app.add_url_rule('/checkout/cart/<int:cart_id>',
-                    view_func=CartItemView.as_view(
-                        'cart_item_view',
-                        cart_item_service,
-                        database
-                    ))
+                     view_func=CartItemView.as_view(
+                         'cart_item_view',
+                         cart_item_service,
+                         database
+                     ))
 
     app.add_url_rule('/checkout/sender',
                     view_func=SenderView.as_view(
@@ -158,7 +157,20 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 강두연 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-    app.add_url_rule('/events', view_func=EventView.as_view('event_view', services.event_service, database))
+    app.add_url_rule('/events',
+                     view_func=EventView.as_view(
+                         'event_view',
+                         services.event_service,
+                         database
+                     ))
+
+    app.add_url_rule('/event/<int:event_id>',
+                     view_func=EventDetailView.as_view(
+                         'event_detail_view',
+                         services.event_service,
+                         database
+                     ))
+
 # ----------------------------------------------------------------------------------------------------------------------
 # 김민서 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------

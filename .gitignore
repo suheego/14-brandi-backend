@@ -377,3 +377,4 @@ __pycache__/
 *.log
 .idea/
 .csv
+*.csv
