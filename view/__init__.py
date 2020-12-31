@@ -9,17 +9,18 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 """
 from .sample_user_view import SampleUserView
 
+from .admin.order_view import OrderView
+from .admin.event_view import EventView, EventDetailView
+from .admin.seller_view import SellerSignupView, SellerSigninView
+from .admin.create_product_view import CreateProductView
+
 from .store.user_view import SignUpView, SignInView, GoogleSocialSignInView
 from .store.product_list_view import ProductListView, ProductSearchView, ProductDetailView
 from .store.category_list_view import CategoryListView
 from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
 from .store.sender_view import SenderView
-
-from .admin.order_view import OrderView, OrderAddView
-from .admin.event_view import EventView, EventDetailView
-from .admin.seller_view import SellerSignupView, SellerSigninView
-from .admin.create_product_view import CreateProductView
+from .store.store_order_view import StoreOrderView, StoreOrderAddView
 
 from utils.error_handler import error_handle
 
@@ -49,7 +50,8 @@ def create_endpoints(app, services, database):
     destination_service = services.destination_service
     cart_item_service = services.cart_item_service
     sender_service = services.sender_service
-
+    product_list_service = services.product_list_service
+    store_order_service = services.store_order_service
 
     seller_service = services.seller_service
     create_product_service = services.create_product_service
@@ -165,16 +167,16 @@ def create_endpoints(app, services, database):
                     ))
 
     app.add_url_rule('/checkout',
-                    view_func=OrderAddView.as_view(
-                        'order_add_view',
-                        order_service,
+                     view_func=StoreOrderAddView.as_view(
+                        'store_order_add_view',
+                        store_order_service,
                         database
                     ))
 
     app.add_url_rule('/checkout/<int:order_id>',
-                    view_func=OrderView.as_view(
-                        'order_view',
-                        order_service,
+                    view_func=StoreOrderView.as_view(
+                        'store_order_view',
+                        store_order_service,
                         database
                     ))
 
@@ -202,7 +204,7 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 김민서 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-    app.add_url_rule('/admin/orders', view_func=OrderView.as_view('order_view', order_service, database))
+    app.add_url_rule('/admin/orders',view_func=OrderView.as_view('order_view', order_service, database))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 이성보 ◟( ˘ ³˘)◞ ♡

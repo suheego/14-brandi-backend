@@ -2,7 +2,7 @@ import pymysql
 from utils.custom_exceptions import CartItemNotExist, OrderCreateDenied, AccountNotExist, ProductNotExist, DeleteDenied
 
 
-class OrderDao:
+class StoreOrderDao:
     """ Persistence Layer
 
         Attributes: None

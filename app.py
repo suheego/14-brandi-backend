@@ -5,16 +5,39 @@ from flask.json import JSONEncoder
 from flask import Flask
 from flask_cors import CORS
 
-from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, SenderDao, EventDao, ProductListDao, OrderDao
-from service import SampleUserService, UserService, DestinationService, CartItemService, SenderService, EventService, ProductListService, OrderService, CategoryListService
-
 from view import create_endpoints
 
-from model.admin import SellerDao
-from model.admin.create_product_dao import CreateProductDao
+from model import OrderDao
+from model import SellerDao
+from model import CreateProductDao
 
+from service import OrderService
 from service.admin import SellerService
 from service.admin.create_product_service import CreateProductService
+from service import EventService
+
+from model import (
+    SampleUserDao,
+    UserDao,
+    DestinationDao,
+    CartItemDao,
+    SenderDao,
+    EventDao,
+    ProductListDao,
+    StoreOrderDao
+)
+
+from service import (
+    SampleUserService,
+    UserService,
+    DestinationService,
+    CartItemService,
+    SenderService,
+    EventService,
+    ProductListService,
+    StoreOrderService,
+    CategoryListService
+)
 
 
 class CustomJSONEncoder(JSONEncoder):
@@ -62,6 +85,7 @@ def create_app(test_config=None):
     cart_item_dao = CartItemDao()
     sender_dao = SenderDao()
     event_dao = EventDao()
+    store_order_dao = StoreOrderDao()
     order_dao = OrderDao()
     seller_dao = SellerDao()
     create_product_dao = CreateProductDao()
@@ -72,7 +96,7 @@ def create_app(test_config=None):
     services.user_service = UserService(app.config)
     services.destination_service = DestinationService(destination_dao)
     services.cart_item_service = CartItemService(cart_item_dao)
-    services.order_service = OrderService(order_dao)
+    services.store_order_service = StoreOrderService(store_order_dao)
     services.product_list_service = ProductListService()
     services.category_list_service = CategoryListService()
     services.sender_service = SenderService(sender_dao)

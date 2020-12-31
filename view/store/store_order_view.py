@@ -13,7 +13,7 @@ from utils.rules import NumberRule, DecimalRule, EmailRule, PostalCodeRule, Phon
 from utils.decorator import signin_decorator
 
 
-class OrderView(MethodView):
+class StoreOrderView(MethodView):
     """ Presentation Layer
 
     Attributes:
@@ -83,7 +83,7 @@ class OrderView(MethodView):
                 raise DatabaseCloseFail('database close fail')
 
 
-class OrderAddView(MethodView):
+class StoreOrderAddView(MethodView):
     """ Presentation Layer
 
     Attributes:
