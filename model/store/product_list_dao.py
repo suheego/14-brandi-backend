@@ -4,6 +4,25 @@ from utils.custom_exceptions import DatabaseError
 
 
 class ProductListDao:
+
+    def get_search_products_dao(self, connection, search):
+
+        sql = """
+        SELECT 
+	    name
+        FROM
+            products
+        WHERE
+            name
+        LIKE %s;
+        """
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            search_string = "'%"+search+"%'"
+            cursor.execute(sql, search_string)
+            result = cursor.fetchall()
+            print(result)
+            return result
+
     def get_product_list(self, connection, data):
         """ 상품 리스트 조회
 

@@ -1,5 +1,7 @@
+import json
+
 from flask.views import MethodView
-from flask import jsonify
+from flask import jsonify, request
 
 from flask_request_validator import (
     validate_params,
@@ -9,6 +11,36 @@ from flask_request_validator import (
 
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
+
+
+class ProductDetailView(MethodView):
+    def __init__(self, service, database):
+        self.service  = service
+        self.database = database
+
+    def get(self):
+        pass
+
+
+class ProductSearchView(MethodView):
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+
+    def get(self):
+        """ GET 메소드: 상품 검색 
+        """
+        try:
+            search = request.args.get('q')
+            connection = get_connection(self.database)
+            result = self.service.product_search_service(connection, search)
+            return jsonify({'message': 'success', 'result': result})
+        except Exception as e:
+            raise e
+        finally:
+            if connection is not None:
+                connection.close()
+
 
 
 class ProductListView(MethodView):
