@@ -1,9 +1,8 @@
-
 import decimal
 
-from flask.json import JSONEncoder
-from flask import Flask
-from flask_cors import CORS
+from flask.json    import JSONEncoder
+from flask         import Flask
+from flask_cors    import CORS
 
 from view import create_endpoints
 
@@ -16,6 +15,10 @@ from service import OrderService
 from service import SellerService
 from service import CreateProductService
 from service import EventService
+
+#admin2
+from model.admin   import SellerInfoDao, SellerDao, CreateProductDao
+from service.admin import SellerInfoService, SellerService, CreateProductService
 
 #service
 from model import (
@@ -79,35 +82,43 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     database = app.config['DB']
-    secret_key = app.config['SECRET_KEY']
 
-    # persistence Layers
-    sample_user_dao = SampleUserDao()
-    destination_dao = DestinationDao()
-    cart_item_dao = CartItemDao()
-    sender_dao = SenderDao()
-    event_dao = EventDao()
-    store_order_dao = StoreOrderDao()
-    order_dao = OrderDao()
-    seller_dao = SellerDao()
+    # persistence Layer
+    sample_user_dao    = SampleUserDao()
+    destination_dao    = DestinationDao()
+    cart_item_dao      = CartItemDao()
+    sender_dao         = SenderDao()
+    event_dao          = EventDao()
+    store_order_dao    = StoreOrderDao()
+    order_dao          = OrderDao()
+    
+    # admin2
+    seller_dao         = SellerDao()
+    seller_info_dao    = SellerInfoDao()
     create_product_dao = CreateProductDao()
-
+    
     # business Layer,   깔끔한 관리 방법을 생각하기
+    # service
     services = Services
-    services.sample_user_service = SampleUserService(sample_user_dao)
-    services.user_service = UserService(app.config)
-    services.destination_service = DestinationService(destination_dao)
-    services.cart_item_service = CartItemService(cart_item_dao)
-    services.store_order_service = StoreOrderService(store_order_dao)
-    services.product_list_service = ProductListService()
+    services.sample_user_service   = SampleUserService(sample_user_dao)
+    services.user_service          = UserService(app.config)
+    services.destination_service   = DestinationService(destination_dao)
+    services.cart_item_service     = CartItemService(cart_item_dao)
+    services.store_order_service   = StoreOrderService(store_order_dao)
+    services.product_list_service  = ProductListService()
     services.category_list_service = CategoryListService()
-    services.sender_service = SenderService(sender_dao)
+    services.sender_service        = SenderService(sender_dao)
+    
+    #admin1
     services.event_service = EventService(event_dao)
     services.order_service = OrderService(order_dao)
-    services.seller_service = SellerService(seller_dao,app.config)
+    
+    #admin2
+    services.seller_service         = SellerService(seller_dao, app.config)
+    services.seller_info_service    = SellerInfoService(seller_info_dao)
     services.create_product_service = CreateProductService(create_product_dao)
     
     # presentation Layer
     create_endpoints(app, services, database)
-
+    
     return app

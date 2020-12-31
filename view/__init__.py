@@ -7,26 +7,28 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
     app.add_url_rule('/test', view_func=TestUserView.as_view('test_user_view', test_user_service, database))
 
 """
-from .sample_user_view import SampleUserView
 
+# service
+from .sample_user_view         import SampleUserView
+from .store.user_view          import SignUpView, SignInView, GoogleSocialSignInView
+from .store.product_list_view  import ProductListView, ProductSearchView, ProductDetailView
+from .store.category_list_view import CategoryListView
+from .store.destination_view   import DestinationView, DestinationDetailView
+from .store.cart_item_view     import CartItemView, CartItemAddView
+from .store.sender_view        import SenderView
+from .store.store_order_view   import StoreOrderView, StoreOrderAddView
+
+# admin1
 from .admin.order_view import OrderView
 from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
-from .admin.seller_view import SellerSignupView, SellerSigninView
-from .admin.create_product_view import CreateProductView
 
-from .store.user_view import SignUpView, SignInView, GoogleSocialSignInView
-from .store.product_list_view import ProductListView, ProductSearchView, ProductDetailView
-from .store.category_list_view import CategoryListView
-from .store.destination_view import DestinationView, DestinationDetailView
-from .store.cart_item_view import CartItemView, CartItemAddView
-from .store.sender_view import SenderView
-from .store.store_order_view import StoreOrderView, StoreOrderAddView
+# admin2
+from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView
+from .admin.create_product_view import MainCategoriesListView, CreateProductView
 
 from utils.error_handler import error_handle
 
 def create_endpoints(app, services, database):
-    sample_user_service = services.sample_user_service
-
     """ 앤드 포인트 시작
 
             Args:
@@ -45,18 +47,21 @@ def create_endpoints(app, services, database):
                 2020-20-21(홍길동): 1차 수정
                 2020-20-22(홍길동): 2차 수정
     """
-
-    sample_user_service = services.sample_user_service
-    destination_service = services.destination_service
-    cart_item_service = services.cart_item_service
-    sender_service = services.sender_service
+    
+    # service
+    sample_user_service  = services.sample_user_service
+    destination_service  = services.destination_service
+    cart_item_service    = services.cart_item_service
+    sender_service       = services.sender_service
     product_list_service = services.product_list_service
-    store_order_service = services.store_order_service
-
-    seller_service = services.seller_service
+    store_order_service  = services.store_order_service
+    
+    # admin1
+    order_service          = services.order_service
+    
+    # admin2
+    seller_service         = services.seller_service
     create_product_service = services.create_product_service
-    order_service = services.order_service
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Service Section(write your code under your name)
@@ -227,13 +232,15 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # Admin 2 Section
 # ----------------------------------------------------------------------------------------------------------------------
-# 김영환
+# 김영환 ◟( ˘ ³˘)◞ ♡
+# ----------------------------------------------------------------------------------------------------------------------
     app.add_url_rule('/admin/signup',
                      view_func = SellerSignupView.as_view(
                          'seller_signup_view',
                          seller_service,
                          database
                      ))
+    
     app.add_url_rule('/admin/signin',
                      view_func = SellerSigninView.as_view(
                          'seller_signin_view',
@@ -242,26 +249,42 @@ def create_endpoints(app, services, database):
                      ))
 
 # ----------------------------------------------------------------------------------------------------------------------
-# 심원두
+# 심원두 ◟( ˘ ³˘)◞ ♡
+# ----------------------------------------------------------------------------------------------------------------------
+    app.add_url_rule('/product/productRegist/main_category',
+                     view_func=MainCategoriesListView.as_view(
+                         'main_category_view',
+                         create_product_service,
+                         database
+                     ))
+    
     app.add_url_rule('/product/productRegist',
                      view_func=CreateProductView.as_view(
                          'create_product_view',
                          create_product_service,
                          database
                      ))
-# ----------------------------------------------------------------------------------------------------------------------
-# 이성보 ◟( ˘ ³˘)◞ ♡
-# ----------------------------------------------------------------------------------------------------------------------
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 이영주 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
+    app.add_url_rule('/admin/<int:account_id>',
+                     view_func=SellerInfoView.as_view(
+                         'SellerInfoView',
+                         seller_service,
+                         database
+                    ))
+    
+    app.add_url_rule('/admin/<int:account_id>/history',
+                     view_func=SellerHistoryView.as_view(
+                         'SellerHistoryView',
+                         seller_service,
+                         database
+                     ))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 장재원 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-
 
 # ----------------------------------------------------------------------------------------------------------------------
     # don't touch this
