@@ -4,8 +4,8 @@ from flask.json import JSONEncoder
 from flask import Flask
 from flask_cors import CORS
 
-from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, SenderDao, EventDao, ProductListDao
-from service import SampleUserService, UserService, DestinationService, CartItemService, SenderService, EventService, ProductListService
+from model import SampleUserDao, UserDao, DestinationDao, CartItemDao, SenderDao, EventDao, ProductListDao,  OrderDao
+from service import SampleUserService, UserService, DestinationService, CartItemService, SenderService, EventService, ProductListService, OrderService
 from view import create_endpoints
 
 
@@ -53,6 +53,7 @@ def create_app(test_config=None):
     product_list_dao = ProductListDao()
     sender_dao = SenderDao()
     event_dao = EventDao()
+    order_dao = OrderDao()
 
     # business Layer,   깔끔한 관리 방법을 생각하기
     services = Services
@@ -63,6 +64,7 @@ def create_app(test_config=None):
     services.product_list_service = ProductListService(product_list_dao)
     services.sender_service = SenderService(sender_dao)
     services.event_service = EventService(event_dao)
+    services.order_service = OrderService(order_dao)
 
     # presentation Layer
     create_endpoints(app, services, database)
