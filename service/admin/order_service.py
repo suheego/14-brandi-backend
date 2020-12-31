@@ -1,4 +1,4 @@
-from utils.custom_exceptions import OrderFilterNotExist, NoPermissionGetOrderList
+from utils.custom_exceptions import OrderFilterNotExist, NoPermissionGetOrderList, DateInputDoesNotExist
 
 class OrderService:
     """ Business Layer
@@ -17,17 +17,19 @@ class OrderService:
 
     def get_orders_service(self, connection, data):
         try:
-            if data['permission'] != 1 or 2:
+            if not (data['permission'] == 1 or data['permission'] == 2):
                 raise NoPermissionGetOrderList('no_permission_to_get_order_list')
 
-            data['page']  = (data['page'] - 1) * data['length']
-            date_inputs   = (data['start_date'], data['end_date'])
-            filter_inputs = (data['number'], data['detail_number'], data['sender_name'], data['sender_phone'],
-                             data['seller_name'], ['product_name'])
+            if (data['start_date'] and not data['end_date']) or (not data['start_date'] and data['end_date']):
+                raise DateInputDoesNotExist('must_be_other_date_input')
 
-            if not (date_inputs and filter_inputs):
+            filters = data['start_date'] + data['end_date'] + data['number'] + data['detail_number'] + data['sender_name'] \
+                      + data['sender_phone'] + data['seller_name'] + data['product_name']
+
+            if not filters:
                 raise OrderFilterNotExist('must_be_date_inputs_or_filter_inputs')
 
+            data['page'] = (data['page'] - 1) * data['length']
             if data['sender_phone']:
                 data['sender_phone'] = data['sender_phone'].replace("-", "")
             if data['product_name']:

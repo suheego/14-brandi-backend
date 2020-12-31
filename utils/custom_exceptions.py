@@ -414,6 +414,13 @@ class EventDoesNotExist(CustomUserError):
 
 
 class OrderFilterNotExist(CustomUserError):
+    """ 필터 조건 없음
+
+        Author: 김민서
+
+        History:
+            2020-12-31(김민서): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 400
         message = 'must be date inputs or filter inputs'
@@ -511,7 +518,20 @@ class SearchFilterRequired(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'filter must be at least one'
+
+        super().__init__(status_code, message, error_massage)
+
+class DateInputDoesNotExist(CustomUserError):
+    """날짜 조건 없음
+
+        Author: 김민서
+
+        History:
+            2020-12-31(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'must be other date input'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
-
