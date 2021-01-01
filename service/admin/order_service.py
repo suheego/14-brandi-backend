@@ -1,8 +1,8 @@
 from utils.custom_exceptions import (OrderFilterNotExist,
-                                     NoPermissionGetOrderList,
+                                     NoPermission,
                                      DateInputDoesNotExist,
                                      NotAllowedStatus,
-                                     NoPermissionUpdateOrderStatus)
+                                     )
 
 
 class OrderService:
@@ -24,7 +24,7 @@ class OrderService:
     def get_orders_service(self, connection, data):
         try:
             if not (data['permission'] == 1 or data['permission'] == 2):
-                raise NoPermissionGetOrderList('no_permission_to_get_order_list')
+                raise NoPermission('no_permission')
 
             if (data['start_date'] and not data['end_date']) or (not data['start_date'] and data['end_date']):
                 raise DateInputDoesNotExist('must_be_other_date_input')
@@ -50,21 +50,16 @@ class OrderService:
     def update_order_status_service(self, connection, data):
         try:
             if not (data['permission'] == 1 or data['permission'] == 2):
-                raise NoPermissionUpdateOrderStatus('no_permission_to_update_order_status')
+                raise NoPermission('no_permission')
 
-            if data['status'] != 1 or data['status'] != 2:
-                raise NotAllowedStatus('not_allowed_to_update_order_status')
+            if not (data['status'] == 1 or data['status'] == 2):
+                raise NotAllowedStatus('now_order_status_is_not_allowed_to_update_status')
 
             data['new_status'] = data['status'] + 1
-
-            updator_data = [(id, data['new_status'], data['account']) for id in data['ids']]
+            update_data = [[id, data['new_status'], data['account']] for id in data['ids']]
 
             self.master_order_dao.update_order_status_dao(connection, data)
-            self.master_order_dao.add_order_history_dao(connection, updator_data)
-
-            return 'success'
+            self.master_order_dao.add_order_history_dao(connection, update_data)
 
         except KeyError:
             return 'key_error'
-
-

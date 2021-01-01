@@ -141,7 +141,7 @@ class OrderView(MethodView):
 
     @validate_params(
         Param('status_id', PATH, int, required=True, rules=[OrderStatusRule()]),
-        Param('order_id', GET, list, required=True)
+        Param('id', GET, list, required=True)
     )
     def patch(self, *args):
         data = {
@@ -163,7 +163,9 @@ class OrderView(MethodView):
         Raises:
             400, {'message': 'key error', 'errorMessage': 'key_error'} : 잘못 입력된 키값        
             400, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
-            403, {'message': 'no permission to update order status', 'errorMessage': 'no_permission_to_update_order_status'} : 주문 상태 변경 권한 없음
+            400, {'message': 'now order status is not allowed to update status', 'errorMessage': 'now_order_status_is_not_allowed_to_update_status'}: 주문 상태 변경 불가능 상
+            400, {'message': 'unable to update order status', 'errorMessage': 'unable_to_update_order_status'}: 수정 내역 없음
+            403, {'message': 'no permission', 'errorMessage': 'no_permission'} : 주문 상태 변경 권한 없음
 
         History:
             2021-01-01(김민서): 초기 생성    
@@ -171,9 +173,12 @@ class OrderView(MethodView):
 
         try:
             connection = get_connection(self.database)
-            self.service.get_order_status_service(connection, data)
+            self.service.update_order_status_service(connection, data)
+            connection.commit()
             return {'message': 'success'}
+
         except Exception as e:
+            connection.rollback()
             raise e
         finally:
             try:
@@ -181,4 +186,3 @@ class OrderView(MethodView):
                     connection.close()
             except Exception:
                 raise DatabaseCloseFail('database close fail')
-
