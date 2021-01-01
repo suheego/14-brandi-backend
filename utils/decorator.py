@@ -6,7 +6,7 @@ import jwt
 
 from utils.custom_exceptions import UnauthorizedUser, InvalidToken
 
-def signin_degorator(func):
+def signin_decorator(func):
     """ 로그인 데코레이터
 
         Args:
@@ -24,14 +24,18 @@ def signin_degorator(func):
 
         History:
             2020-20-29(김민구): 초기 생성
+
+        Notes:
+            토큰 유효시간 : 5시간
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
             access_token = request.headers.get('Authorization')
 
             if not access_token:
-                raise UnauthorizedUser('should_be_sign_in')
+                raise UnauthorizedUser('로그인이 필요합니다.')
 
             payload = jwt.decode(
                 access_token,
@@ -41,10 +45,11 @@ def signin_degorator(func):
 
             g.username = payload['username']
             g.account_id = payload['account_id']
+            g.permission_type_id = payload['permission_type_id']
 
         except (jwt.InvalidTokenError, jwt.exceptions.ExpiredSignatureError, jwt.exceptions.DecodeError):
-            raise InvalidToken('invalid_token')
+            raise InvalidToken('잘못된 사용자입니다.')
 
         return func(*args, **kwargs)
-    return wrapper
 
+    return wrapper

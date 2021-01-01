@@ -13,12 +13,12 @@ from flask_request_validator import AbstractRule
 
 class NumberRule(AbstractRule):
     def validate(self, value):
-        pattern = '^[0-9]+$'
+        pattern = '^[1-9]+$'
         regex = re.compile(pattern)
         result = regex.match(value)
         errors = []
         if not result:
-            errors.append('accept_only_number')
+            errors.append('오직 숫자만 받는다.')
         return value, errors
 
 
@@ -41,15 +41,63 @@ class GenderRule(AbstractRule):
             errors.append('accept only male and female value')
         return value, errors
 
+      
+class SellerInfoRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^[0-9]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only number')
+        return value, errors
+
+
+class DefaultRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^[0-9A-Za-z가-힣\s.\-_]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only number, text')
+        return value, errors
+
+
+class RequiredFieldRule(AbstractRule):
+    def validate(self, *args):
+        errors = []
+        if not all([value for value in args]):
+            errors.append('required field')
+        return args, errors
+
+
+class RequiredFieldNumberRule(AbstractRule):
+    def validate(self, value):
+        errors = []
+        if not value:
+            errors.append('required value')
+        return value, errors
+
 
 class UsernameRule(AbstractRule):
+    """ 비밀번호 규칙
+
+    6~20 글자의 대소문자,숫자만 허용한다.
+
+    Author: 김민구
+
+    History:
+        2020-12-28(김민구): 초기생성
+    """
+
     def validate(self, value):
         pattern = '^[a-zA-Z0-9]{6,20}$'
         regex = re.compile(pattern)
         result = regex.match(value)
         errors = []
         if not result:
-            errors.append('username_is_not_valid')
+            errors.append('please_enter_6-20_letters_or_numbers')
         return value, errors
 
 
@@ -71,13 +119,23 @@ class PhoneRule(AbstractRule):
 
 
 class PasswordRule(AbstractRule):
+    """ 비밀번호 규칙
+
+    8~20 자리 숫자, 대소문자, 특수문자를 모두 넣어야 허용한다.
+
+    Author: 김민구
+
+    History:
+        2020-12-28(김민구): 초기생성
+    """
+
     def validate(self, value):
-        pattern = '^.*(?=.{8,18})(?=.*[a-zA-Z])(?=.*?[A-Z])(?=.*\d)(?=.*[!@#£$%^&*()_+={}\-?:~\[\]])[a-zA-Z0-9!@#£$%^&*()_+={}\-?:~\[\]]+$'
+        pattern = '^.*(?=.{8,20})(?=.*[a-zA-Z])(?=.*?[A-Z])(?=.*\d)(?=.*[!@#£$%^&*()_+={}\-?:~\[\]])[a-zA-Z0-9!@#£$%^&*()_+={}\-?:~\[\]]+$'
         regex = re.compile(pattern)
         result = regex.match(value)
         errors = []
         if not result:
-            errors.append('password_is_not_valid')
+            errors.append('8~20_characters_including_numbers_uppercase_letters_lowercase_letters_special_characters')
         return value, errors
 
 
@@ -99,13 +157,25 @@ class PostalCodeRule(AbstractRule):
 
 
 class EmailRule(AbstractRule):
+    """ 이메일 규칙
+
+    @ 앞은 이메일의 아이디에 해당하며 대소문자, 숫자, 특수문자(-_)를 사용할 수 있다.
+    @ 다음은 도메인이며 대소문자, 숫자로 이루어져 있다.
+    . 다음은 최상위 도메인이며 대소문자 숫자로 이루어진다.
+
+    Author: 김민구
+
+    History:
+        2020-12-28(김민구): 초기생성
+    """
+
     def validate(self, value):
         pattern = '^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+$'
         regex = re.compile(pattern)
         result = regex.match(value)
         errors = []
         if not result:
-            errors.append('email_is_not_valid')
+            errors.append('this_email_is_incorrect')
         return value, errors
 
 
@@ -128,11 +198,16 @@ class IsDeleteRule(AbstractRule):
         2020-12-28(김기용): 초기생성
     """
     def validate(self, value):
-        gender_set = ['0', '1']
+        bool_set = ['0', '1']
         errors = []
-        if value not in gender_set:
-            errors.append('accept only 0 and 1 value')
+        if value not in bool_set:
+            errors.append('0 과 1 값만 받는다.')
+        return value, errors
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3fa1e6f9d40bd7812e16f4b2eb03bfbd59349887
 class EventStatusRule(AbstractRule):
     def validate(self, value):
         status_set = ('progress', 'wait', 'end')
@@ -159,6 +234,15 @@ class OrderStatusRule(AbstractRule):
         return value, errors
 
 
+class OrderStatusRule(AbstractRule):
+    def validate(self, value):
+        status_set = [1, 2, 3, 8]
+        errors = []
+        if value not in status_set:
+            errors.append('order status must be one of 1, 2, 3, 8')
+        return value, errors
+
+
 class DateRule(AbstractRule):
     """ 날짜 형식 벨리데이터 (YYYY-MM-DD)
         Author: 강두연
@@ -171,4 +255,47 @@ class DateRule(AbstractRule):
         errors = []
         if not regex.match(value):
             errors.append('accept only alphabetic characters')
+<<<<<<< HEAD
         return value, errors
+=======
+        return value, errors
+
+
+class ProductMenuRule(AbstractRule):
+    """ 상품 분류 메뉴 규칙 (트렌드, 브랜드, 뷰티) id는 (4, 5, 6)
+
+        Author: 강두연
+
+        History:
+            2020-12-31(강두연): 작성
+    """
+    def validate(self, value):
+        menu_set = (4, 5, 6)
+        errors = []
+        if value not in menu_set:
+            errors.append('accept only id of trend, brand, beauty')
+        return value, errors
+
+
+class CategoryFilterRule(AbstractRule):
+    """ 카테고리 불러올 때 필터 규칙
+
+    """
+    def validate(self, value):
+        filter_set = ('menu', 'both', 'none')
+        errors = []
+        if value not in filter_set:
+            errors.append('accept only (menu, both, none) as a filter value')
+        return value, errors
+
+
+class PageRule(AbstractRule):
+    """ 페이지네이션 page는 1이상
+
+    """
+    def validate(self, value):
+        errors = []
+        if value <= 0:
+            errors.append('page cannot be less than 1')
+        return value, errors
+>>>>>>> 3fa1e6f9d40bd7812e16f4b2eb03bfbd59349887
