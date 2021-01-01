@@ -502,4 +502,39 @@ class OrderCreateDenied(CustomUserError):
         message = 'order create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class SellerNotExist(CustomUserError):
+    """ 셀러 조회 실패
+
+        Author: 고수희
+
+        History:
+            2021-01-01(고수희): 초기생성
+    """
+
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'seller does not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
