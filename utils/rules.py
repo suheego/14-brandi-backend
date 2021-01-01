@@ -228,3 +228,22 @@ class DateRule(AbstractRule):
         errors = []
         if not regex.match(value):
             errors.append('accept only alphabetic characters')
+        return value, errors
+
+
+class PositiveInteger(AbstractRule):
+    """ 양의 정수 규칙
+
+        0보다 큰 수만 허용한다.
+
+        Author: 김민구
+
+        History:
+            2021-01-01(김민구)
+    """
+
+    def validate(self, value):
+        errors = []
+        if value <= 0:
+            errors.append('must_be_bigger_than_0')
+        return value, errors
