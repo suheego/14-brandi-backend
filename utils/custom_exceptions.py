@@ -480,6 +480,51 @@ class NoPermissionGetOrderList(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+class NoPermissionUpdateOrderStatus(CustomUserError):
+    """ 주문 상태 변경 권한 없음
+
+        Author: 김민서
+
+        History:
+            2021-01-01(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'no permission to update order status'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class NoPermissionUpdateOrderStatus(CustomUserError):
+    """ 주문 상태 변경 권한 없음
+
+        Author: 김민서
+
+        History:
+            2021-01-01(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'no permission to update order status'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class NotAllowedStatus(CustomUserError):
+    """ 주문 상태 변경 권한 없음
+
+        Author: 김민서
+
+        History:
+            2021-01-01(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 403
+        message = 'no permission to update order status'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+
 
 class OrderCreateDenied(CustomUserError):
     """ 결제 추가 실패

@@ -113,3 +113,29 @@ class OrderDao:
 
             return {'total_count': count[0]['total_count'],'order_lists': list}
 
+    def update_order_status_dao(self, connection, data):
+        sql = """
+            UPDATE order_items
+            SET order_item_status_type_id = %(new_status)s
+            WHERE id IN %(ids);
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            try:
+                connection.commit()
+                cursor.execute(sql, data)
+
+    def add_order_history_dao(self, connection, data):
+        sql = """
+            INSERT
+            INTO order_item_histories(order_item_id, order_item_status_type_id, updator_id)
+            VALUES (%s, %(status)s, %(account)s);
+        """
+
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            try:
+                connection.commit()
+                cursor.executemany(sql, data)
+
+

@@ -9,7 +9,8 @@ from flask_request_validator import (
     Param,
     JSON,
     validate_params,
-    GET
+    GET,
+    PATH
 )
 
 
@@ -27,12 +28,12 @@ class OrderView(MethodView):
         Param('sender_phone', GET, str, required=False),
         Param('seller_name', GET, str, required=False),
         Param('product_name', GET, str, required=False),
-        Param('start_date', GET, str, required=False, rules=[DateRule()]),
-        Param('end_date', GET, str, required=False, rules=[DateRule()]),
+        Param('start_date', GET, str, required=False), #rules=[DateRule()]),
+        Param('end_date', GET, str, required=False), #rules=[DateRule()]),
         Param('attributes', GET, list, required=False),
         Param('order_by', GET, str, required=True),
         Param('page', GET, int, required=True),
-        Param('length', GET, int, required=True)
+        Param('length', GET, str, required=True)
     )
     def get(self, *args):
         data = {
@@ -139,15 +140,39 @@ class OrderView(MethodView):
                 raise DatabaseCloseFail('database close fail')
 
     @validate_params(
-        Param('order_status_id', JSON, int)
+        Param('status_id', PATH, int, required=True, rules=[OrderStatusRule()]),
+        Param('order_id', GET, list, required=True)
     )
     def patch(self, *args):
-        order_status_id = args[0]
+        data = {
+            'permission': g.permission_id,
+            'account': g.acount_id,
+            "status": args[0],
+            "ids": args[1]
+        }
+
+        """PATCH 메소드: 주문 상태 변경
+
+        Args: 
+            args = ('status', 'ids')
+
+        Author: 김민서
+
+        Returns: { "message": "success" }
+
+        Raises:
+            400, {'message': 'key error', 'errorMessage': 'key_error'} : 잘못 입력된 키값        
+            400, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
+            403, {'message': 'no permission to update order status', 'errorMessage': 'no_permission_to_update_order_status'} : 주문 상태 변경 권한 없음
+
+        History:
+            2021-01-01(김민서): 초기 생성    
+        """
 
         try:
             connection = get_connection(self.database)
-            self.service.get_order_status_service(connection, order_status_id)
-            return jsonify({'message': 'success'})
+            self.service.get_order_status_service(connection, data)
+            return {'message': 'success'}
         except Exception as e:
             raise e
         finally:
@@ -156,3 +181,4 @@ class OrderView(MethodView):
                     connection.close()
             except Exception:
                 raise DatabaseCloseFail('database close fail')
+

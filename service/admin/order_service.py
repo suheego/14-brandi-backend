@@ -1,4 +1,9 @@
-from utils.custom_exceptions import OrderFilterNotExist, NoPermissionGetOrderList, DateInputDoesNotExist
+from utils.custom_exceptions import (OrderFilterNotExist,
+                                     NoPermissionGetOrderList,
+                                     DateInputDoesNotExist,
+                                     NotAllowedStatus,
+                                     NoPermissionUpdateOrderStatus)
+
 
 class OrderService:
     """ Business Layer
@@ -14,6 +19,7 @@ class OrderService:
     """
     def __init__(self, master_order_dao):
         self.master_order_dao = master_order_dao
+
 
     def get_orders_service(self, connection, data):
         try:
@@ -39,3 +45,26 @@ class OrderService:
 
         except KeyError:
             return 'key_error'
+
+
+    def update_order_status_service(self, connection, data):
+        try:
+            if not (data['permission'] == 1 or data['permission'] == 2):
+                raise NoPermissionUpdateOrderStatus('no_permission_to_update_order_status')
+
+            if data['status'] != 1 or data['status'] != 2:
+                raise NotAllowedStatus('not_allowed_to_update_order_status')
+
+            data['new_status'] = data['status'] + 1
+
+            updator_data = [(id, data['new_status'], data['account']) for id in data['ids']]
+
+            self.master_order_dao.update_order_status_dao(connection, data)
+            self.master_order_dao.add_order_history_dao(connection, updator_data)
+
+            return 'success'
+
+        except KeyError:
+            return 'key_error'
+
+
