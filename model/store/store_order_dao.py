@@ -1,5 +1,14 @@
-import pymysql
-from utils.custom_exceptions import CartItemNotExist, OrderCreateDenied, AccountNotExist, ProductNotExist, DeleteDenied
+import pymysql, traceback
+from utils.custom_exceptions import (
+    OrderNotExist,
+    OrderCreateDenied,
+    AccountNotExist,
+    ProductNotExist,
+    DeleteDenied,
+    DeliveryMemoCreateDenied,
+    OrderItemCreateDenied,
+    ServerError
+)
 
 
 class StoreOrderDao:
@@ -12,65 +21,6 @@ class StoreOrderDao:
         History:
             2020-12-30(고수희): 초기 생성
     """
-
-    def get_order_dao(self, connection, data):
-        """상품 결제 완료 결과 조
-
-        Args:
-            connection: 데이터베이스 연결 객체
-            data   : 서비스 레이어에서 넘겨 받아 조회할 data
-
-        Author: 고수희
-
-        Returns:
-            return {totalPrice":"9000",
-                        cartItem:
-                           }}
-
-        History:
-            2020-12-30(고수희): 초기 생성
-
-        Raises:
-            400, {'message': 'cart item does not exist',
-            'errorMessage': 'cart_item_does_not_exist'} : 장바구니 상품 정보 조회 실패
-        """
-        sql = """
-        SELECT 
-        ct.id as id
-        , se.name as sellerName
-        , ct.product_id as productId
-        , pd.name as productName
-        , pi.image_url as image
-        , ct.stock_id as stockId
-        , co.name as color
-        , sz.name as size
-        , ct.quantity as quantity
-        , CONVERT(ct.sale*100, UNSIGNED) as sale
-        , CONVERT(ct.original_price, UNSIGNED) as originalPrice
-        , CONVERT(ct.discounted_price, UNSIGNED) as discountedPrice 
-        FROM cart_items as ct
-        INNER JOIN stocks as st ON st.id = stock_id
-        INNER JOIN colors as co ON co.id = st.color_id
-        INNER JOIN sizes as sz ON sz.id = st.size_id
-        INNER JOIN product_images as pi ON pi.product_id = ct.product_id AND pi.order_index = 1
-        INNER JOIN products as pd ON pd.id = ct.product_id 
-        INNER JOIN sellers as se ON se.account_id = pd.seller_id
-        WHERE ct.id = %s
-        AND ct.is_deleted = 0
-        ; 
-
-        """
-
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql, data['cart_id'])
-            item_info = cursor.fetchone()
-            if not item_info:
-                raise CartItemNotExist('cart_item_does_not_exist')
-            result = {"totalPrice": (item_info['discountedPrice']
-                                     if item_info['discountedPrice'] > 0
-                                     else item_info['originalPrice']), "cartItem": item_info}
-            return result
-
 
     def get_user_permission_check_dao(self, connection, data):
         """사용자의 권한 조회
@@ -96,14 +46,60 @@ class StoreOrderDao:
         WHERE id = %s
         ;
         """
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql, data['user_id'])
-            result = cursor.fetchone()
-            if not result:
-                raise AccountNotExist('account_does_not_exist')
-            return result
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data['user_id'])
+                result = cursor.fetchone()
+                if not result:
+                    raise AccountNotExist('account_does_not_exist')
+                return result
 
-    def product_soldout_dao(self, connection, data):
+        except Exception:
+            traceback.print_exc()
+            raise ServerError('server_error')
+
+    def get_store_order_dao(self, connection, data):
+        """상품 결제 완료 결과 조회
+
+        Args:
+            connection: 데이터베이스 연결 객체
+            data   : 서비스 레이어에서 넘겨 받아 조회할 data
+
+        Author: 고수희
+
+        Returns:
+            return
+
+        History:
+            2020-12-30(고수희): 초기 생성
+
+        Raises:
+            400, {'message': 'order does not exist',
+            'errorMessage': 'order_does_not_exist'} : 결제 상품 정보 조회 실패
+        """
+
+        sql = """
+        SELECT order_number, total_price
+        FROM orders
+        WHERE id = %s
+        ; 
+        """
+
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data['order_id'])
+                result = cursor.fetchone()
+                if not result:
+                    raise OrderNotExist('order_does_not_exist')
+                return result
+
+        except Exception:
+            traceback.print_exc()
+            raise ServerError('server_error')
+
+
+
+    def order_product_soldout_dao(self, connection, data):
         """상품 결제 시점에 해당 상품이 품절되었는지 여부 체크
 
         Args:
@@ -131,16 +127,21 @@ class StoreOrderDao:
         ;
         """
 
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql, data['product_id'])
-            result = cursor.fetchone()
-            if not result:
-                raise ProductNotExist('product_does_not_exist')
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data['product_id'])
+                result = cursor.fetchone()
+                if not result:
+                    raise ProductNotExist('product_does_not_exist')
 
-            #상품 재고가 0인지 확인하여, 상품이 품절되었는지 체크
-            if result['remain'] <= 0:
-                return {'soldOut': True}
-            return {'soldOut': False}
+                #상품 재고가 0인지 확인하여, 상품이 품절되었는지 체크
+                if result['remain'] <= 0:
+                    return {'sold_out': True}
+                return {'sold_out': False}
+
+        except Exception:
+            traceback.print_exc()
+            raise ServerError('server_error')
 
     def post_delivery_type_dao(self, connection, data):
         """배송 정보 추가 (배송 메모가 직접 입력일 경우)
@@ -170,16 +171,20 @@ class StoreOrderDao:
           ,0
           );
           """
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(sql, data)
+                result = cursor.lastrowid
+                if not result:
+                    raise DeliveryMemoCreateDenied('unable_to_create')
+                return result
 
-        with connection.cursor() as cursor:
-            cursor.execute(sql, data)
-            result = cursor.lastrowid
-            if not result:
-                raise DeliveryMemoCreateDenied('unable_to_create')
-            return result
+        except Exception:
+            traceback.print_exc()
+            raise ServerError('server_error')
 
-    def post_order_dao(self, connection, data, custom_delivery):
-        """주문 정보 추가
+    def get_today_order_number_dao(self, connection):
+        """주문번호 생성을 위한 당일 주문량 파악
 
         Args:
             connection: 데이터베이스 연결 객체
@@ -196,46 +201,86 @@ class StoreOrderDao:
         History:
             2020-12-30(고수희): 초기 생성
         """
+
+        today_sql = """
+        SELECT count(*)+1 as today
+        FROM orders
+        WHERE date(created_at) = date(now())
+        """
+
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(today_sql)
+                result = cursor.fetchone()
+                return result
+
+        except Exception:
+            traceback.print_exc()
+            raise ServerError('server_error')
+
+    def post_store_order_dao(self, connection, data):
+        """주문 정보 추가
+
+        Args:
+            connection: 데이터베이스 연결 객체
+            data      : 서비스 레이어에서 넘겨 받아 추가할 data
+
+        Author: 고수희
+
+        Returns: 생성된 order_id 반환
+
+        Raises:
+            400, {'message': 'unable to create',
+            'errorMessage': 'unable_to_create'} : 주문 정보 추가 실패
+
+        History:
+            2020-12-30(고수희): 초기 생성
+        """
+
         sql = """
         INSERT INTO orders (
-            order_number
-            , sender_name
-            , sender_phone
-            , sender_email
-            , recipient_name
-            , recipient_phone
-            , address1
-            , address2
-            , post_number
-            , user_id
-            , delivery_memo_type_id
-            , total_price
-        ) VALUES (
-            SELECT 
-            , %(sender_name)s
-            , %(sender_phone)s
-            , %(sender_email)s
-            , %(recipient_name)s
-            , %(recipient_phone)s
-            , %(address1)s
-            , %(address2)s
-            , %(post_number)s
-            , %(user_id)s
-            , %(delivery_memo_type_id)s
-            , %(total_price)s
-            );
+        order_number
+        , sender_name
+        , sender_phone
+        , sender_email
+        , recipient_name
+        , recipient_phone
+        , address1
+        , address2
+        , post_number
+        , user_id
+        , delivery_memo_type_id
+        , total_price
+        )
+        VALUES (
+        (CONCAT(DATE_FORMAT(now(), '%%y%%m%%d'),(LPAD(%(today)s,6,0)),LPAD(0,3,0))))
+        , %(sender_name)s
+        , %(sender_phone)s
+        , %(sender_email)s
+        , %(recipient_name)s
+        , %(recipient_phone)s
+        , %(address1)s
+        , %(address2)s
+        , %(post_number)s
+        , %(user_id)s
+        , %(delivery_memo_type_id)s
+        , %(total_price)s
+        );
         """
-        with connection.cursor() as cursor:
-            cursor.execute(sql, data)
-            result = cursor.lastrowid
-            if not result:
-                raise OrderCreateDenied('unable_to_create')
-            return result
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(sql, data)
+                result = cursor.lastrowid()
+                if not result:
+                    raise OrderCreateDenied('unable_to_create')
+                return result
 
+        except Exception:
+            traceback.print_exc()
+            raise ServerError('server_error')
 
-    def post_order_item_dao(self, connection, data):
+    def post_store_order_item_dao(self, connection, data):
         """주문 상품 추가
-
         Args:
             connection: 데이터베이스 연결 객체
             data      : 서비스 레이어에서 넘겨 받아 추가할 data
@@ -277,67 +322,18 @@ class StoreOrderDao:
           );
           """
 
-        with connection.cursor() as cursor:
-            cursor.execute(sql, data)
-            result = cursor.lastrowid
-            if not result:
-                raise OrderItemCreateDenied('unable_to_create')
-            return result
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(sql, data)
+                result = cursor.lastrowid
+                if not result:
+                    raise OrderItemCreateDenied('unable_to_create')
+                return result
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
-
-
-    def post_order_item_dao(self, connection, data):
-        """주문 상품 추가
-
-        Args:
-            connection: 데이터베이스 연결 객체
-            data      : 서비스 레이어에서 넘겨 받아 추가할 data
-
-        Author: 고수희
-
-        Returns: 생성된 cart의 id 반환
-
-        Raises:
-            400, {'message': 'unable to create',
-            'errorMessage': 'unable_to_create'} : 장바구니 상품 추가 실패
-
-        History:
-            2020-12-30(고수희): 초기 생성
-        """
-        sql = """
-        INSERT INTO order_items (
-            product_id
-            , stock_id
-            , quantity
-            , order_id
-            , cart_id
-            , order_detail_number
-            , order_item_status_type_id
-            , original_price
-            , discounted_price
-            , sale
-        ) VALUES (
-            CONVERT ()
-            , %(stock_id)s
-            , %(quantity)s
-            , %(order_id)s
-            , %(cart_id)s
-            , %(order_detail_number)s
-            , %(order_item_status_type_id)s
-            , %(original_price)s
-            , %(discounted_price)s
-            , %(sale)s
-        );
-        """
-
-        with connection.cursor() as cursor:
-            cursor.execute(sql, data)
-            result = cursor.lastrowid
-            if not result:
-                raise OrderItemCreateDenied('unable_to_create')
-            return result
-
-    def post_order_item_history_dao(self, connection, data):
+    def post_store_order_item_history_dao(self, connection, data):
         """주문 상품 정보 이력 추가
 
         Args:
@@ -374,7 +370,7 @@ class StoreOrderDao:
                 raise CartItemCreateFail('unable_to_create')
             return result
 
-    def post_order_item_status_dao(self, connection, data):
+    def post_store_order_item_status_dao(self, connection, data):
         """주문 상품 타입 추가
 
         Args:
@@ -437,6 +433,13 @@ class StoreOrderDao:
         , phone = %(phone)s
         WHERE account_id = %(account_id)s;
         """
+
+        with connection.cursor() as cursor:
+            cursor.execute(sql, data)
+            result = cursor.lastrowid
+            if not result:
+                raise CartItemCreateFail('unable_to_create')
+            return result
 
     def post_patch_product_remain_dao(self, connection, data):
         """주문한 상품 수량 만큼 재고 감소 처리
@@ -503,7 +506,7 @@ class StoreOrderDao:
                 raise DeleteDenied('unable_to_create')
             return result
 
-    def post_custmer_information_dao(self, connection, data):
+    def post_customer_information_dao(self, connection, data):
         """주문자 정보 추가/수정
 
         Args:

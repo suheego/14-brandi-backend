@@ -32,12 +32,13 @@ class StoreOrderView(MethodView):
 
     @signin_decorator
     @validate_params(
-        Param('cart_id', PATH, str)
+        Param('order_id', PATH, str)
     )
     def get(self, *args):
-        """ GET 메소드: 해당 유저의 장바구니 상품 정보를 조회.
+        """ GET 메소드: 해당 유저가 직전에 마친 결제 정보를 조회
+        결제가 완료된 페이지에서 확인하는 정보다.
 
-        cart_id에 해당되는 장바구니 상품을 테이블에서 조회 후 가져옴
+        order_id에 해당되는 결제 상품 정보를 테이블에서 조회 후 가져옴
 
         Args: args = ('account_id', 'cart_id')
 
@@ -64,14 +65,14 @@ class StoreOrderView(MethodView):
             2020-12-30(고수희): 1차 수정 - 데코레이터 추가, 사용자 권한 체
         """
         data = {
-            "cart_id": args[0],
+            "order_id": args[0],
             "user_id": g.account_id
         }
 
         try:
             connection = get_connection(self.database)
-            cart_items = self.service.get_cart_item_service(connection, data)
-            return jsonify({'message': 'success', 'result': cart_items})
+            store_order_info = self.service.get_store_order_service(connection, data)
+            return jsonify({'message': 'success', 'result': store_order_info})
 
         except Exception as e:
             raise e
@@ -88,7 +89,7 @@ class StoreOrderAddView(MethodView):
 
     Attributes:
         database: app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
-        service : CartItemService 클래스
+        service : StoreOrderService 클래스
 
     Author: 고수희
 
@@ -108,19 +109,19 @@ class StoreOrderAddView(MethodView):
         Param('originalPrice', JSON, str, rules=[DecimalRule()]),
         Param('sale', JSON, str, rules=[DecimalRule()]),
         Param('discountedPrice', JSON, str, rules=[DecimalRule()]),
+        Param('totalPrice', JSON, str, rules=[DecimalRule()]),
         Param('soldOut', JSON, bool),
         Param('senderName', JSON, str),
-        Param('senderPhone', JSON, str, rules=[DecimalRule()]),
+        Param('senderPhone', JSON, str, rules=[PhoneRule()]),
         Param('senderEmail', JSON, str, rules=[EmailRule()]),
-        Param('recipientName', JSON, str, rules=[DecimalRule()]),
+        Param('recipientName', JSON, str),
         Param('recipientPhone', JSON, str, rules=[PhoneRule()]),
-        Param('recipientEmail', JSON, str, rules=[EmailRule()]),
         Param('address1', JSON, str),
         Param('address2', JSON, str),
         Param('postNumber', JSON, str, rules=[PostalCodeRule()]),
         Param('deliveryId', JSON, str, rules=[NumberRule()]),
         Param('deliveryMemo', JSON, str, required=False),
-        Param('deliveryMemoDefault', JSON, str, rules=[NumberRule()])
+        Param('deliveryMemoDefault', JSON, bool)
     )
     def post(self, *args):
         """POST 메소드: 장바구니 상품 생성
@@ -155,13 +156,13 @@ class StoreOrderAddView(MethodView):
             'original_price': args[3],
             'sale': args[4],
             'discounted_price': args[5],
-            'sold_out': args[6],
-            'sender_name': args[7],
-            'sender_phone': args[8],
-            'sender_email': args[9],
-            'recipient_name': args[10],
-            'recipient_phone': args[11],
-            'recipient_email': args[12],
+            'total_price':args[6],
+            'sold_out': args[7],
+            'sender_name': args[8],
+            'sender_phone': args[9],
+            'sender_email': args[10],
+            'recipient_name': args[11],
+            'recipient_phone': args[12],
             'address1': args[13],
             'address2': args[14],
             'post_number': args[15],
@@ -169,12 +170,11 @@ class StoreOrderAddView(MethodView):
             'delivery_content': args[17],
             'delivery_default': args[18]
         }
-        print(data)
         try:
             connection = get_connection(self.database)
-            cart_id = self.service.post_cart_item_service(connection, data)
+            order_id = self.service.post_order_service(connection, data)
             connection.commit()
-            return {'message': 'success', 'result': {"cartId": cart_id}}, 201
+            return {'message': 'success', 'result': {"cartId": order_id}}, 201
 
         except Exception as e:
             connection.rollback()
