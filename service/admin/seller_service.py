@@ -88,3 +88,38 @@ class SellerInfoService:
 
         except KeyError:
             raise KeyError('Key_error')
+
+    def post_person_in_charge(self, connection, data):
+        """해당 아이디를 가진 셀러 정보 업데이트
+
+        Args:
+            connection: 데이터베이스 연결 객체
+            data      : View 에서 넘겨받은 dict 객체
+
+        Author: 이영주
+
+        Returns:
+            return
+
+        Raises:
+            400, {'message': 'key error', 'errorMessage': 'key_error'}: 잘못 입력된 키값
+
+        History:
+            2020-12-30(이영주): 초기 생성
+        """
+        try:
+#            if data['order_index'] == 1:
+#            return self.seller_dao.patch_seller_info(connection, data)
+
+
+
+            return self.seller_dao.post_person_in_charge(connection, data) #추가 담당자 로직
+
+
+
+# 그 해당 값이 동시에 들어올 수 있으니까 get 리스트를 써야하는게 맞dma
+        except KeyError:
+             raise KeyError('Key_error')
+
+
+        # get dao를 또 만들어야하는지 하 진짜 너무헷갈린다

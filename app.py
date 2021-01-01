@@ -1,11 +1,17 @@
 from flask import Flask
 from flask_cors import CORS
 
-from model.admin import SellerInfoDao
-from service.admin import SellerInfoService
-from view.admin import create_endpoints
+from model import SampleUserDao
+from service import SampleUserService
+
+from model import SellerInfoDao
+from service import SellerInfoService
+from view import create_endpoints
 
 # for getting multiple service classes
+
+
+
 class Services:
     pass
 
@@ -25,11 +31,14 @@ def create_app(test_config=None):
     database = app.config['DB']
 
     # persistence Layer
-    seller_dao = SellerInfoDao()
+    sample_user_dao = SampleUserDao
+    seller_info_dao = SellerInfoDao()
 
     # business Layer
     services = Services
-    services.seller_service = SellerInfoService(seller_dao)
+    services.sample_user_service = SampleUserService(sample_user_dao)
+
+    services.seller_info_service = SellerInfoService(seller_info_dao)
 
     # presentation Layer
     create_endpoints(app, services, database)

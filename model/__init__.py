@@ -5,3 +5,4 @@
 """
 
 from .sample_user_dao import SampleUserDao
+from .admin.seller_dao import SellerInfoDao

@@ -8,13 +8,15 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 
 """
 
-
 from .sample_user_view import SampleUserView
 from utils.error_handler import error_handle
+
+from .admin.seller_view import SellerInfoView, SellerHistoryView
 
 
 def create_endpoints(app, services, database):
     sample_user_service = services.sample_user_service
+    seller_info_service = services.seller_info_service
     """ 앤드 포인트 시작
 
             Args: 
@@ -52,17 +54,27 @@ def create_endpoints(app, services, database):
 # Admin 1 Section
 # ----------------------------------------------------------------------------------------------------------------------
 
-# ----------------------------------------------------------------------------------------------------------------------
-# 이영주 ◟( ˘ ³˘)◞ ♡
-# ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Admin 2 Section
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# 이성보 ◟( ˘ ³˘)◞ ♡
+# 이영주 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
+    app.add_url_rule('/admin/<int:account_id>',
+                     view_func=SellerInfoView.as_view(
+                         'SellerInfoView',
+                         seller_info_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/<int:account_id>/history',
+                     view_func=SellerHistoryView.as_view(
+                         'SellerHistoryView',
+                         seller_info_service,
+                         database
+                     ))
 
 # ----------------------------------------------------------------------------------------------------------------------
     # don't touch this
