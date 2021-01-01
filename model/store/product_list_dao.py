@@ -6,6 +6,16 @@ from utils.custom_exceptions import DatabaseError
 
 
 class ProductListDao:
+    """ Persistence Layer
+
+        Attributes: None
+
+        Author: 김민구, 김기용
+
+        History:
+            2020-12-30(김민구): 초기 생성
+            2020-12-31(김민구): 에러 문구 변경
+    """
 
     def get_search_products_dao(self, connection, search):
 

@@ -65,36 +65,37 @@ class ProductListView(MethodView):
         """ GET 메소드: 전체 상품 리스트 조회
 
             Args:
-                offset = 1부터 시작
+                offset = 0부터 시작
 
             Author: 김민구
 
             Returns: 상품 리스트 조회 성공
                 200, {
                         'message': 'success',
-                        'result': [
-                            {
+                        'result': {
+                            "event": {
                                 'id' : 1,
                                 'banner_image' : 'url'
                             },
-                            {
-                                'image': 'url',
-                                'seller_id': 1,
-                                'seller_name': '둘리',
-                                'product_id': 1,
-                                'product_name': '성보의 하루',
-                                'origin_price': 10000.0,
-                                'discount_rate': 0.1,
-                                'discounted_price': 9000.0,
-                                'sales_count': 30
-                            },
-                        ]
+                            "product_list" : [
+                                {
+                                    'image': 'url',
+                                    'seller_id': 1,
+                                    'seller_name': '둘리',
+                                    'product_id': 1,
+                                    'product_name': '성보의 하루',
+                                    'origin_price': 10000.0,
+                                    'discount_rate': 0.1,
+                                    'discounted_price': 9000.0,
+                                    'sales_count': 30
+                                },
+                            ]
+                        }
                     }
 
             Raises:
                 400, {'message': 'invalid_parameter', 'error_message': '[데이터]가(이) 유효하지 않습니다.'}  : 잘못된 요청값
                 400, {'message': 'key_error', 'error_message': format(e)}                            : 잘못 입력된 키값
-                404, {'message': 'event_not_exist', 'error_message': '이벤트가 더 이상 존재하지 않습니다.'}   : 이벤트가 존재하지 않음
                 500, {
                     'message': 'database_connection_fail',
                     'error_message': '서버에 알 수 없는 에러가 발생했습니다.'

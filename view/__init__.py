@@ -21,9 +21,10 @@ from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
 from .store.sender_view import SenderView
 from .store.store_order_view import StoreOrderView, StoreOrderAddView
-from .store.event_list_view import EventBannerListView, EventDetailInformationView, EventDetailListView, EventDetailButtonListView
+from .store.event_list_view import EventBannerListView, EventDetailInformationView, EventDetailProductListView, EventDetailButtonListView
 
 from utils.error_handler import error_handle
+
 
 def create_endpoints(app, services, database):
     """ 앤드 포인트 시작
@@ -149,7 +150,7 @@ def create_endpoints(app, services, database):
                      ))
 
     app.add_url_rule('/event-list/<int:event_id>',
-                     view_func=EventDetailListView.as_view(
+                     view_func=EventDetailProductListView.as_view(
                         'event_detail_list_view',
                         services,
                         database
