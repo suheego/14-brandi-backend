@@ -23,7 +23,9 @@ from model import (
     CartItemDao,
     SenderDao,
     EventDao,
-    StoreOrderDao
+    ProductListDao,
+    StoreOrderDao,
+    SellerShopDao
 )
 
 from service import (
@@ -37,6 +39,7 @@ from service import (
     StoreOrderService,
     CategoryListService,
     EventListService
+    SellerShopService
 )
 
 
@@ -89,6 +92,9 @@ def create_app(test_config=None):
     seller_dao = SellerDao()
     create_product_dao = CreateProductDao()
 
+
+    seller_shop_dao = SellerShopDao()
+
     # business Layer,   깔끔한 관리 방법을 생각하기
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
@@ -104,6 +110,10 @@ def create_app(test_config=None):
     services.order_service = OrderService(order_dao)
     services.seller_service = SellerService(seller_dao, app.config)
     services.create_product_service = CreateProductService(create_product_dao)
+
+
+
+    services.seller_shop_service = SellerShopService(seller_shop_dao)
     
     # presentation Layer
     create_endpoints(app, services, database)

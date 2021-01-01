@@ -19,3 +19,4 @@ from .store.cart_item_dao import CartItemDao
 from .store.sender_dao import SenderDao
 from .store.store_order_dao import StoreOrderDao
 from .store.event_list_dao import EventListDao
+from .store.seller_shop_dao import SellerShopDao

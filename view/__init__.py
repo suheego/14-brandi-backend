@@ -23,6 +23,10 @@ from .store.sender_view import SenderView
 from .store.store_order_view import StoreOrderView, StoreOrderAddView
 from .store.event_list_view import EventBannerListView, EventDetailInformationView, EventDetailProductListView, EventDetailButtonListView
 
+
+
+from .store.seller_shop_view import SellerShopView
+
 from utils.error_handler import error_handle
 
 
@@ -52,6 +56,10 @@ def create_endpoints(app, services, database):
     sender_service = services.sender_service
     product_list_service = services.product_list_service
     store_order_service = services.store_order_service
+
+
+    seller_shop_service = services.seller_shop_service
+
 
     seller_service = services.seller_service
     create_product_service = services.create_product_service
@@ -205,6 +213,14 @@ def create_endpoints(app, services, database):
                     view_func=StoreOrderView.as_view(
                         'store_order_view',
                         store_order_service,
+                        database
+                    ))
+
+
+    app.add_url_rule('/shops/<int:seller_id>',
+                    view_func=SellerShopView.as_view(
+                        'seller_shop_view',
+                        seller_shop_service,
                         database
                     ))
 

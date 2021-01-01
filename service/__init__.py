@@ -19,3 +19,4 @@ from .store.cart_item_service import CartItemService
 from .store.sender_service import SenderService
 from .store.store_order_service import StoreOrderService
 from .store.event_list_service import EventListService
+from .store.seller_shop_service import SellerShopService

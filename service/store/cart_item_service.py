@@ -1,3 +1,4 @@
+import traceback
 from utils.custom_exceptions import CustomerPermissionDenied, CartItemCreateFail
 
 
@@ -35,6 +36,7 @@ class CartItemService:
             'errorMessage': 'customer_permission_denied'} : 사용자 권한이 없음
         History:
             2020-12-28(고수희): 초기 생성
+            2021-01-01(고수희): 로직 수정
         """
         try:
             #사용자의 권한 체크
@@ -42,17 +44,11 @@ class CartItemService:
             if permission_check['permission_type_id'] != 3:
                 raise CustomerPermissionDenied('customer_permission_denied')
 
-            #상품 품절 여부 체크
-            sold_out = self.cart_item_dao.get_cart_item_soldout_dao(connection, data)
-
             #상품 정보 조회
-            cart_item = self.cart_item_dao.get_cart_item_dao(connection, data)
-
-            # 상품 정보 조회에 상품 품절 여부 결과 병합하여 리턴
-            cart_item.update(sold_out)
-            return cart_item
+            return self.cart_item_dao.get_cart_item_dao(connection, data)
 
         except KeyError:
+            traceback.print_exc()
             raise KeyError('key_error')
 
     def post_cart_item_service(self, connection, data):
@@ -91,4 +87,5 @@ class CartItemService:
             return self.cart_item_dao.post_cart_item_dao(connection, data)
 
         except KeyError:
+            traceback.print_exc()
             raise KeyError('key_error')

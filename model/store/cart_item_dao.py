@@ -1,4 +1,4 @@
-import pymysql
+import pymysql, traceback
 from utils.custom_exceptions import CartItemNotExist, CartItemCreateFail, AccountNotExist, ProductNotExist
 
 
@@ -12,7 +12,6 @@ class CartItemDao:
         History:
             2020-12-28(고수희): 초기 생성
     """
-
     def get_cart_item_dao(self, connection, data):
         """장바구니 상품 정보 조회
 
@@ -23,43 +22,49 @@ class CartItemDao:
         Author: 고수희
 
         Returns:
-            return {totalPrice":"9000",
-                        cartItem:
-                            {id: 3,
-                            "sellerName": "미우블랑",
-                            "productId": 3,
-                            "productName": "회색 반팔티",
-                            "productImage": "https://img.freepik.com/free-psd/simple-black-men-s-tee-mockup_53876-57893.jpg?size=338&ext=jpg&ga=GA1.2.1060993109.1605750477",
-                            "stockId": 3,
-                            "size": "Free",
-                            "color": "Gray",
-                            "quantity": 1,
-                            "sale": 10,
-                            "originalPrice": 10000,
-                            "discountedPrice": 9000,
-                        }}
+                "result": {
+                    "cart_item": {
+                        "color": "Black",
+                        "discounted_price": 9000.0,
+                        "id": 23,
+                        "image_url": "https://img.freepik.com/free-psd/simple-black-men-s-tee-mockup_53876-57893.jpg?size=338&ext=jpg&ga=GA1.2.1060993109.1605750477",
+                        "original_price": 14000.0,
+                        "product_id": 1,
+                        "product_name": "성보의하루1",
+                        "quantity": "1",
+                        "sale": 0.1,
+                        "seller_name": "나는셀러9",
+                        "size": "Free",
+                        "sold_out": false,
+                        "stock_id": 1,
+                        "total_price": 9000.0
+                    }
+                }
 
         History:
             2020-12-28(고수희): 초기 생성
+            2021-01-01(고수희): 상품 조회 시 재고도 함께 조회하는 것으로 로직 수정
 
         Raises:
             400, {'message': 'cart item does not exist',
             'errorMessage': 'cart_item_does_not_exist'} : 장바구니 상품 정보 조회 실패
         """
+
         sql = """
         SELECT 
-        ct.id as id
-        , se.name as sellerName
-        , ct.product_id as productId
-        , pd.name as productName
-        , pi.image_url as image
-        , ct.stock_id as stockId
-        , co.name as color
-        , sz.name as size
-        , ct.quantity as quantity
-        , CONVERT(ct.sale*100, UNSIGNED) as sale
-        , CONVERT(ct.original_price, UNSIGNED) as originalPrice
-        , CONVERT(ct.discounted_price, UNSIGNED) as discountedPrice 
+        ct.id 
+        , se.name AS seller_name
+        , ct.product_id 
+        , pd.name AS product_name
+        , pi.image_url
+        , ct.stock_id 
+        , co.name AS color
+        , sz.name AS size
+        , ct.quantity 
+        , sale
+        , ct.original_price 
+        , ct.discounted_price 
+        , st.remain AS sold_out
         FROM cart_items as ct
         INNER JOIN stocks as st ON st.id = stock_id
         INNER JOIN colors as co ON co.id = st.color_id
@@ -70,7 +75,6 @@ class CartItemDao:
         WHERE ct.id = %s
         AND ct.is_deleted = 0
         ; 
-
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -78,51 +82,22 @@ class CartItemDao:
             item_info = cursor.fetchone()
             if not item_info:
                 raise CartItemNotExist('cart_item_does_not_exist')
-            result = {"totalPrice": (item_info['discountedPrice']
-                                     if item_info['discountedPrice'] > 0
-                                     else item_info['originalPrice']), "cartItem": item_info}
+
+            # 상품 재고가 0인지 확인하여, 상품이 품절되었는지 체크
+            if item_info['sold_out'] <= 0:
+                item_info['sold_out'] = True
+            item_info['sold_out'] = False
+
+            # 총 가격 계산, 할인가가 있으면 할인가가 총 가격이 됨
+            total_price = {"total_price": (item_info['discounted_price']
+                                          if item_info['discounted_price'] > 0
+                                          else item_info['original_price'])}
+
+            #총 가격을 상품 조회 결과에 병합
+            item_info.update(total_price)
+            result = {"cart_item": item_info}
+
             return result
-
-    def get_cart_item_soldout_dao(self, connection, data):
-        """장바구니 상품 조회 시점에 해당 상품이 품절되었는지 여부 체크
-
-        Args:
-            connection  : 데이터베이스 연결 객체
-            data        : 서비스 레이어에서 넘겨 받아 조회할 data
-
-        Author: 고수희
-
-        Returns:
-            {'soldOut': true}: 상품이 품절됨
-            {'soldOut': falue}: 상품이 품절되지 않음
-
-        Raises:
-            400, {'message': 'cart item does not exist',
-            'errorMessage': 'cart_item_does_not_exist'} : 장바구니 상품 정보 조회 실패
-
-        History:
-            2020-12-29(고수희): 초기 생성
-        """
-
-        sql = """
-        SELECT st.remain as remain
-        FROM cart_items as ct
-        INNER JOIN stocks as st ON st.id = stock_id
-        WHERE ct.id = %s
-        AND ct.is_deleted = 0
-        ;
-        """
-
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql, data['cart_id'])
-            result = cursor.fetchone()
-            if not result:
-                raise CartItemNotExist('cart_item_does_not_exist')
-
-            #상품 재고가 0인지 확인하여, 상품이 품절되었는지 체크
-            if result['remain'] <= 0:
-                return {'soldOut': True}
-            return {'soldOut': False}
 
     def get_user_permission_check_dao(self, connection, data):
         """사용자의 권한 조회
