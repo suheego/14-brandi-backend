@@ -1,5 +1,5 @@
 import pymysql
-from utils.custom_exceptions import OrderDoesNotExist
+from utils.custom_exceptions import OrderDoesNotExist, UnableToUpdate
 
 
 class OrderDao:
@@ -113,3 +113,28 @@ class OrderDao:
 
             return {'total_count': count[0]['total_count'],'order_lists': list}
 
+
+    def update_order_status_dao(self, connection, data):
+        sql = """
+            UPDATE order_items
+            SET order_item_status_type_id = %(new_status)s
+            WHERE id IN %(ids)s;
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            affected_row = cursor.execute(sql, data)
+            if affected_row == 0:
+                raise UnableToUpdate('unable to update status')
+
+
+    def add_order_history_dao(self, connection, update_data):
+        sql = """
+            INSERT
+            INTO order_item_histories (order_item_id, order_item_status_type_id, updater_id)
+            VALUES (%s, %s, %s);
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            created_rows = cursor.executemany(sql, update_data)
+            if created_rows == 0:
+                raise UnableToUpdate('unable to update status')
