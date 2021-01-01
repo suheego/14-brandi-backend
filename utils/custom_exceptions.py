@@ -63,16 +63,44 @@ class UserNotExist(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-        
+
+class TokenCreateDenied(CustomUserError):
+    """ 토큰 생성 실패 에러
+
+    Author: 김민구
+
+    History:
+        2020-12-29(김민구): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'token_create_denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
 class InvalidUser(CustomUserError):
+    """ 적합하지 않은 사용자 에러
+
+    Author: 김민구
+
+    History:
+        2020-12-29(김민구): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 403
         message = 'invalid_user'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-
 class InvalidToken(CustomUserError):
+    """ 토큰 검증 에러
+
+    Author: 김민구
+
+    History:
+        2020-12-29(김민구): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 403
         message = 'invalid_token'
@@ -81,6 +109,13 @@ class InvalidToken(CustomUserError):
 
 
 class TokenCreateDenied(CustomUserError):
+    """ 토큰 생성 에러
+
+    Author: 김민구
+
+    History:
+        2020-12-29(김민구): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 500
         message = 'token_create_denied'
@@ -89,39 +124,19 @@ class TokenCreateDenied(CustomUserError):
 
 
 class UnauthorizedUser(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 401
-        message = error_message
-        error_message = error_message
-        super().__init__(status_code, message, error_message)
+    """ 인증이 필요한 사용자 에러
 
-class InvalidUser(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 403
-        message = 'invalid_user'
-        error_message = error_message
-        super().__init__(status_code, message, error_message)
+    Author: 김민구
 
-class InvalidToken(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 403
-        message = 'invalid_token'
-        error_message = error_message
-        super().__init__(status_code, message, error_message)
-
-class TokenCreateDenied(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 500
-        message = 'token_create_denied'
-        error_message = error_message
-        super().__init__(status_code, message, error_message)
-
-class UnauthorizedUser(CustomUserError):
+    History:
+        2020-12-28(김민구): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 401
         message = 'unauthorized_user'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
@@ -132,6 +147,13 @@ class DatabaseCloseFail(CustomUserError):
 
 
 class DatabaseError(CustomUserError):
+    """ 데이터 베이스 에러
+
+    Author: 김민구
+
+    History:
+        2020-12-28(김민구): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 500
         message = "database_error"
