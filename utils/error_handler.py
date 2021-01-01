@@ -16,7 +16,6 @@
     @app.errorhandler(Exception)
     def handle_error(e):
         return jsonify({'message': 'type your error message here', 'errorMessage': format(e)}), 500
-
 """
 
 from flask import jsonify
