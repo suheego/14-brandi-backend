@@ -13,7 +13,8 @@ class UserDao:
         Author: 김민구
 
         History:
-            2020-20-28(김민구): 초기 생성
+            2020-12-28(김민구): 초기 생성
+            2020-12-31(김민구): 에러 문구 변경
     """
 
     def username_exist_check(self, connection, data):
@@ -30,10 +31,11 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
-                2020-20-28(김민구): 초기 생성
+                2020-12-28(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
         """
 
         sql = """
@@ -67,10 +69,11 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-28(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
         """
 
         sql = """
@@ -104,10 +107,11 @@ class UserDao:
                 1 : 해당 유저 존재
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-28(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
         """
 
         sql = """
@@ -140,10 +144,11 @@ class UserDao:
                 account_id : account 생성 후 아이디 반환
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-28(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
         """
 
         sql = """
@@ -181,10 +186,11 @@ class UserDao:
                 1 : 유저 생성 성공
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-28(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
         """
 
         sql = """
@@ -221,10 +227,11 @@ class UserDao:
                 {'account_id': 1, 'username': 'brandi', 'password': 'hashed_password', permission_type_id: 3}
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-29(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
         """
 
         sql = """
@@ -262,10 +269,11 @@ class UserDao:
                 account_id : account 생성 후 아이디 반환
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-29(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
         """
 
         sql = """
@@ -301,10 +309,11 @@ class UserDao:
                 1 : 유저 생성 성공
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2020-12-29(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
         """
 
         sql = """

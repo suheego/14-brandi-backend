@@ -42,7 +42,7 @@ def error_handle(app):
     # pram customized exception
     @app.errorhandler(InvalidRequest)
     def handle_user_custom_rule(e):
-        return jsonify({'message': e.errors, 'error_message:': ", ".join(e.errors.keys()) + '이 유효하지 않습니다.'}), 400
+        return jsonify({'message': e.errors, 'error_message:': ", ".join(e.errors.keys()) + '가(이) 유효하지 않습니다.'}), 400
 
     # customized exception
     @app.errorhandler(CustomUserError)
