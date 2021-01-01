@@ -1,9 +1,11 @@
 import json
-from flask import jsonify, request
-from flask.views import MethodView
-from utils.rules import NumberRule, DefaultRule, EmailCheckRule
+from flask                   import jsonify, request
+from flask.views             import MethodView
+
+from utils.connection        import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
-from utils.connection import get_connection
+from utils.rules             import NumberRule, DefaultRule, EmailRule
+
 from flask_request_validator import (
     Param,
     PATH,
@@ -13,9 +15,79 @@ from flask_request_validator import (
 )
 
 
+class SellerSignupView(MethodView):
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+
+    @validate_params(
+        Param('username', JSON, str),
+        Param('password', JSON, str),
+        Param('seller_attribute_type_id', JSON, str),
+        Param('name', JSON, str),
+        Param('english_name', JSON, str),
+        Param('contact_phone', JSON, str),
+        Param('service_center_number', JSON, str),
+    )
+    def post(self, *args):
+
+        data = {
+            'username' : args[0],
+            'password' : args[1],
+            'seller_attribute_type_id': args[2],
+            'name': args[3],
+            'english_name': args[4],
+            'contact_phone': args[5],
+            'service_center_number': args[6],
+        }
+
+        try:
+            connection = get_connection(self.database)
+            self.service.seller_signup_service(connection,data)
+            connection.commit()
+            return jsonify({'message': 'success'}),200
+
+
+        except Exception as e:
+            connection.rollback()
+            raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+
+class SellerSigninView(MethodView):
+
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+
+    @validate_params(
+        Param('username', JSON, str),
+        Param('password', JSON, str)
+    )
+    def post(self, *args):
+        data = {
+            'username': args[0],
+            'password': args[1]
+        }
+
+        try:
+            connection = get_connection(self.database)
+            token = self.service.seller_signin_service(connection, data)
+            connection.commit()
+            return jsonify({'message':'login success','token': token}),200
+
+        except Exception as e:
+            connection.rollback()                
+
+
 class SellerInfoView(MethodView):
     """ Presentation Layer
-
     Attributes:
         database: app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
         service : SellerInfoService 클래스
@@ -26,28 +98,21 @@ class SellerInfoView(MethodView):
     History:
         2020-12-28(이영주): 초기 생성
     """
-
-    def __init__(self, service, database):
-        self.service = service
-        self.database = database
-
     @validate_params(
-        Param('account_id', PATH, str, required=True, rules=[NumberRule()])
+      Param('account_id', PATH, str, required=True, rules=[NumberRule()])
     )
     def get(self, *args):
-        """GET 메소드: 
+        """GET 메소드:
             해당 셀러의 정보를 조회.
             account_id 에 해당되는 셀러를 테이블에서 조회 후 가져온다.
-
-        Args: 
+        Args:
             account_id
-
-        Author: 
+        Author:
             이영주
-        
+
         Returns:
             result seller
-            
+
         Raises:
             400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
             400, {'message': 'seller does not exist error', 'errorMessage': 'seller_does_not_exist'}: 셀러 정보 조회 실패
@@ -81,12 +146,12 @@ class SellerInfoView(MethodView):
         Param('id', JSON, str, rules=[NumberRule()]),
         Param('name', JSON, str, rules=[DefaultRule()]),
         Param('phone', JSON, str, rules=[NumberRule()]),
-        Param('email', JSON, str, rules=[EmailCheckRule()]),
+        Param('email', JSON, str, rules=[EmailRule()]),
         Param('order_index', JSON, str, rules=[NumberRule()]),
         Param('seller_id', JSON, str, rules=[NumberRule()]),
         Param('contact_name', JSON, str, required=False, rules=[DefaultRule()]),
         Param('contact_phone', JSON, str, required=False, rules=[NumberRule()]),
-        Param('contact_email', JSON, str, required=False, rules=[EmailCheckRule()]),
+        Param('contact_email', JSON, str, required=False, rules=[EmailRule()]),
     )
     def post(self, *args):
         """POST 메소드:
@@ -163,16 +228,15 @@ class SellerInfoView(MethodView):
         Param('exchange_information', FORM, str, required=True, rules=[DefaultRule()])
     )
     def patch(self, *args):
-        """PATCH 메소드: 
+        """PATCH 메소드:
                 셀러 정보 수정
+        Args:
 
-        Args: 
-
-        Author: 
-            이영주 
+        Author:
+            이영주
 
         Returns:
-            200, {'message': 'success'}                                                             : 셀러 정보변경   
+            200, {'message': 'success'}                                                             : 셀러 정보변경
 
         Raises:
             400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
@@ -228,7 +292,6 @@ class SellerInfoView(MethodView):
             return jsonify({'message': 'success'}), 200
 
         except Exception as e:
-            connection.rollback()
             raise e
 
         finally:
@@ -287,4 +350,5 @@ class SellerHistoryView(MethodView):
                 if connection:
                     connection.close()
             except Exception:
+
                 raise DatabaseCloseFail('database close fail')
