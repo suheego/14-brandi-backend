@@ -163,7 +163,7 @@ def create_endpoints(app, services, database):
                         database
                      ))
 
-    app.add_url_rule('/event-button/<int:event_id>',
+    app.add_url_rule('/event-list/<int:event_id>/buttons',
                      view_func=EventDetailButtonListView.as_view(
                         'event_detail_button_list_view',
                         services,
