@@ -172,7 +172,8 @@ class EventListDao:
             FROM 
                 event_buttons
             WHERE
-                event_id = %s;
+                event_id = %s
+                AND is_deleted = 0;
         """
 
         try:
@@ -288,6 +289,7 @@ class EventListDao:
             WHERE
                 events_product.event_id = %(event_id)s
                 AND product.is_deleted = 0
+                AND product.is_display = 1
             ORDER BY
                 product.id DESC
             LIMIT %(offset)s, %(limit)s;
