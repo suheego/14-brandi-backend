@@ -59,7 +59,7 @@ class SellerInfoRule(AbstractRule):
 
 class DefaultRule(AbstractRule):
     def validate(self, value):
-        pattern = '^[0-9A-Za-z가-힣\s.\-_]+$'
+        pattern = '^[a-zA-Z가-힝0-9+-_.]+$'
         regex = re.compile(pattern)
         result = regex.match(value)
         errors = []

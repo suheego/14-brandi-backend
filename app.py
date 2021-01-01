@@ -58,6 +58,9 @@ class CustomJSONEncoder(JSONEncoder):
 
 
 # for getting multiple service classes
+
+
+
 class Services:
     pass
 
@@ -78,19 +81,25 @@ def create_app(test_config=None):
     database = app.config['DB']
 
     # persistence Layer
-    sample_user_dao    = SampleUserDao()
-    destination_dao    = DestinationDao()
-    cart_item_dao      = CartItemDao()
-    sender_dao         = SenderDao()
-    event_dao          = EventDao()
-    store_order_dao    = StoreOrderDao()
-    order_dao          = OrderDao()
-    
+    sample_user_dao = SampleUserDao()
+    destination_dao = DestinationDao()
+    cart_item_dao = CartItemDao()
+    sender_dao = SenderDao()
+    event_dao = EventDao()
+    store_order_dao = StoreOrderDao()
+    order_dao = OrderDao()
+
     # admin2
-    seller_dao         = SellerDao()
-    seller_info_dao    = SellerInfoDao()
+    seller_dao = SellerDao()
+    seller_info_dao = SellerInfoDao()
     product_create_dao = ProductCreateDao()
     product_manage_dao = ProductManageDao()
+
+    # business Layer
+    services = Services
+    services.sample_user_service = SampleUserService(sample_user_dao)
+
+    services.seller_info_service = SellerInfoService(seller_info_dao)
     
     # business Layer,   깔끔한 관리 방법을 생각하기
     # service
@@ -113,7 +122,7 @@ def create_app(test_config=None):
     services.seller_info_service    = SellerInfoService(seller_info_dao)
     services.product_create_service = ProductCreateService(product_create_dao)
     services.product_manage_service = ProductManageService(product_manage_dao)
-    
+
     # presentation Layer
     create_endpoints(app, services, database)
     

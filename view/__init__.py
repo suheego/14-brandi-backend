@@ -29,6 +29,7 @@ from .admin.product_manage_view import SearchProductView
 
 from utils.error_handler import error_handle
 
+
 def create_endpoints(app, services, database):
     """ 앤드 포인트 시작
 
@@ -38,18 +39,18 @@ def create_endpoints(app, services, database):
                 database: 데이터베이스
 
             Author: 김기용
-        
+
             Returns: None
 
             Raises: None
-            
+
             History:
                 2020-12-28(김기용): 초기 생성
                 2020-12-29(김기용): 1차 수정
                 2020-12-31(강두연): 2차 수정
                 2020-12-31(심원두): 3차 수정
     """
-    
+
     # service
     sample_user_service  = services.sample_user_service
     destination_service  = services.destination_service
@@ -57,15 +58,15 @@ def create_endpoints(app, services, database):
     sender_service       = services.sender_service
     product_list_service = services.product_list_service
     store_order_service  = services.store_order_service
-    
+
     # admin1
     order_service          = services.order_service
-    
+
     # admin2
     seller_service         = services.seller_service
     product_create_service = services.product_create_service
     product_manage_service = services.product_manage_service
-    
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Service Section(write your code under your name)
 # ----------------------------------------------------------------------------------------------------------------------
@@ -243,7 +244,7 @@ def create_endpoints(app, services, database):
                          seller_service,
                          database
                      ))
-    
+
     app.add_url_rule('/admin/signin',
                      view_func = SellerSigninView.as_view(
                          'seller_signin_view',
@@ -260,14 +261,14 @@ def create_endpoints(app, services, database):
                          product_create_service,
                          database
                      ))
-    
+
     app.add_url_rule('/admin/product/productRegist',
                      view_func=CreateProductView.as_view(
                          'product_create_view',
                          product_create_service,
                          database
                      ))
-    
+
     app.add_url_rule('/admin/products',
                      view_func=SearchProductView.as_view(
                          'search_product_view',
@@ -283,8 +284,8 @@ def create_endpoints(app, services, database):
                          'SellerInfoView',
                          seller_service,
                          database
-                    ))
-    
+                     ))
+
     app.add_url_rule('/admin/<int:account_id>/history',
                      view_func=SellerHistoryView.as_view(
                          'SellerHistoryView',

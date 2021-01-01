@@ -133,6 +133,10 @@ class SellerInfoDao:
             ,seller.`contact_phone` AS 'contact_phone'
             ,seller.`contact_name` AS 'contact_name'
             ,seller.`contact_email` AS 'contact_email'
+            ,seller.`contact_phone` AS 'contact_phone'
+            ,seller.`contact_name` AS 'contact_name'
+            ,seller.`contact_email` AS 'contact_email'
+            ,seller.`service_center_number` AS 'service_center_number'
 
 
         FROM
@@ -182,8 +186,8 @@ class SellerInfoDao:
                 raise SellerNotExist('seller_does_not_exist')
             return result
 
-    def patch_seller_info(self, connection, data):
-        """셀러 상세 히스토리 변경
+        def patch_seller_info(self, connection, data):
+            """셀러 상세 히스토리 변경
         Args:   
             connection : 데이터베이스 연결 객체
             data      : service 에서 넘겨받은 dict 객체
@@ -199,7 +203,42 @@ class SellerInfoDao:
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             result = cursor.execute(sql, data)
-            if result == 0: ## 에러처리 확인예정
+            if result == 0: ## 에러처리 확인예정, 히스토리 이력은?
                 raise SellerUpdateDenied('unable_to_update')
             return result
 
+    def post_person_in_charge(self, connection, data):
+        """셀러 담당자 등록
+        Args:
+            connection : 데이터베이스 연결 객체
+            data      : service 에서 넘겨받은 dict 객체
+        """
+        sql = """
+        INSERT INTO additional_contacts (
+            `id`
+            ,`name`
+            ,`phone`
+            ,`email`
+            ,`order_index`
+            ,`seller_id`
+         )
+        VALUES (
+            %(id)s							    # ADDITIONAL_CONTACTS ID MAX + 1 값
+            ,%(name)s						    # 변수 (화면 입력 값)
+            ,%(phone)s					        # 변수 (화면 입력 값)
+            ,%(email)s			                # 변수 (화면 입력 값)
+            ,%(order_index)s					# 변수 (화면 입력 값)
+            ,%(seller_id)s						# 변수 (화면 입력 값)
+        )
+        ON DUPLICATE KEY UPDATE 
+            `name` = %(name)s				            # 변수 (화면 입력 값)
+            ,`phone` = %(phone)s			                # 변수 (화면 입력 값)
+            ,`email` = %(email)s		                    # 변수 (화면 입력 값)
+            ,`seller_id` = %(seller_id)s;                 # 변수 (화면 입력 값)
+        
+        """#순서가 1이면 패치셀러로, 그외에는 여기로 하면 되는거 아닌가??
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            result = cursor.execute(sql, data)
+            if result == 0:
+                raise PersonInChargeNotExist('person_in_charge_not_exist')
+            return result
