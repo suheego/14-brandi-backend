@@ -38,7 +38,7 @@ from service import (
     ProductListService,
     StoreOrderService,
     CategoryListService,
-    EventListService
+    EventListService,
     SellerShopService
 )
 
