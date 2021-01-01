@@ -13,6 +13,7 @@ from .store.user_view import SignUpView, SignInView, GoogleSocialSignInView
 from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
 from .admin.event_view import EventView
+from .admin.enquiry_view import EnquiryView
 from utils.error_handler import error_handle
 
 
@@ -39,6 +40,7 @@ def create_endpoints(app, services, database):
     # user_service = services.user_service
     # destination_service = services.destination_service
     # cart_item_service = services.cart_item_service
+
     
 # ----------------------------------------------------------------------------------------------------------------------
 # Service Section(write your code under your name)

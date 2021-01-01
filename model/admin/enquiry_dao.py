@@ -1,30 +1,65 @@
 import pymysql
-from utils.custom_exceptions import UserNotExist
+from utils.custom_exceptions import EnquiryDoesNotExist
 
 
 class EnquiryDao:
+    """ Persistence Layer
 
-    def get_dao(self, connection, data):
+        Attributes: None
 
-        total_count_sql = """
-                    SELECT
-                        COUNT(*) AS total_count
-                    FROM 
-                        enquiries AS enquiry
-                        INNER JOIN enquiry_types AS enquiry_type 
-                            ON enquiry.enquiry_type_id = enquiry_type.id
-                        INNER JOIN `users` AS `user` 
-                            ON enquiry.user_id = `user`.account_id
-                        INNER JOIN products AS product 
-                            ON enquiry.product_id = product.id
-                        INNER JOIN sellers AS seller
-                            ON product.seller_id = seller.account_id
-                        LEFT JOIN enquiry_replies AS enquiry_reply 
-                            ON enquiry.id = enquiry_reply.enquiry_id
-                        INNER JOIN accounts AS account 
-                            ON enquiry_reply.account_id = account.id
+        Author: 이성보
+
+        History:
+            2020-12-29(이성보): 초기 생성 및 조회 기능 작성
+            2020-12-30(이성보): Q&A 검색조건별 조회 작성
         """
 
+    def get_enquiries_list(self, connection, data):
+        """Q&A 정보 조회
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data   : 비지니스 레이어에서 넘겨 받은 검색 조건 키벨류
+
+            Author: 이성보
+
+            Returns:
+                return [
+                    {
+                        "created_at": "Mon, 28 Dec 2020 16:40:41 GMT",
+                        "end_date": "Mon, 01 Mar 2021 00:00:00 GMT",
+                        "event_kind": "버튼",
+                        "event_name": "성보의 하루 시리즈2(버튼형)",
+                        "event_number": 2,
+                        "event_status": "진행중",
+                        "event_type": "상품(이미지)",
+                        "is_display": "노출",
+                        "product_count": 59,
+                        "start_date": "Mon, 19 Oct 2020 00:00:00 GMT"
+                    },
+                    {
+                        "created_at": "Mon, 28 Dec 2020 16:40:41 GMT",
+                        "end_date": "Mon, 01 Mar 2021 00:00:00 GMT",
+                        "event_kind": "상품",
+                        "event_name": "성보의 하루 시리즈",
+                        "event_number": 1,
+                        "event_status": "진행중",
+                        "event_type": "상품(이미지)",
+                        "is_display": "노출",
+                        "product_count": 40,
+                        "start_date": "Mon, 19 Oct 2020 00:00:00 GMT"
+                    }
+                ]
+
+            History:
+                2020-12-29(이성보): 초기 생성 및 조회 기능 작성
+                2020-12-30(이성보): Q&A 검색조건별 조회 작성
+
+            Raises:
+                400, {'message': 'q&a not exist', 'errorMessage': 'q&a does not exist'} : Q&A 정보 조회 실패
+        """
+
+        # COUNT(*) AS total_count
         sql = """
             SELECT 
                 enquiry.id,
@@ -54,83 +89,59 @@ class EnquiryDao:
                     ON enquiry.id = enquiry_reply.enquiry_id
                 INNER JOIN accounts AS account 
                     ON enquiry_reply.account_id = account.id
+                WHERE enquiry.is_deleted = 0
         """
 
-        total_count_sql += ' WHERE enquiry.is_deleted = 0'
-        sql += ' WHERE enquiry.is_deleted = 0'
-
+        # search option 1 : search by keyword (event_name or event_number)
         if data['is_answered'] == 'yes':
-            total_count_sql += ' AND EXISTS (SELECT id FROM enquiries WHERE enquiries.id = enquiry_reply.enquiry_id)'
             sql += ' AND EXISTS (SELECT id FROM enquiries WHERE enquiries.id = enquiry_reply.enquiry_id)'
         elif data['is_answered'] == 'no':
-            total_count_sql += ' AND NOT EXISTS (SELECT id FROM enquiries WHERE enquiries.id = enquiry_reply.enquiry_id)'
             sql += ' AND NOT EXISTS (SELECT id FROM enquiries WHERE enquiries.id = enquiry_reply.enquiry_id)'
 
+        # search option 1 : search by keyword (event_name or event_number)
         if data['product_name']:
-            total_count_sql += ' AND product.`name` LIKE %(product_name)s'
             sql += ' AND product.`name` LIKE %(product_name)s'
         elif data['id']:
-            total_count_sql += ' AND enquiry.id = %(id)s'
             sql += ' AND enquiry.id = %(id)s'
         elif data['seller_name']:
-            total_count_sql += ' AND seller.`name` LIKE %(seller_name)s'
             sql += ' AND seller.`name` LIKE %(seller_name)s'
         elif data['membership_number']:
-            total_count_sql += ' AND `user`.account_id = %(membership_number)s'
             sql += ' AND `user`.account_id = %(membership_number)s'
 
+        # search option 1 : search by keyword (event_name or event_number)
         if data['type'] == 'product_enquiry':
-            total_count_sql += ' AND enquiry_type.id = 1'
             sql += ' AND enquiry_type.id = 1'
         elif data['type'] == 'exchange':
-            total_count_sql += ' AND enquiry_type.id = 2'
             sql += ' AND enquiry_type.id = 2'
         elif data['type'] == 'faulty':
-            total_count_sql += ' AND enquiry_type.id = 3'
             sql += ' AND enquiry_type.id = 3'
         elif data['type'] == 'other':
-            total_count_sql += ' AND enquiry_type.id = 4'
             sql += ' AND enquiry_type.id = 4'
         elif data['type'] == 'shipping_enquiry':
-            total_count_sql += ' AND enquiry_type.id = 5'
             sql += ' AND enquiry_type.id = 5'
         elif data['type'] == 'one_day_delivery':
-            total_count_sql += ' AND enquiry_type.id = 6'
             sql += ' AND enquiry_type.id = 6'
         elif data['type'] == 'cancel_change':
-            total_count_sql += ' AND enquiry_type.id = 7'
             sql += ' AND enquiry_type.id = 7'
 
-        if data['response_date'] == 1:
-            sql += ' AND enquiry.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 1 DAY) AND NOW()'
-        elif data['response_date'] == 3:
-            sql += ' AND enquiry.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 3 DAY) AND NOW()'
-        elif data['response_date'] == 7:
-            sql += ' AND enquiry.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 7 DAY) AND NOW()'
-        elif data['response_date'] == 15:
-            sql += ' AND enquiry.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 15 DAY) AND NOW()'
-        elif data['response_date'] == 30:
-            sql += ' AND enquiry.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 30 DAY) AND NOW()'
+        # search option 1 : search by keyword (event_name or event_number)
+        if data['response_date']:
+            sql += ' AND enquiry.created_at BETWEEN DATE_SUB(NOW(), INTERVAL %(response_date)s DAY) AND NOW()'
 
+        # search option 1 : search by keyword (event_name or event_number)
         if data['start_date'] and data['end_date']:
-            total_count_sql += """
-                           AND enquiry.created_at BETWEEN CONCAT(%(start_date)s, " 00:00:00") AND CONCAT(%(end_date)s, " 23:59:59")
-            """
             sql += """
                 AND enquiry.created_at BETWEEN CONCAT(%(start_date)s, " 00:00:00") AND CONCAT(%(end_date)s, " 23:59:59")
             """
 
         sql += ' ORDER BY enquiry.id DESC LIMIT %(page)s, %(length)s;'
-        print(sql)
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, data)
             enquiries = cursor.fetchall()
             if not enquiries:
-                raise UserNotExist('user_does_not_exist')
-            cursor.execute(total_count_sql, data)
-            count = cursor.fetchone()
-            return {'enquiries': enquiries, 'total_count': count['total_count']}
+                raise EnquiryDoesNotExist('q&a does not exist')
+            return {'enquiries': enquiries}  # 'total_count': count['total_count']
 
 # total_count_sql sql 통합
 # if not enquiries 위치
