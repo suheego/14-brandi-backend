@@ -1,5 +1,3 @@
-import traceback
-
 from flask.views import MethodView
 from flask import jsonify, request
 
@@ -29,7 +27,8 @@ class SignUpView(MethodView):
         History:
             2020-12-28(김민구): 초기 생성 / bcrypt 까지 완료
             2020-12-29(김민구): 각 Param에 rules 추가, 에러 구문 수정
-            2020-12-31(김민구): 모든 service를 담고 있는 services 클래스로 유연하게 처리
+            2020-12-31(김민구): 모든 service를 담고 있는 services 클래스로 유연하게 처리 / 에러 문구 변경
+            2021-01-02(김민구): 데이터 조작 에러 추가
     """
 
     def __init__(self, services, database):
@@ -54,17 +53,21 @@ class SignUpView(MethodView):
                 200, {'message': 'success'}                                                         : 유저 생성 성공
 
             Raises:
-                400, {'message': 'invalid_parameter', 'errorMessage': str(e)}                       : 잘못된 요청값
-                400, {'message': 'key_error', 'errorMessage': format(e)}                            : 잘못 입력된 키값
-                403, {'message': 'user_already_exist', errorMessage': 'already_exist' + _중복 데이터}  : 중복 유저 생성 실패
-                500, {'message': 'user_create_denied', 'errorMessage': 'account_create_fail'}       : account 생성 실패
-                500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}          : 유저 생성 실패
-                500, {'message': 'database_connection_fail', 'errorMessage': 'database_close_fail'} : 커넥션 종료 실패
-                500, {'message': 'database_error', 'errorMessage': format(e)}                       : 데이터베이스 에러
-                500, {'message': 'internal_server_error', 'errorMessage': format(e)})               : 서버 에러
+                400, {'message': 'invalid_parameter', 'errorMessage': '[데이터]가(이) 유효하지 않습니다.'} : 잘못된 요청값
+                400, {'message': 'key_error', 'error_message': format(e)}                          : 잘못 입력된 키값
+                403, {'message': 'user_already_exist', 'error_message': '이미 사용중인 [데이터] 입니다.'} : 중복 유저 존재
+                500, {
+                        'message': 'database_connection_fail',
+                        'error_message': '서버에 알 수 없는 에러가 발생했습니다.'
+                      }                                                                             : 커넥션 종료 실패
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'data_manipulation_fail', 'error_message': '유저 등록을 실패하였습니다.'}  : 데이터 조작 에러
+                500, {'message': 'internal_server_error', 'error_message': format(e)})              : 서버 에러
 
             History:
                 2020-12-28(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
+                2021-01-02(김민구): 데이터 조작 에러 추가
         """
 
         connection = None
@@ -104,6 +107,8 @@ class SignInView(MethodView):
 
         History:
             2020-12-29(김민구): 초기 생성
+            2020-12-31(김민구): 에러 문구 변경
+            2021-01-02(김민구): 데이터 조작 에러 추가
     """
 
     def __init__(self, services, database):
@@ -125,16 +130,21 @@ class SignInView(MethodView):
                 200, {'message': 'success', 'token': token}                                         : 유저 로그인 성공
 
             Raises:
-                400, {'message': 'invalid_parameter', 'errorMessage': str(e)}                       : 잘못된 요청값
-                400, {'message': 'key_error', 'errorMessage': format(e)}                            : 잘못 입력된 키값
-                403, {'message': 'invalid_user', 'errorMessage': 'invalid_user'}                    : 로그인 실패
-                500, {'message': 'create_token_denied', 'errorMessage': 'token_create_fail'}        : 토큰 생성 실패
-                500, {'message': 'database_connection_fail', 'errorMessage': 'database_close_fail'} : 커넥션 종료 실패
-                500, {'message': 'database_error', 'errorMessage': format(e)}                       : 데이터베이스 에러
-                500, {'message': 'internal_server_error', 'errorMessage': format(e)})               : 서버 에러
+                400, {'message': 'invalid_parameter', 'errorMessage': '[데이터]가(이) 유효하지 않습니다.'}  : 잘못된 요청값
+                400, {'message': 'key_error', 'error_message': format(e)}                           : 잘못 입력된 키값
+                403, {'message': 'invalid_user', 'error_message': '로그인에 실패했습니다.'}               : 로그인 실패
+                500, {'message': 'create_token_denied', 'error_message': '로그인에 실패했습니다.'}        : 토큰 생성 실패
+                500, {
+                        'message': 'database_connection_fail',
+                        'error_message': '서버에 알 수 없는 에러가 발생했습니다.'
+                      }                                                                             : 커넥션 종료 실패
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'internal_server_error', 'error_message': format(e)})              : 서버 에러
 
             History:
                 2020-12-29(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
+                2021-01-02(김민구): 데이터 조작 에러 추가
         """
 
         connection = None
@@ -169,6 +179,8 @@ class GoogleSocialSignInView(MethodView):
 
         History:
             2020-12-29(김민구): 초기 생성
+            2020-12-31(김민구): 에러 문구 변경
+            2021-01-02(김민구): 데이터 조작 에러 추가
     """
 
     def __init__(self, services, database):
@@ -186,20 +198,24 @@ class GoogleSocialSignInView(MethodView):
             Author: 김민구
 
             Returns:
-                200, {'message': 'success', 'token': token}                                         : 유저 로그인 성공
+                200, {'message': 'success', 'token': token}                                           : 유저 로그인 성공
 
             Raises:
-                400, {'message': 'key_error', 'errorMessage': format(e)}                            : 잘못 입력된 키값
-                403, {'message': 'invalid_token', 'errorMessage': 'invalid_google_token'}           : 유효하지 않은 토큰
-                500, {'message': 'user_create_denied', 'errorMessage': 'account_create_fail'}       : account 생성 실패
-                500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}          : 유저 생성 실패
-                500, {'message': 'create_token_denied', 'errorMessage': 'token_create_fail'}        : 토큰 생성 실패
-                500, {'message': 'database_connection_fail', 'errorMessage': 'database_close_fail'} : 커넥션 종료 실패
-                500, {'message': 'database_error', 'errorMessage': format(e)}                       : 데이터베이스 에러
-                500, {'message': 'internal_server_error', 'errorMessage': format(e)})               : 서버 에러
+                400, {'message': 'key_error', 'error_message': format(e)}                             : 잘못 입력된 키값
+                403, {'message': 'invalid_token', 'error_message': '구글 소셜 로그인에 실패하였습니다.'}       : 유효하지 않은 토큰
+                403, {'message': 'invalid_user', 'error_message': '구글 소셜 로그인에 실패했습니다.'}         : 유효하지 않은 유저
+                500, {
+                        'message': 'database_connection_fail',
+                        'error_message': '서버에 알 수 없는 에러가 발생했습니다.'
+                      }                                                                              : 커넥션 종료 실패
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'}  : 데이터베이스 에러
+                500, {'message': 'data_manipulation_fail', 'error_message': '소셜 로그인을 실패하였습니다.'} : 데이터 조작 에러
+                500, {'message': 'internal_server_error', 'error_message': format(e)})               : 서버 에러
 
             History:
                 2020-12-29(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
+                2021-01-02(김민구): 데이터 조작 에러 추가
         """
 
         connection = None

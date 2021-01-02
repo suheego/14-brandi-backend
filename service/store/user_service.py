@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import bcrypt
 import jwt
 
-from utils.custom_exceptions import UserAlreadyExist, UserCreateDenied, InvalidUser, TokenCreateDenied
+from utils.custom_exceptions import UserAlreadyExist, InvalidUser, TokenCreateDenied
 from model import UserDao
 
 
@@ -17,7 +17,7 @@ class UserService:
 
         History:
             2020-12-28(김민구): 초기 생성
-            2020-12-31(김민구): 수정 (user_dao를 import 해서 사용하는 방법으로 수정)
+            2020-12-31(김민구): user_dao를 import 해서 사용하는 방법으로 수정
     """
 
     def __init__(self, config):
@@ -37,19 +37,17 @@ class UserService:
                 None
 
             Raises:
-                400, {'message': 'key_error', 'errorMessage': format(e)}                            : 잘못 입력된 키값
-                403, {'message': 'user already exist', 'errorMessage': 'already_exist' + _중복 데이터} : 중복 유저 존재
-                500, {'message': 'user_create_denied', 'errorMessage': 'account_create_fail'}       : account 생성 실패
-                500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}          : 유저 생성 실패
+                400, {'message': 'key_error', 'error_message': format(e)}                          : 잘못 입력된 키값
+                403, {'message': 'user_already_exist', 'error_message': '이미 사용중인 [데이터] 입니다.'} : 중복 유저 존재
 
             History:
                 2020-12-28(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
         """
 
         username_check = self.user_dao.username_exist_check(connection, data)
         email_check = self.user_dao.email_exist_check(connection, data)
         phone_check = self.user_dao.phone_exist_check(connection, data)
-        print(' email' * email_check)
         if username_check or email_check or phone_check:
             raise UserAlreadyExist(
                 '이미 사용중인' +
@@ -63,13 +61,9 @@ class UserService:
         data['password'] = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
         account_id = self.user_dao.create_account(connection, data)
-        if not account_id:
-            raise UserCreateDenied('회원 가입에 실패했습니다.')
 
         data['account_id'] = account_id
-        result = self.user_dao.create_user(connection, data)
-        if not result:
-            raise UserCreateDenied('회원 가입에 실패했습니다.')
+        self.user_dao.create_user(connection, data)
 
     def sign_in_logic(self, data, connection):
         """ 유저 로그인
@@ -84,16 +78,17 @@ class UserService:
                 token
 
             Raises:
-                400, {'message': 'key_error', 'errorMessage': format(e)}         : 잘못 입력된 키값
-                403, {'message': 'invalid_user', 'errorMessage': 'invalid_user'} : 로그인 실패
+                400, {'message': 'key_error', 'error_message': format(e)}             : 잘못 입력된 키값
+                403, {'message': 'invalid_user', 'error_message': '로그인에 실패했습니다.'} : 로그인 실패
 
             History:
                 2020-12-29(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
         """
 
         user = self.user_dao.get_user_infomation(connection, data)
         if not user or not bcrypt.checkpw(data['password'].encode('utf-8'), user['password'].encode('utf-8')):
-            raise InvalidUser('user_not_exist_or_password_is_invalid')
+            raise InvalidUser('로그인에 실패했습니다.')
 
         token = self.token_generator(user)
         return token
@@ -110,11 +105,12 @@ class UserService:
                 token
 
             Raises:
-                400, {'message': 'key_error', 'errorMessage': format(e)}                     : 잘못 입력된 키값
-                500, {'message': 'create_token_denied', 'errorMessage': 'token_create_fail'} : 토큰 생성 실패
+                400, {'message': 'key_error', 'error_message': format(e)}                    : 잘못 입력된 키값
+                500, {'message': 'create_token_denied', 'error_message': '로그인에 실패했습니다.'} : 토큰 생성 실패
 
             History:
                 2020-12-29(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
         """
 
         payload = {
@@ -142,14 +138,12 @@ class UserService:
                 token
 
             Raises:
-                400, {'message': 'key_error', 'errorMessage': format(e)}                      : 잘못 입력된 키값
-                403, {'message': 'invalid_user', 'errorMessage': 'invalid_user'}              : 유효하지 않은 유저
-                500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}    : 소셜 유저 등록 실패
-                500, {'message': 'user_create_denied', 'errorMessage': 'account_create_fail'} : account 생성 실패
-                500, {'message': 'user_create_denied', 'errorMessage': 'user_create_fail'}    : 유저 생성 실패
+                400, {'message': 'key_error', 'error_message': format(e)}                          : 잘못 입력된 키값
+                403, {'message': 'invalid_user', 'error_message': '구글 소셜 로그인에 실패했습니다.'}       : 유효하지 않은 유저
 
             History:
                 2020-12-29(김민구): 초기 생성
+                2020-12-31(김민구): 에러 문구 변경
 
             Notes:
                 소셜이 구글 하나라고 가정한 상황이기 때문에 확장성이 떨어짐
@@ -169,9 +163,7 @@ class UserService:
             data['permission_type_id'] = 3
             account_id = self.user_dao.social_create_account(connection, data)
             data['account_id'] = account_id
-            result = self.user_dao.social_create_user(connection, data)
-            if not result:
-                raise UserCreateDenied('구글 소셜 로그인에 실패했습니다.')
+            self.user_dao.social_create_user(connection, data)
 
         user = self.user_dao.get_user_infomation(connection, data)
         if not user:

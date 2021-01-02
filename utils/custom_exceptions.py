@@ -63,16 +63,44 @@ class UserNotExist(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-        
+
+class TokenCreateDenied(CustomUserError):
+    """ 토큰 생성 실패 에러
+
+    Author: 김민구
+
+    History:
+        2020-12-29(김민구): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'token_create_denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
 class InvalidUser(CustomUserError):
+    """ 적합하지 않은 사용자 에러
+
+    Author: 김민구
+
+    History:
+        2020-12-29(김민구): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 403
         message = 'invalid_user'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-
 class InvalidToken(CustomUserError):
+    """ 토큰 검증 에러
+
+    Author: 김민구
+
+    History:
+        2020-12-29(김민구): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 403
         message = 'invalid_token'
@@ -81,6 +109,13 @@ class InvalidToken(CustomUserError):
 
 
 class TokenCreateDenied(CustomUserError):
+    """ 토큰 생성 에러
+
+    Author: 김민구
+
+    History:
+        2020-12-29(김민구): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 500
         message = 'token_create_denied'
@@ -89,39 +124,19 @@ class TokenCreateDenied(CustomUserError):
 
 
 class UnauthorizedUser(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 401
-        message = error_message
-        error_message = error_message
-        super().__init__(status_code, message, error_message)
+    """ 인증이 필요한 사용자 에러
 
-class InvalidUser(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 403
-        message = 'invalid_user'
-        error_message = error_message
-        super().__init__(status_code, message, error_message)
+    Author: 김민구
 
-class InvalidToken(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 403
-        message = 'invalid_token'
-        error_message = error_message
-        super().__init__(status_code, message, error_message)
-
-class TokenCreateDenied(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 500
-        message = 'token_create_denied'
-        error_message = error_message
-        super().__init__(status_code, message, error_message)
-
-class UnauthorizedUser(CustomUserError):
+    History:
+        2020-12-28(김민구): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 401
         message = 'unauthorized_user'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
@@ -132,6 +147,13 @@ class DatabaseCloseFail(CustomUserError):
 
 
 class DatabaseError(CustomUserError):
+    """ 데이터 베이스 에러
+
+    Author: 김민구
+
+    History:
+        2020-12-28(김민구): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 500
         message = "database_error"
@@ -480,4 +502,132 @@ class OrderCreateDenied(CustomUserError):
         message = 'order create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class DeliveryMemoCreateDenied(CustomUserError):
+    """ 배송 메모 추가 실패
+
+        Author: 고수희
+
+        History:
+            2020-12-31(고수희): 초기생성
+    """
+
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'delivery memo create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
         
+class OrderItemCreateDenied(CustomUserError):
+    """ 결제 상품 정보 추가 실패
+
+        Author: 고수희
+
+        History:
+            2020-12-31(고수희): 초기생성
+    """
+
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'order item create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ServerError(CustomUserError):
+    """ 서버 에러 출력
+
+        Author: 고수희
+
+        History:
+            2021-01-01(고수희): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 500
+        message = "server_error"
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+        
+class OrderNotExist(CustomUserError):
+    """ 상품 조회 실패
+    
+        Author: 고수희
+
+        History:
+            2021-01-01(고수희): 초기생성
+    """
+    def __init__(self, error_message):
+      status_code = 404
+      message = "order does not exist"
+      error_message = error_message
+      super().__init__(status_code, message, error_message)
+
+      
+class SellerNotExist(CustomUserError):
+    """ 셀러 조회 실패
+
+        Author: 고수희
+
+        History:
+            2021-01-01(고수희): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'seller does not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class DataManipulationFail(CustomUserError):
+    """ 데이터 조작 실패
+
+
+        Author: 김민구
+
+        History:
+            2021-01-02(김민구): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'data_manipulation_fail'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class AlreadyExistBookmark(CustomUserError):
+    """ 북마크 이미 존재
+
+        해당 북마크가 이미 존재할 때 발생
+
+        Author: 김민구
+
+        History:
+            2021-01-02(김민구): 초기생성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'already_exist_bookmark'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class NotExistBookmark(CustomUserError):
+    """ 북마크가 존재하지 않음
+
+        해당 북마크가 존재하지 않을 때 발생
+
+        Author: 김민구
+
+        History:
+            2021-01-02(김민구): 초기생성
+    """
+
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'not_exist_bookmark'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)

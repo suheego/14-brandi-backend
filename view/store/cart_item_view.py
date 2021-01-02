@@ -24,6 +24,7 @@ class CartItemView(MethodView):
 
     History:
         2020-12-28(고수희): 초기 생성
+        2021-01-01(고수희): response 수정
     """
 
     def __init__(self, service, database):
@@ -44,24 +45,28 @@ class CartItemView(MethodView):
         Author: 고수희
 
         Returns:
-            return {
-            "message": "success",
-            "result": {"totalPrice"":9000,
-                        "soldOut": true,
-                        "cartItem":
-                            {id: 3,
-                            "sellerName": "미우블랑",
-                            "productId": 3,
-                            "productName": "회색 반팔티",
-                            "productImage": "https://img.freepik.com/free-psd/simple-black-men-s-tee-mockup_53876-57893.jpg?size=338&ext=jpg&ga=GA1.2.1060993109.1605750477",
-                            "stockId": 3,
-                            "size": "Free",
-                            "color": "Gray",
-                            "quantity": 1,
-                            "sale": 10,
-                            "originalPrice": 10000,
-                            "discountedPrice": 9000
-                        }}
+            return
+                    {
+                        "message": "success",
+                        "result": {
+                            "cart_item": {
+                                "color": "Black",
+                                "discounted_price": 9000.0,
+                                "id": 23,
+                                "image_url": "https://img.freepik.com/free-psd/simple-black-men-s-tee-mockup_53876-57893.jpg?size=338&ext=jpg&ga=GA1.2.1060993109.1605750477",
+                                "original_price": 14000.0,
+                                "product_id": 1,
+                                "product_name": "성보의하루1",
+                                "quantity": "1",
+                                "sale": 0.1,
+                                "seller_name": "나는셀러9",
+                                "size": "Free",
+                                "sold_out": false,
+                                "stock_id": 1,
+                                "total_price": 9000.0
+                            }
+                        }
+                    }
 
         Raises:
             400, {'message': 'key error',

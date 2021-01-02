@@ -5,7 +5,7 @@ class StoreOrderService:
     """ Business Layer
 
         Attributes:
-            order_dao: OrderDao 클래스
+            store_order_dao: StoreOrderDao 클래스
 
         Author: 고수희
 
@@ -13,10 +13,10 @@ class StoreOrderService:
             2020-12-30(고수희): 초기 생성
     """
 
-    def __init__(self, order_dao):
-        self.order_dao = order_dao
+    def __init__(self, store_order_dao):
+        self.store_order_dao = store_order_dao
 
-    def get_order_service(self, connection, data):
+    def get_store_order_service(self, connection, data):
         """ GET 메소드: 결제 정보 조회
 
         Args:
@@ -38,9 +38,12 @@ class StoreOrderService:
         """
         try:
             #사용자의 권한 체크
-            permission_check = self.order_dao.get_user_permission_check_dao(connection, data)
+            permission_check = self.store_order_dao.get_user_permission_check_dao(connection, data)
             if permission_check['permission_type_id'] != 3:
                 raise CustomerPermissionDenied('customer_permission_denied')
+
+            #상품 결제 완료 결과 조회
+            return self.store_order_dao.get_store_order_dao(connection, data)
 
         except KeyError:
             raise KeyError('key_error')
@@ -70,47 +73,52 @@ class StoreOrderService:
 
         try:
             #사용자 권한 체크
-            permission_check = self.cart_item_dao.get_user_permission_check_dao(connection, data)
+            permission_check = self.store_order_dao.get_user_permission_check_dao(connection, data)
             if permission_check['permission_type_id'] != 3:
                 raise CustomerPermissionDenied('customer_permission_denied')
 
             #상품 구매 가능 여부 체크
-            if data['sold_out'] == "true":
+            if data['sold_out'] is True:
                 raise CheckoutDenied('unable_to_checkout')
 
             #상품 품절 여부 체크
-            sold_out = self.order_dao.product_soldout_dao(connection, data)
+            sold_out = self.store_order_dao.order_product_soldout_dao(connection, data)
             if sold_out['sold_out'] is True:
                 raise CheckoutDenied('unable_to_checkout')
 
             #배송 정보 추가 (배송 메모가 직접 입력일 경우)
-            if data['delivery_memo_type_id'] == 5:
-                custom_memo = self.order_dao.post_delivery_type_dao(connection, data)
+            if data['delivery_memo_type_id'] == '5':
+                custom_memo = self.store_order_dao.post_delivery_type_dao(connection, data)
                 data['delivery_memo_type_id'] = custom_memo
 
+            #주문번호 생성을 위한 당일 주문량 파악
+            today = self.store_order_dao.get_today_order_number_dao(connection)
+            data.update(today)
+
             #주문 정보 추가 (주문자 정보, 배송지 정보, 기타 배송 정보)
-            order = self.order_dao.post_order_dao(connection, data)
+            order = self.store_order_dao.post_store_order_dao(connection, data)
 
-            #주문 상품 추가 (주문 상품에 대한 정보)
-            self.order_dao.post_order_item_dao(connection, data)
-
-            #주문 상품 정보 이력 추가
-            self.order_dao.post_order_item_history_dao(connection, data)
-
-            #주문 상품 타입 추가
-            self.order_dao.post_order_item_status_dao(connection, data)
-
-            #주문한 상품 수량 만큼 상품 판매량 추가
-            self.order_dao.post_product_sales_rate_dao(connection, data)
-
-            #주문한 상품 수량 만큼 재고 감소 처리
-            self.order_dao.patch_product_remain_dao(connection, data)
-
-            #장바구니 상품 논리 삭제 처리
-            self.order_dao.is_delete_cart_item_dao(connection, data)
-
-            #주문자 정보 추가/수정
-            cart_item = self.order_dao.custmer_information_dao(connection, data)
+            # #주문 상품 추가 (주문 상품에 대한 정보)
+            # self.store_order_dao.post_store_order_item_dao(connection, data)
+            #
+            # #주문 상품 정보 이력 추가
+            # self.store_order_dao.post_store_order_item_history_dao(connection, data)
+            #
+            # #주문 상품 타입 추가
+            # self.store_order_dao.post_store_order_item_status_dao(connection, data)
+            #
+            # #주문한 상품 수량 만큼 상품 판매량 추가
+            # self.store_order_dao.post_product_sales_rate_dao(connection, data)
+            #
+            # #주문한 상품 수량 만큼 재고 감소 처리
+            # self.store_order_dao.patch_product_remain_dao(connection, data)
+            #
+            # #장바구니 상품 논리 삭제 처리
+            # self.store_order_dao.is_delete_cart_item_dao(connection, data)
+            #
+            # #주문자 정보 추가/수정
+            # cart_item = self.store_order_dao.customer_information_dao(connection, data)
+            return order
 
         except KeyError:
             raise KeyError('key_error')
