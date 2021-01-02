@@ -50,10 +50,10 @@ class UserService:
         phone_check = self.user_dao.phone_exist_check(connection, data)
         if username_check or email_check or phone_check:
             raise UserAlreadyExist(
-                '이미 사용중인' +
-                ' username' * username_check +
-                ' email' * email_check +
-                ' phone' * phone_check +
+                '이미 사용중인 ' +
+                ', '.join((' username' * username_check +
+                           ' email' * email_check +
+                           ' phone' * phone_check).split()) +
                 ' 입니다.'
             )
 
