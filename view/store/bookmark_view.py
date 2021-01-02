@@ -46,6 +46,7 @@ class BookmarkView(MethodView):
 
         Raises:
             400, {'message': 'key_error', 'error_message': format(e)}                                : 잘못 입력된 키값
+            400, {'message': 'already_exist_bookmark', 'error_message': '이미 추가된 북마크입니다.'}        : 북마크 중복
             500, {
                 'message': 'database_connection_fail',
                 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'
@@ -94,6 +95,7 @@ class BookmarkView(MethodView):
 
         Raises:
             400, {'message': 'key_error', 'error_message': format(e)}                                : 잘못 입력된 키값
+            400, {'message': 'not_exist_bookmark', 'error_message': '해당 북마크가 존재하지 않습니다.'}       : 존재하지 않는 북마크
             500, {
                 'message': 'database_connection_fail',
                 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'

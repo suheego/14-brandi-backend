@@ -28,7 +28,8 @@ class BookmarkService:
             None
 
         Raises:
-            400, {'message': 'key_error', 'error_message': format(e)} : 잘못 입력된 키값
+            400, {'message': 'key_error', 'error_message': format(e)}                         : 잘못 입력된 키값
+            400, {'message': 'already_exist_bookmark', 'error_message': '이미 추가된 북마크입니다.'} : 북마크 중복
 
         History:
             2021-01-02(김민구): 초기 생성
@@ -54,7 +55,8 @@ class BookmarkService:
             None
 
         Raises:
-            400, {'message': 'key_error', 'error_message': format(e)} : 잘못 입력된 키값
+            400, {'message': 'key_error', 'error_message': format(e)}                          : 잘못 입력된 키값
+            400, {'message': 'not_exist_bookmark', 'error_message': '해당 북마크가 존재하지 않습니다.'} : 존재하지 않는 북마크
 
         History:
             2021-01-02(김민구): 초기 생성

@@ -28,6 +28,7 @@ class SignUpView(MethodView):
             2020-12-28(김민구): 초기 생성 / bcrypt 까지 완료
             2020-12-29(김민구): 각 Param에 rules 추가, 에러 구문 수정
             2020-12-31(김민구): 모든 service를 담고 있는 services 클래스로 유연하게 처리 / 에러 문구 변경
+            2021-01-02(김민구): 데이터 조작 에러 추가
     """
 
     def __init__(self, services, database):
@@ -66,6 +67,7 @@ class SignUpView(MethodView):
             History:
                 2020-12-28(김민구): 초기 생성
                 2020-12-31(김민구): 에러 문구 변경
+                2021-01-02(김민구): 데이터 조작 에러 추가
         """
 
         connection = None
@@ -106,6 +108,7 @@ class SignInView(MethodView):
         History:
             2020-12-29(김민구): 초기 생성
             2020-12-31(김민구): 에러 문구 변경
+            2021-01-02(김민구): 데이터 조작 에러 추가
     """
 
     def __init__(self, services, database):
@@ -141,6 +144,7 @@ class SignInView(MethodView):
             History:
                 2020-12-29(김민구): 초기 생성
                 2020-12-31(김민구): 에러 문구 변경
+                2021-01-02(김민구): 데이터 조작 에러 추가
         """
 
         connection = None
@@ -176,6 +180,7 @@ class GoogleSocialSignInView(MethodView):
         History:
             2020-12-29(김민구): 초기 생성
             2020-12-31(김민구): 에러 문구 변경
+            2021-01-02(김민구): 데이터 조작 에러 추가
     """
 
     def __init__(self, services, database):
@@ -210,6 +215,7 @@ class GoogleSocialSignInView(MethodView):
             History:
                 2020-12-29(김민구): 초기 생성
                 2020-12-31(김민구): 에러 문구 변경
+                2021-01-02(김민구): 데이터 조작 에러 추가
         """
 
         connection = None
