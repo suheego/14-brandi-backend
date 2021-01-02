@@ -22,7 +22,7 @@ class SenderView(MethodView):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    @signin_decorator(True)
     def get(self, *args):
         """ GET 메소드: 해당 유저가 사용한 가장 최신의 주문자 정보 조회
 
@@ -45,6 +45,7 @@ class SenderView(MethodView):
 
         History:
             2020-12-30(고수희): 초기 생성
+            2021-01-02(고수희): decorator 수정
         """
 
         data = {

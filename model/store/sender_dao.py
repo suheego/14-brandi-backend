@@ -1,5 +1,6 @@
+import traceback
 import pymysql
-from utils.custom_exceptions import AccountNotExist
+from utils.custom_exceptions import AccountNotExist, ServerError
 
 
 class SenderDao:
@@ -30,6 +31,7 @@ class SenderDao:
 
         History:
             2020-12-30(고수희): 초기 생성
+            2020-01-02(고수희): traceback 추가
         """
         sql = """
         SELECT
@@ -41,22 +43,27 @@ class SenderDao:
         ;
         """
 
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql, data['user_id'])
-            result = cursor.fetchone()
-            if not result:
-                result = {
-                            "name":"",
-                            "phone":"",
-                            "email":""
-                }
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data['user_id'])
+                result = cursor.fetchone()
+                if not result:
+                    result = {
+                                "name":"",
+                                "phone":"",
+                                "email":""
+                    }
+                    return result
                 return result
-            return result
+
+        except Exception:
+            traceback.print_exc()
+            raise ServerError('server_error')
 
     def get_user_permission_check_dao(self, connection, data):
         """사용자의 권한 조회
 
-       Args:
+        Args:
             connection: 데이터베이스 연결 객체
             data      : 서비스 레이어에서 넘겨 받아 조회할 data
 
@@ -77,9 +84,14 @@ class SenderDao:
         WHERE id = %s
         ;
         """
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql, data['user_id'])
-            result = cursor.fetchone()
-            if not result:
-                raise AccountNotExist('account_does_not_exist')
-            return result
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data['user_id'])
+                result = cursor.fetchone()
+                if not result:
+                    raise AccountNotExist('account_does_not_exist')
+                return result
+
+        except Exception:
+            traceback.print_exc()
+            raise ServerError('server_error')

@@ -1,3 +1,4 @@
+import traceback
 from utils.custom_exceptions import CustomerPermissionDenied
 
 
@@ -5,7 +6,7 @@ class SenderService:
     """ Business Layer
 
         Attributes:
-            orderer_dao: OrdererDao 클래스
+            sender_dao: SenderDao 클래스
 
         Author: 고수희
 
@@ -37,7 +38,7 @@ class SenderService:
             'errorMessage': 'customer_permission_denied'} : 사용자 권한이 아님
             500, {'message': 'internal server error',
             'errorMessage': format(e)}) : 서버 에러
-일
+
         History:
             2020-12-30(고수희): 초기 생성
         """
@@ -51,4 +52,5 @@ class SenderService:
             return self.sender_dao.get_sender_info_dao(connection, data)
 
         except KeyError:
+            traceback.print_exc()
             raise KeyError('key_error')
