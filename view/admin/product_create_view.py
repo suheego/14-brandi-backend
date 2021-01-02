@@ -1,12 +1,12 @@
 import json
 
+import flask
 from flask                   import jsonify, request
 from flask.views             import MethodView
 
 from utils.connection        import get_connection
-from utils.custom_exceptions import DatabaseCloseFail
+from utils.custom_exceptions import DatabaseCloseFail, RequiredFieldException, CorrelationCheckException
 from utils.rules             import (
-    RequiredFieldRule,
     NumberRule
 )
 from flask_request_validator import (
@@ -162,29 +162,29 @@ class CreateProductView(MethodView):
                     connection.close()
             except Exception:
                 raise DatabaseCloseFail('database close fail')
-
+    
     @validate_params(
-        Param('seller_id',              FORM, int,  required=True,  rules=[RequiredFieldRule()]),
-        Param('account_id',             FORM, int,  required=True,  rules=[RequiredFieldRule()]),
-        Param('is_sale',                FORM, int,  required=True,  rules=[RequiredFieldRule()]),
-        Param('is_display',             FORM, int,  required=True,  rules=[RequiredFieldRule()]),
-        Param('main_category_id',       FORM, int,  required=True,  rules=[RequiredFieldRule()]),
-        Param('sub_category_id',        FORM, int,  required=True,  rules=[RequiredFieldRule()]),
-        Param('is_product_notice',      FORM, int,  required=True,  rules=[RequiredFieldRule()]),
-        Param('manufacturer',           FORM, str,  required=False, rules=[MaxLength(30)]),
-        Param('manufacturing_date',     FORM, str,  required=False),
-        Param('product_origin_type_id', FORM, str,  required=False),
-        Param('product_name',           FORM, str,  required=True,  rules=[RequiredFieldRule(), MaxLength(100)]),
-        Param('description',            FORM, str,  required=True,  rules=[RequiredFieldRule(), MaxLength(200)]),
-        Param('detail_information',     FORM, str,  required=True,  rules=[RequiredFieldRule()]),
-        Param('options',                FORM, list, required=True),
-        Param('minimum_quantity',       FORM, int,  required=False, rules=[RequiredFieldRule()]),
-        Param('maximum_quantity',       FORM, int,  required=False, rules=[RequiredFieldRule()]),
-        Param('origin_price',           FORM, str,  required=True,  rules=[RequiredFieldRule()]),
-        Param('discount_rate',          FORM, str,  required=True),
-        Param('discounted_price',       FORM, str,  required=True),
-        Param('discount_start_date',    FORM, str,  required=False),
-        Param('discount_end_date',      FORM, str,  required=False)
+        # Param('seller_id',              FORM, int,  required=True),
+        Param('account_id',             FORM, int,  required=True),
+        # Param('is_sale',                FORM, int,  required=True),
+        # Param('is_display',             FORM, int,  required=True),
+        # Param('main_category_id',       FORM, int,  required=True),
+        # Param('sub_category_id',        FORM, int,  required=True),
+        # Param('is_product_notice',      FORM, int,  required=True),
+        # Param('manufacturer',           FORM, str,  required=False, rules=[MaxLength(30)]),
+        # Param('manufacturing_date',     FORM, str,  required=False),
+        # Param('product_origin_type_id', FORM, str,  required=False),
+        # Param('product_name',           FORM, str,  required=True,  rules=[MaxLength(100)]),
+        # Param('description',            FORM, str,  required=True,  rules=[MaxLength(200)]),
+        Param('detail_information',     FORM, str,  required=True),
+        # Param('options',                FORM, list, required=True),
+        # Param('minimum_quantity',       FORM, int,  required=False),
+        # Param('maximum_quantity',       FORM, int,  required=False),
+        # Param('origin_price',           FORM, str,  required=True),
+        # Param('discount_rate',          FORM, str,  required=True),
+        # Param('discounted_price',       FORM, str,  required=True),
+        # Param('discount_start_date',    FORM, str,  required=False),
+        # Param('discount_end_date',      FORM, str,  required=False)
     )
     def post(self, *args):
         """POST 메소드: 상품 정보 등록
@@ -232,7 +232,7 @@ class CreateProductView(MethodView):
 
                 400, {'message': 'correlation check fail',
                       'errorMessage': '_minimum_quantity_maximum_quantity'}             : 최소구매, 최대구매 수량 비교
-
+                
                 400, {'message': 'correlation check fail',
                       'errorMessage': '_discounted_price_origin_price'}                 : 판매가, 할인가 비교
 
@@ -266,84 +266,95 @@ class CreateProductView(MethodView):
                 2020-12-29(심원두): 초기 생성
                 2020-12-30(심원두):
         """
-
+        
         data = {
-            'seller_id'              : request.form.get('seller_id'),
+            # 'seller_id'              : request.form.get('seller_id'),
             'account_id'             : request.form.get('account_id'),
-            'is_sale'                : request.form.get('is_sale'),
-            'is_display'             : request.form.get('is_display'),
-            'main_category_id'       : request.form.get('main_category_id'),
-            'sub_category_id'        : request.form.get('sub_category_id'),
-            'is_product_notice'      : request.form.get('is_product_notice'),
-            'manufacturer'           : request.form.get('manufacturer', None),
-            'manufacturing_date'     : request.form.get('manufacturing_date', None),
-            'product_origin_type_id' : request.form.get('product_origin_type_id', None),
-            'product_name'           : request.form.get('product_name'),
-            'description'            : request.form.get('description'),
+            # 'is_sale'                : request.form.get('is_sale'),
+            # 'is_display'             : request.form.get('is_display'),
+            # 'main_category_id'       : request.form.get('main_category_id'),
+            # 'sub_category_id'        : request.form.get('sub_category_id'),
+            # 'is_product_notice'      : request.form.get('is_product_notice'),
+            # 'manufacturer'           : request.form.get('manufacturer', None),
+            # 'manufacturing_date'     : request.form.get('manufacturing_date', None),
+            # 'product_origin_type_id' : request.form.get('product_origin_type_id', None),
+            # 'product_name'           : request.form.get('product_name'),
+            # 'description'            : request.form.get('description'),
             'detail_information'     : request.form.get('detail_information'),
-            'minimum_quantity'       : request.form.get('minimum_quantity'),
-            'maximum_quantity'       : request.form.get('maximum_quantity'),
-            'origin_price'           : request.form.get('origin_price'),
-            'discount_rate'          : request.form.get('discount_rate'),
-            'discounted_price'       : request.form.get('discounted_price'),
-            'discount_start_date'    : request.form.get('discount_start_date', None),
-            'discount_end_date'      : request.form.get('discount_end_date', None),
+            # 'minimum_quantity'       : request.form.get('minimum_quantity'),
+            # 'maximum_quantity'       : request.form.get('maximum_quantity'),
+            # 'origin_price'           : request.form.get('origin_price'),
+            # 'discount_rate'          : request.form.get('discount_rate'),
+            # 'discounted_price'       : request.form.get('discounted_price'),
+            # 'discount_start_date'    : request.form.get('discount_start_date', None),
+            # 'discount_end_date'      : request.form.get('discount_end_date', None),
         }
-
-        product_images = request.files.getlist("imageFiles")
-        stocks = json.loads(request.form.get('options'))
-
+        
+        print(data)
+        product_images = request.files.getlist("image_files")
+        print('product_images::', product_images)
+        #
+        # stocks = json.loads(request.form.get('options'))
+        # print('stocks::', stocks)
+        
         try:
             connection = get_connection(self.database)
             
+            print("0")
             # products 테이블 insert
             product_id = self.service.create_product_service(
                 connection,
                 data
             )
-
+            
+            print("1")
             # products 테이블 update (product_code)
-            self.service.update_product_code_service(
-                connection,
-                product_id
-            )
-
-            # product_images 테이블 insert
-            self.service.create_product_images_service(
-                connection,
-                data['seller_id'],
-                product_id,
-                product_images
-            )
-
-            # stock 테이블 insert
-            self.service.create_stock_service(
-                connection,
-                product_id,
-                stocks
-            )
-
-            # product_histories 테이블 insert
-            self.service.create_product_history_service(
-                connection,
-                product_id,
-                data
-            )
-
-            # product_sales_volumes 테이블 insert
-            self.service.create_product_sales_volumes_service(
-                connection,
-                product_id
-            )
-
+            # self.service.update_product_code_service(
+            #     connection,
+            #     product_id
+            # )
+            # print("2")
+            # # product_images 테이블 insert
+            # self.service.create_product_images_service(
+            #     connection,
+            #     data['seller_id'],
+            #     product_id,
+            #     product_images
+            # )
+            #
+            # print("3")
+            # # stock 테이블 insert
+            # self.service.create_stock_service(
+            #     connection,
+            #     product_id,
+            #     stocks
+            # )
+            #
+            # print("4")
+            # # product_histories 테이블 insert
+            # self.service.create_product_history_service(
+            #     connection,
+            #     product_id,
+            #     data
+            # )
+            #
+            # print("5")
+            # # product_sales_volumes 테이블 insert
+            # self.service.create_product_sales_volumes_service(
+            #     connection,
+            #     product_id
+            # )
+            #
+            # print("6")
             connection.commit()
-
+            # print("7")
+            
             return jsonify({'message': 'success'}), 200
 
         except Exception as e:
             connection.rollback()
             raise e
-
+        
         finally:
             try:
                 if connection:

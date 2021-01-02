@@ -608,3 +608,43 @@ class SearchFilterRequired(CustomUserError):
         message = 'filter must be at least one'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class DateCompareException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'start date is greater than end date'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ProductImageNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product image not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class StockNotNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'stock info not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ProductSearchListZero(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 200
+        message = 'product search result zero'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class LookUpDateFieldRequiredCheck(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'both date field required'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)

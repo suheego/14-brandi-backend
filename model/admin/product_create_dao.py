@@ -92,14 +92,48 @@ class ProductCreateDao:
             );
         """
         
+        test_sql = """
+            insert into test_table (
+                detail_information
+            ) values (
+                %(detail_information)s
+            );
+        """
+        
+        print("다오:", data)
+        
+        print('상품 등록 다오1')
         with connection.cursor() as cursor:
-            cursor.execute(sql, data)
+            print('상품 등록 다오2')
+            cursor.execute(test_sql, data)
+
+            print('상품 등록 다오3')
             product_id = cursor.lastrowid
-            
+
+            print('상품 등록 다오4', product_id)
+
             if not product_id:
                 raise ProductCreateDenied('unable_to_create_product')
-            
+
+            print('상품 등록 다오 성공')
             return product_id
+        
+        
+        # print('상품 등록 다오1')
+        # with connection.cursor() as cursor:
+        #     print('상품 등록 다오2')
+        #     cursor.execute(sql, data)
+        #
+        #     print('상품 등록 다오3')
+        #     product_id = cursor.lastrowid
+        #
+        #     print('상품 등록 다오4', product_id)
+        #
+        #     if not product_id:
+        #         raise ProductCreateDenied('unable_to_create_product')
+        #
+        #     print('상품 등록 다오 성공')
+        #     return product_id
     
     def update_product_code(self, connection, data):
         """상품 정보 갱신 (product_code 갱신)
@@ -133,13 +167,14 @@ class ProductCreateDao:
             AND
                 is_deleted = 0;
         """
-
+        print("c")
         with connection.cursor() as cursor:
             result = cursor.execute(sql, data)
 
             if not result:
                 raise ProductCodeUpdatedDenied('unable_to_update_product_code')
-            
+
+            print("상품 코드 수정 다오 성공")
             return result
     
     def insert_product_image(self, connection, data):
@@ -183,8 +218,9 @@ class ProductCreateDao:
             if not result:
                 raise ProductImageCreateDenied('unable_to_create_product_image')
             
+            print("상품 이미지 다오 성공")
             return result
-
+    
     def insert_stock(self, connection, data):
         """상품 옵션 정보 등록
 
@@ -206,29 +242,34 @@ class ProductCreateDao:
                 500, {'message': 'stock create denied', 'errorMessage': 'unable_to_create_stocks'}
                 : 상품 이미지 정보 등록 실패
         """
-
+        
         sql = """
             INSERT INTO stocks(
                  `product_option_code`
+                , `is_stock_manage`
                 , `remain`
                 , `color_id`
                 , `size_id`
                 , `product_id`
             ) VALUES (
                 %(product_option_code)s
+                ,%(is_stock_manage)s
                 ,%(remain)s
                 ,%(color_id)s
                 ,%(size_id)s
                 ,%(product_id)s
             );
         """
-
+        print('상품 옵션 등록 다오1')
+        print('stock', data)
         with connection.cursor() as cursor:
             result = cursor.execute(sql, data)
-
+            print('상품 옵션 등록 다오2')
+            
             if not result:
                 raise StockCreateDenied('unable_to_create_stocks')
-            
+
+            print('상품 옵션 등록 성공')
             return result
 
     def insert_product_history(self, connection, data):
@@ -267,7 +308,6 @@ class ProductCreateDao:
                 ,`minimum_quantity`
                 ,`maximum_quantity`
                 ,`updater_id`
-                ,`is_product_deleted`
             ) VALUES (
                 %(product_id)s
                 ,%(product_name)s
@@ -281,7 +321,6 @@ class ProductCreateDao:
                 ,%(minimum_quantity)s
                 ,%(maximum_quantity)s
                 ,%(account_id)s
-                ,%(is_product_deleted)s
             );
         """
 
@@ -328,7 +367,8 @@ class ProductCreateDao:
 
             if not result:
                 raise ProductSalesVolumeCreateDenied('unable_to_create_product_sales_volumes')
-        
+
+            print("상품 볼륨 다오 성공")
             return result
     
     def get_product_origin_types(self, connection):

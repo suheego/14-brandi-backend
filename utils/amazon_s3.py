@@ -21,7 +21,7 @@ class S3FileManager:
     def file_upload(self, file, file_name):
         """ Amazon S3 파일 업로드 클래스
             Args:
-                filefunc  : View 에서 받은 이미지 파일
+                file       : View 에서 받은 이미지 파일
                 file_name : 해당 파일명
 
             Author: 심원두
