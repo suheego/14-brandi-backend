@@ -1,5 +1,3 @@
-import traceback
-
 from flask.views import MethodView
 from flask import jsonify, request
 
@@ -57,13 +55,12 @@ class SignUpView(MethodView):
                 400, {'message': 'invalid_parameter', 'errorMessage': '[데이터]가(이) 유효하지 않습니다.'} : 잘못된 요청값
                 400, {'message': 'key_error', 'error_message': format(e)}                          : 잘못 입력된 키값
                 403, {'message': 'user_already_exist', 'error_message': '이미 사용중인 [데이터] 입니다.'} : 중복 유저 존재
-                500, {'message': 'user_create_denied', 'error_message': '회원 가입에 실패했습니다.'}     : account 생성 실패
-                500, {'message': 'user_create_denied', 'error_message': '회원 가입에 실패했습니다.'}     : 유저 생성 실패
                 500, {
                         'message': 'database_connection_fail',
                         'error_message': '서버에 알 수 없는 에러가 발생했습니다.'
                       }                                                                             : 커넥션 종료 실패
                 500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'data_manipulation_fail', 'error_message': '유저 등록을 실패하였습니다.'}  : 데이터 조작 에러
                 500, {'message': 'internal_server_error', 'error_message': format(e)})              : 서버 에러
 
             History:
@@ -196,19 +193,19 @@ class GoogleSocialSignInView(MethodView):
             Author: 김민구
 
             Returns:
-                200, {'message': 'success', 'token': token}                                         : 유저 로그인 성공
+                200, {'message': 'success', 'token': token}                                           : 유저 로그인 성공
 
             Raises:
-                400, {'message': 'key_error', 'error_message': format(e)}                            : 잘못 입력된 키값
-                403, {'message': 'invalid_token', 'error_message': '구글 소셜 로그인에 실패하였습니다.'}      : 유효하지 않은 토큰
-                403, {'message': 'invalid_user', 'error_message': '구글 소셜 로그인에 실패했습니다.'}        : 유효하지 않은 유저
-                500, {'message': 'user_create_denied', 'error_message': '구글 소셜 로그인에 실패했습니다.'}  : 유저 생성 실패
+                400, {'message': 'key_error', 'error_message': format(e)}                             : 잘못 입력된 키값
+                403, {'message': 'invalid_token', 'error_message': '구글 소셜 로그인에 실패하였습니다.'}       : 유효하지 않은 토큰
+                403, {'message': 'invalid_user', 'error_message': '구글 소셜 로그인에 실패했습니다.'}         : 유효하지 않은 유저
                 500, {
                         'message': 'database_connection_fail',
                         'error_message': '서버에 알 수 없는 에러가 발생했습니다.'
-                      }                                                                             : 커넥션 종료 실패
-                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
-                500, {'message': 'internal_server_error', 'error_message': format(e)})              : 서버 에러
+                      }                                                                              : 커넥션 종료 실패
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'}  : 데이터베이스 에러
+                500, {'message': 'data_manipulation_fail', 'error_message': '소셜 로그인을 실패하였습니다.'} : 데이터 조작 에러
+                500, {'message': 'internal_server_error', 'error_message': format(e)})               : 서버 에러
 
             History:
                 2020-12-29(김민구): 초기 생성

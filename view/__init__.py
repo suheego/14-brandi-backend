@@ -21,12 +21,11 @@ from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
 from .store.sender_view import SenderView
 from .store.store_order_view import StoreOrderView, StoreOrderAddView
-
-
-
+from .store.bookmark_view import BookmarkView
 from .store.seller_shop_view import SellerShopView
 
 from utils.error_handler import error_handle
+
 
 def create_endpoints(app, services, database):
     sample_user_service = services.sample_user_service
@@ -57,9 +56,7 @@ def create_endpoints(app, services, database):
     product_list_service = services.product_list_service
     store_order_service = services.store_order_service
 
-
     seller_shop_service = services.seller_shop_service
-
 
     seller_service = services.seller_service
     create_product_service = services.create_product_service
@@ -146,6 +143,13 @@ def create_endpoints(app, services, database):
     app.add_url_rule('/categories',
                      view_func=CategoryListView.as_view(
                          'category_list_view',
+                         services,
+                         database
+                     ))
+
+    app.add_url_rule('/products/<int:product_id>/bookmarks',
+                     view_func=BookmarkView.as_view(
+                         'bookmark_view',
                          services,
                          database
                      ))

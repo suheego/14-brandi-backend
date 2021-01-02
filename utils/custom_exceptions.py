@@ -579,3 +579,55 @@ class SellerNotExist(CustomUserError):
         message = 'seller does not exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class DataManipulationFail(CustomUserError):
+    """ 데이터 조작 실패
+
+
+        Author: 김민구
+
+        History:
+            2021-01-02(김민구): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'data_manipulation_fail'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class AlreadyExistBookmark(CustomUserError):
+    """ 북마크 이미 존재
+
+        해당 북마크가 이미 존재할 때 발생
+
+        Author: 김민구
+
+        History:
+            2021-01-02(김민구): 초기생성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'already_exist_bookmark'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class NotExistBookmark(CustomUserError):
+    """ 북마크가 존재하지 않음
+
+        해당 북마크가 존재하지 않을 때 발생
+
+        Author: 김민구
+
+        History:
+            2021-01-02(김민구): 초기생성
+    """
+
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'not_exist_bookmark'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)

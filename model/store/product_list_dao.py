@@ -22,7 +22,6 @@ class ProductListDao:
             search_string = "'%"+search+"%'"
             cursor.execute(sql, search_string)
             result = cursor.fetchall()
-            print(result)
             return result
 
     def get_product_list(self, connection, event_id):

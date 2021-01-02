@@ -20,7 +20,6 @@ from service import EventService
 #service
 from model import (
     SampleUserDao,
-    UserDao,
     DestinationDao,
     CartItemDao,
     SenderDao,
@@ -40,7 +39,8 @@ from service import (
     ProductListService,
     StoreOrderService,
     CategoryListService,
-    SellerShopService
+    SellerShopService,
+    BookmarkService
 )
 
 
@@ -111,6 +111,7 @@ def create_app(test_config=None):
     services.order_service = OrderService(order_dao)
     services.seller_service = SellerService(seller_dao,app.config)
     services.create_product_service = CreateProductService(create_product_dao)
+    services.bookmark_service = BookmarkService()
 
 
 

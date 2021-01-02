@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import bcrypt
 import jwt
 
-from utils.custom_exceptions import UserAlreadyExist, UserCreateDenied, InvalidUser, TokenCreateDenied
+from utils.custom_exceptions import UserAlreadyExist, InvalidUser, TokenCreateDenied
 from model import UserDao
 
 
@@ -39,8 +39,6 @@ class UserService:
             Raises:
                 400, {'message': 'key_error', 'error_message': format(e)}                          : 잘못 입력된 키값
                 403, {'message': 'user_already_exist', 'error_message': '이미 사용중인 [데이터] 입니다.'} : 중복 유저 존재
-                500, {'message': 'user_create_denied', 'error_message': '회원 가입에 실패했습니다.'}     : account 생성 실패
-                500, {'message': 'user_create_denied', 'error_message': '회원 가입에 실패했습니다.'}     : 유저 생성 실패
 
             History:
                 2020-12-28(김민구): 초기 생성
@@ -63,13 +61,9 @@ class UserService:
         data['password'] = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
         account_id = self.user_dao.create_account(connection, data)
-        if not account_id:
-            raise UserCreateDenied('회원 가입에 실패했습니다.')
 
         data['account_id'] = account_id
-        result = self.user_dao.create_user(connection, data)
-        if not result:
-            raise UserCreateDenied('회원 가입에 실패했습니다.')
+        self.user_dao.create_user(connection, data)
 
     def sign_in_logic(self, data, connection):
         """ 유저 로그인
@@ -146,7 +140,6 @@ class UserService:
             Raises:
                 400, {'message': 'key_error', 'error_message': format(e)}                          : 잘못 입력된 키값
                 403, {'message': 'invalid_user', 'error_message': '구글 소셜 로그인에 실패했습니다.'}       : 유효하지 않은 유저
-                500, {'message': 'user_create_denied', 'error_message': '구글 소셜 로그인에 실패했습니다.'} : 유저 생성 실패
 
             History:
                 2020-12-29(김민구): 초기 생성
@@ -170,9 +163,7 @@ class UserService:
             data['permission_type_id'] = 3
             account_id = self.user_dao.social_create_account(connection, data)
             data['account_id'] = account_id
-            result = self.user_dao.social_create_user(connection, data)
-            if not result:
-                raise UserCreateDenied('구글 소셜 로그인에 실패했습니다.')
+            self.user_dao.social_create_user(connection, data)
 
         user = self.user_dao.get_user_infomation(connection, data)
         if not user:

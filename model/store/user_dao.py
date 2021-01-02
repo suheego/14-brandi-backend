@@ -2,7 +2,7 @@ import traceback
 
 import pymysql
 
-from utils.custom_exceptions import DatabaseError
+from utils.custom_exceptions import DatabaseError, DataManipulationFail
 
 
 class UserDao:
@@ -144,7 +144,8 @@ class UserDao:
                 account_id : account 생성 후 아이디 반환
 
             Raises:
-                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러,
+                500, {'message': 'data_manipulation_fail', 'error_message': '유저 등록을 실패하였습니다.'} : 데이터 조작 에러
 
             History:
                 2020-12-28(김민구): 초기 생성
@@ -165,8 +166,13 @@ class UserDao:
 
         try:
             with connection.cursor() as cursor:
-                cursor.execute(sql, data)
+                result = cursor.execute(sql, data)
+                if not result:
+                    raise DataManipulationFail('유저 등록을 실패하였습니다.')
                 return cursor.lastrowid
+
+        except DataManipulationFail as e:
+            raise e
 
         except Exception:
             traceback.print_exc()
@@ -187,6 +193,7 @@ class UserDao:
 
             Raises:
                 500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'data_manipulation_fail', 'error_message': '유저 등록을 실패하였습니다.'} : 데이터 조작 에러
 
             History:
                 2020-12-28(김민구): 초기 생성
@@ -208,7 +215,11 @@ class UserDao:
         try:
             with connection.cursor() as cursor:
                 result = cursor.execute(sql, data)
-                return result
+                if not result:
+                    raise DataManipulationFail('유저 등록을 실패하였습니다.')
+
+        except DataManipulationFail as e:
+            raise e
 
         except Exception:
             traceback.print_exc()
@@ -269,7 +280,8 @@ class UserDao:
                 account_id : account 생성 후 아이디 반환
 
             Raises:
-                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'}  : 데이터베이스 에러
+                500, {'message': 'data_manipulation_fail', 'error_message': '소셜 로그인을 실패하였습니다.'} : 데이터 조작 에러
 
             History:
                 2020-12-29(김민구): 초기 생성
@@ -289,7 +301,11 @@ class UserDao:
         try:
             with connection.cursor() as cursor:
                 result = cursor.execute(sql, data)
-                return result
+                if not result:
+                    raise DataManipulationFail('소셜 로그인을 실패하였습니다.')
+
+        except DataManipulationFail as e:
+            raise e
 
         except Exception:
             traceback.print_exc()
@@ -309,7 +325,8 @@ class UserDao:
                 1 : 유저 생성 성공
 
             Raises:
-                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'}  : 데이터베이스 에러
+                500, {'message': 'data_manipulation_fail', 'error_message': '소셜 로그인을 실패하였습니다.'} : 데이터 조작 에러
 
             History:
                 2020-12-29(김민구): 초기 생성
@@ -329,7 +346,11 @@ class UserDao:
         try:
             with connection.cursor() as cursor:
                 result = cursor.execute(sql, data)
-                return result
+                if not result:
+                    raise DataManipulationFail('소셜 로그인을 실패하였습니다.')
+
+        except DataManipulationFail as e:
+            raise e
 
         except Exception:
             traceback.print_exc()
