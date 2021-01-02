@@ -1,16 +1,13 @@
 """사용자 제작 예외 처리
-
 앱 관련 사용자 제작 예외처리는 모두 이곳에 Exception 클래스를 상속받아 작성한다.
 작성한 사용제 제작 예외 처리는 error_handler.py 에서 사용된다.
-
 기본적인 사용 예시:
-  class IamException(Exception):
+class IamException(Exception):
         def __init__(self, error_message):
         self.status_code = 400
         self.message = 'your message goes here'
         self.error_message = error_message
         super().__init__(self.status_code, self.message, self.error_message)
-
 """
 
 # don't touch
@@ -102,12 +99,14 @@ class InvalidUser(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class InvalidToken(CustomUserError):
     def __init__(self, error_message):
         status_code = 403
         message = 'invalid_token'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class TokenCreateDenied(CustomUserError):
     def __init__(self, error_message):
@@ -116,12 +115,14 @@ class TokenCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class UnauthorizedUser(CustomUserError):
     def __init__(self, error_message):
         status_code = 401
         message = 'unauthorized_user'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message):
@@ -168,6 +169,37 @@ class DestinationCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+        
+class SellerNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'seller not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class SellerUpdateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'user update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class SellerNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'seller not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class SellerUpdateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'user update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
 
 class RequiredFieldException(CustomUserError):
     def __init__(self, error_message):
@@ -176,12 +208,14 @@ class RequiredFieldException(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class CorrelationCheckException(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'correlation check fail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class ProductCreateDenied(CustomUserError):
     def __init__(self, error_message):
@@ -190,12 +224,14 @@ class ProductCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class ProductCodeUpdatedDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
         message = 'product code update denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class ProductImageCreateDenied(CustomUserError):
     def __init__(self, error_message):
@@ -204,12 +240,14 @@ class ProductImageCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class StockCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
         message = 'stock create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class ProductHistoryCreateDenied(CustomUserError):
     def __init__(self, error_message):
@@ -218,21 +256,78 @@ class ProductHistoryCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-class ColorNotExist(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 400
-        message = 'color not exist'
-        error_message = error_message
 
+class ProductSalesVolumeCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product sales volume create denied'
+        error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class ProductOriginTypesNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'fail to get product origin types'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
 
 class SizeNotExist(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
-        message = 'size not exist'
+        status_code = 500
+        message = 'fail to get size list'
         error_message = error_message
-        
         super().__init__(status_code, message, error_message)
+
+
+class ColorNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'fail to get color list'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class MainCategoryNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'fail to get main category list'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class SubCategoryNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'fail to get sub category list'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class NotValidFileException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'invalid file'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class FileSizeException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 413
+        message = 'file size too large'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class FileExtensionException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'only allowed jpg type'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
 
 class NotUser(CustomUserError):
     """ 유저가 아님

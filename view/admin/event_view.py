@@ -110,7 +110,7 @@ class EventProductsCategoryView(MethodView):
             'menu_id': args[1],
             'first_category_id': args[2]
         }
-        if data['filter'] is "none" and (data['menu_id'] or data['first_category_id']):
+        if data['filter'] == "none" and (data['menu_id'] or data['first_category_id']):
             raise FilterDoesNotMatch('error: filter does not match')
         elif data['filter'] == "menu":
             if not data['menu_id']:
