@@ -1,5 +1,5 @@
 import traceback
-from utils.custom_exceptions import CustomerPermissionDenied, CartItemCreateFail
+from utils.custom_exceptions import CustomerPermissionDenied, CartItemCreateDenied
 
 
 class SellerShopService:

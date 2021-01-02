@@ -2,7 +2,7 @@ import traceback
 import pymysql
 from utils.custom_exceptions import (
     CartItemNotExist,
-    CartItemCreateFail,
+    CartItemCreateDenied,
     AccountNotExist,
     ProductNotExist,
     ServerError
@@ -43,7 +43,7 @@ class CartItemDao:
                         "sale": 0.1,
                         "seller_name": "나는셀러9",
                         "size": "Free",
-                        "sold_out": false,
+                        "soldout": false,
                         "stock_id": 1,
                         "total_price": 9000.0
                     }
@@ -73,7 +73,7 @@ class CartItemDao:
         , sale
         , ct.original_price 
         , ct.discounted_price 
-        , st.remain AS sold_out
+        , st.remain AS soldout
         FROM cart_items as ct
         INNER JOIN stocks as st ON st.id = stock_id
         INNER JOIN colors as co ON co.id = st.color_id
@@ -94,9 +94,9 @@ class CartItemDao:
                     raise CartItemNotExist('cart_item_does_not_exist')
 
                 # 상품 재고가 0인지 확인하여, 상품이 품절되었는지 체크
-                if item_info['sold_out'] <= 0:
-                    item_info['sold_out'] = True
-                item_info['sold_out'] = False
+                if item_info['soldout'] <= 0:
+                    item_info['soldout'] = True
+                item_info['soldout'] = False
 
                 # 총 가격 계산, 할인가가 있으면 할인가가 총 가격이 됨
                 total_price = {"total_price": (item_info['discounted_price']
@@ -109,43 +109,9 @@ class CartItemDao:
 
                 return result
 
-        except Exception:
+        except CartItemNotExist as e:
             traceback.print_exc()
-            raise ServerError('server_error')
-
-    def get_user_permission_check_dao(self, connection, data):
-        """사용자의 권한 조회
-
-        Args:
-            connection: 데이터베이스 연결 객체
-            data      : 서비스 레이어에서 넘겨 받아 조회할 data
-
-        Author:  고수희
-        Returns: 조회된 권한 타입의 id 반환
-
-        Raises:
-            400, {'message': 'account_does_not_exist',
-            'errorMessage': 'account_does_not_exist'} : 사용자 조회 실패
-
-        History:
-            2020-12-29(고수희): 초기 생성
-            2021-01-02(고수희): traceback 추가
-        """
-
-        sql = """
-        SELECT permission_type_id
-        FROM accounts  
-        WHERE id = %s
-        ;
-        """
-
-        try:
-            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-                cursor.execute(sql, data['user_id'])
-                result = cursor.fetchone()
-                if not result:
-                    raise AccountNotExist('account_does_not_exist')
-                return result
+            raise e
 
         except Exception:
             traceback.print_exc()
@@ -188,8 +154,12 @@ class CartItemDao:
 
                 #상품 재고가 0인지 확인하여, 상품이 품절되었는지 체크
                 if result['remain'] <= 0:
-                    return {'soldOut': True}
-                return {'soldOut': False}
+                    return {'soldout': True}
+                return {'soldout': False}
+
+        except ProductNotExist as e:
+            traceback.print_exc()
+            raise e
 
         except Exception:
             traceback.print_exc()
@@ -240,8 +210,12 @@ class CartItemDao:
                 cursor.execute(sql, data)
                 result = cursor.lastrowid
                 if not result:
-                    raise CartItemCreateFail('unable_to_create')
+                    raise CartItemCreateDenied('unable_to_create')
                 return result
+
+        except CartItemCreateDenied as e:
+            traceback.print_exc()
+            raise e
 
         except Exception:
             traceback.print_exc()

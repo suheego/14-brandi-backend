@@ -9,7 +9,7 @@ from flask_request_validator import (
 
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
-from utils.rules import NumberRule, DecimalRule
+from utils.rules import DecimalRule
 from utils.decorator import signin_decorator
 
 
@@ -62,7 +62,7 @@ class CartItemView(MethodView):
                                 "sale": 0.1,
                                 "seller_name": "나는셀러9",
                                 "size": "Free",
-                                "sold_out": false,
+                                "soldout": false,
                                 "stock_id": 1,
                                 "total_price": 9000.0
                             }
@@ -86,7 +86,8 @@ class CartItemView(MethodView):
         """
         data = {
             "cart_id": args[0],
-            "user_id": g.account_id
+            "user_id": g.account_id,
+            "user_permission": g.permission_type_id
         }
 
         try:
@@ -159,6 +160,7 @@ class CartItemAddView(MethodView):
         """
         data = {
             'user_id': g.account_id,
+            'user_permission': g.permission_type_id,
             'product_id': args[0],
             'stock_id': args[1],
             'quantity': args[2],
@@ -171,7 +173,7 @@ class CartItemAddView(MethodView):
             connection = get_connection(self.database)
             cart_id = self.service.post_cart_item_service(connection, data)
             connection.commit()
-            return {'message': 'success', 'result': {"cartId": cart_id}}, 201
+            return {'message': 'success', 'result': {"cart_id": cart_id}}, 201
 
         except Exception as e:
             connection.rollback()
