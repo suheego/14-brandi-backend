@@ -7,22 +7,38 @@ from utils.custom_exceptions import DatabaseError
 
 class ProductListDao:
 
-    def get_search_products_dao(self, connection, search):
+    def get_search_products_dao(self, connection, data):
 
         sql = """
-        SELECT 
-	    name
+        SELECT DISTINCT
+             product.id AS product_id
+            , product_image.image_url AS image
+            , product.name
+            , product.seller_id AS seller_id
+            , seller.name AS seller_name
+            , product.origin_price
+            , product.discounted_price
+            , product_sales_volume.sales_count
         FROM
-            products
+            products AS product
+        INNER JOIN product_images AS product_image
+            ON product_id = product_image.product_id
+            AND product_image.order_index = 1
+        INNER JOIN sellers AS seller
+            ON seller.account_id = product.seller_id
+        INNER JOIN product_sales_volumes AS product_sales_volume
+            ON product_sales_volume.product_id = product.id
         WHERE
-            name
-        LIKE %s;
+            product.name LIKE %(search)s
+        ORDER BY
+            (CASE WHEN %(sort_type)s = 2 THEN sales_count END) DESC,
+            (CASE WHEN %(sort_type)s = 3 THEN product.id END) DESC
+        LIMIT %(limit)s;
         """
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            search_string = "'%"+search+"%'"
-            cursor.execute(sql, search_string)
+            data['search'] = '%%' + data['search'] + '%%' 
+            cursor.execute(sql, data)
             result = cursor.fetchall()
-            print(result)
             return result
 
     def get_product_list(self, connection, event_id):

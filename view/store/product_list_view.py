@@ -27,13 +27,26 @@ class ProductSearchView(MethodView):
         self.service = service
         self.database = database
 
-    def get(self):
+    @validate_params(
+            Param('q', GET, str),
+            Param('limit', GET, int),
+            Param('sort_type', GET, str)
+            )
+    def get(self, *args):
         """ GET 메소드: 상품 검색 
+
+        #validate 미적용 
         """
         try:
-            search = request.args.get('q')
+
+            data = {
+                    'search': args[0],
+                    'limit': args[1],
+                    'sort_type': args[2] 
+                    }
+
             connection = get_connection(self.database)
-            result = self.service.product_search_service(connection, search)
+            result = self.service.product_search_service(connection, data)
             return jsonify({'message': 'success', 'result': result})
         except Exception as e:
             raise e
