@@ -113,8 +113,6 @@ def create_app(test_config=None):
     services.create_product_service = CreateProductService(create_product_dao)
     services.bookmark_service = BookmarkService()
 
-
-
     services.seller_shop_service = SellerShopService(seller_shop_dao)
     
     # presentation Layer

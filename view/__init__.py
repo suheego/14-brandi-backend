@@ -152,6 +152,7 @@ def create_endpoints(app, services, database):
                          'bookmark_view',
                          services,
                          database
+                     ))
 
     app.add_url_rule('/event-list',
                      view_func=EventBannerListView.as_view(
