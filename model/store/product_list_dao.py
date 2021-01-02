@@ -10,12 +10,12 @@ class ProductListDao:
     def get_search_products_dao(self, connection, data):
 
         sql = """
-        SELECT DISTINCT
-             product.id AS product_id
-            , product_image.image_url AS image
+        SELECT
+            product_image.image_url AS image
             , product.name
             , product.seller_id AS seller_id
             , seller.name AS seller_name
+            , product.id AS product_id
             , product.origin_price
             , product.discounted_price
             , product_sales_volume.sales_count
@@ -31,9 +31,10 @@ class ProductListDao:
         WHERE
             product.name LIKE %(search)s
         ORDER BY
-            (CASE WHEN %(sort_type)s = 2 THEN sales_count END) DESC,
-            (CASE WHEN %(sort_type)s = 3 THEN product.id END) DESC
+            (CASE WHEN %(sort_type)s=2 THEN sales_count END) DESC
+            , (CASE WHEN %(sort_type)s=3 THEN product.id END) DESC
         LIMIT %(limit)s;
+
         """
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             data['search'] = '%%' + data['search'] + '%%' 
@@ -146,3 +147,40 @@ class ProductListDao:
         except Exception:
             traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
+
+
+    def get_product_detail_dao(self, connection, data):
+
+        sql = """
+            SELECT
+	        product.id
+	        , product.name
+                , product.seller_id AS seller_id
+                , seller.name AS seller_name
+	        , product.origin_price
+	        , product.discount_rate
+                , product.discounted_price
+                , product.detail_infomation
+                , product_sales_volume.sales_count
+                , bookmark.bookmark_count
+            FROM
+	        products AS product
+	    INNER JOIN sellers AS seller
+		ON product.seller_id = seller.account_id
+	    INNER JOIN product_sales_volumes AS product_sales_volume
+		ON product_sales_volume.product_id = product.id
+            INNER JOIN bookmark_volumes AS bookmark
+                ON bookmark.product_id = product.id
+            WHERE 
+	        product.id = %(product_id)s;
+
+        """
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data)
+                result = cursor.fetchone()
+                return result
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
+

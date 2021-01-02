@@ -76,4 +76,9 @@ class ProductListService:
             data['sort_type'] = 3
 
         return self.product_dao.get_search_products_dao(connection, data)
-
+    
+    def product_detail_service(self, connection, data):
+        """
+        """
+        return self.product_dao.get_product_detail_dao(connection, data)
+        
