@@ -23,12 +23,10 @@ class SenderView(MethodView):
         self.database = database
 
     @signin_decorator(True)
-    def get(self, *args):
+    def get(self):
         """ GET 메소드: 해당 유저가 사용한 가장 최신의 주문자 정보 조회
 
         user_id에 해당되는 주문 내역들을 조회해서, 가장 최근에 사용한 주문자 정보 사용
-
-        Args: args = ('account_id')
 
         Author: 고수희
 
@@ -49,7 +47,8 @@ class SenderView(MethodView):
         """
 
         data = {
-            "user_id": g.account_id
+            "user_id": g.account_id,
+            "user_permission": g.permission_type_id
         }
 
         try:

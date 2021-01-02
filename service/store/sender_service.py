@@ -44,12 +44,15 @@ class SenderService:
         """
         try:
             # 사용자의 권한 체크
-            permission_check = self.sender_dao.get_user_permission_check_dao(connection, data)
-            if permission_check['permission_type_id'] != 3:
+            if data['user_permission'] != 3:
                 raise CustomerPermissionDenied('customer_permission_denied')
 
             #주문 정보 조회
             return self.sender_dao.get_sender_info_dao(connection, data)
+
+        except CustomerPermissionDenied as e:
+            traceback.print_exc()
+            raise e
 
         except KeyError:
             traceback.print_exc()
