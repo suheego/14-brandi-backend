@@ -1,7 +1,7 @@
 
 import json
 from utils.decorator import signin_decorator
-
+from utils.rules import SortTypeRule, NumberRule
 
 from flask.views import MethodView
 from flask import jsonify, request
@@ -32,12 +32,14 @@ class ProductDetailView(MethodView):
             200, {'message': 'success', 'result': 상품정보}   
         
         Raises:
-
+            400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
+            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
+            500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
         History:
 
                 2020-12-31(김기용): 초기 생성
-                2021-01-01(김기용): 수정
-                2021-01-02(김기용): 수정
+                2021-01-01(김기용): 1차 구현
+                2021-01-02(김기용): 북마크에대한 정보를 추가해주었다.
         """
         try:
             data=dict()
@@ -59,8 +61,8 @@ class ProductSearchView(MethodView):
 
     @validate_params(
             Param('q', GET, str),
-            Param('limit', GET, int),
-            Param('sort_type', GET, str)
+            Param('limit', GET, str, rules=[NumberRule()]),
+            Param('sort_type', GET, str, rules=[SortTypeRule()])
             )
     def get(self, *args):
         """ GET 메소드: 상품 검색 
@@ -76,18 +78,22 @@ class ProductSearchView(MethodView):
             200, {'message': 'success', 'result': 상품정보들}   
         
         Raises:
-
+            400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
+            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
+            500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
         History:
 
                 2020-12-31(김기용): 초기 생성
-                2021-01-01(김기용): 수정
-                2021-01-02(김기용): 수정
+                2021-01-01(김기용): 북마크에 대한 정보 추가
+                2021-01-02(김기용): Param 값에대한 Rule을 정의해주었다.
         """
+
+        connection = None
         try:
 
             data = {
                     'search': args[0],
-                    'limit': args[1],
+                    'limit': int(args[1]),
                     'sort_type': args[2] 
                     }
 

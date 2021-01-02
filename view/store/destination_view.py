@@ -84,7 +84,6 @@ class DestinationView(MethodView):
             2020-12-29(김기용): 초기 생성
         """
 
-        # 로그인 데코레이터 달리면 그때 account_id 를 받아올예정
         data = dict()
         data['account_id'] = g.account_id
 
