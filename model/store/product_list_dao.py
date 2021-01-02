@@ -8,6 +8,9 @@ from utils.custom_exceptions import DatabaseError
 class ProductListDao:
 
     def get_search_products_dao(self, connection, data):
+        """ 상품 검색 및 정렬
+
+        """
 
         sql = """
         SELECT
