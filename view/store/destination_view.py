@@ -52,7 +52,7 @@ class DestinationDetailView(MethodView):
                 if connection:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database_close_failed')
+                raise DatabaseCloseFail('서버에서 알 수 없는 에러가 발생했습니다.')
 
 
 class DestinationView(MethodView):
@@ -61,7 +61,7 @@ class DestinationView(MethodView):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    @signin_decorator(True)
     def get(self):
         """GET 메소드:   해당 유저에 대한 배송지 정보 받아오기
 
@@ -82,10 +82,12 @@ class DestinationView(MethodView):
 
         History:
             2020-12-29(김기용): 초기 생성
+            2021-01-02(김기용): 데코레이터 수정
         """
 
         data = dict()
         data['account_id'] = g.account_id
+        data['permission_type_id'] = g.permission_type_id
 
         try:
             connection = get_connection(self.database)
@@ -100,9 +102,9 @@ class DestinationView(MethodView):
                 if connection:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database_close_failed')
+                raise DatabaseCloseFail('서버에서 알 수 없는 에러가 발생했습니다.')
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
         Param('recipient', JSON, str),
         Param('phone', JSON, str, rules=[PhoneRule()]),
@@ -114,8 +116,7 @@ class DestinationView(MethodView):
         """POST 메소드:  배송지 추가
 
         Args:
-            args =('user_id',
-                   'recipient',
+            args =('recipient',
                    'phone',
                    'address1',
                    'address2',
@@ -139,17 +140,19 @@ class DestinationView(MethodView):
         History:
             2020-12-28(김기용): 초기 생성
             2020-12-29(김기용): 데코레이터 추가
+            2020-12-30(김기용): 수정된 데코레이터반영: 데코레이터에서 user_type을 받음
+            2021-01-02(김기용): 수정된 데코레이터 반영: signin_decorator(True)
         """
 
         data = {
             'user_id': g.account_id,
+            'permission_type_id': g.permission_type_id,
             'recipient': args[0],
             'phone': args[1],
             'address1': args[2],
             'address2': args[3],
             'post_number': args[4],
         }
-
         try:
             connection = get_connection(self.database)
             self.service.create_destination_service(connection, data)
@@ -165,9 +168,9 @@ class DestinationView(MethodView):
                 if connection:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database close fail')
+                raise DatabaseCloseFail('서버에서 알 수 없는 에러가 발생했습니다.')
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
         Param('destination_id', JSON, str, rules=[NumberRule()]),
         Param('recipient', JSON, str),
@@ -200,6 +203,7 @@ class DestinationView(MethodView):
         data['post_number'] = args[5]
         data['default_location'] = args[6]
         data['account_id'] = g.account_id
+        data['permission_type_id'] = g.permission_type_id
 
         try:
             connection = get_connection(self.database)
@@ -216,9 +220,9 @@ class DestinationView(MethodView):
                 if connection:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database close fail')
+                raise DatabaseCloseFail('서버에서 알 수 없는 에러가 발생했습니다')
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
         Param('destination_id', JSON, str, rules=[NumberRule()])
     )
@@ -245,6 +249,7 @@ class DestinationView(MethodView):
         data = dict()
         data['destination_id'] = args[0]
         data['account_id'] = g.account_id
+        data['permission_type_id'] = g.permission_type_id
         
         try:
             connection = get_connection(self.database)
@@ -261,4 +266,4 @@ class DestinationView(MethodView):
                 if connection:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database close fail')
+                raise DatabaseCloseFail('서버에서 알 수 없는 에러가 발생했습니다')
