@@ -21,6 +21,7 @@ from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
 from .store.sender_view import SenderView
 from .store.store_order_view import StoreOrderView, StoreOrderAddView
+from .store.event_list_view import EventBannerListView, EventDetailInformationView, EventDetailProductListView, EventDetailButtonListView
 
 
 
@@ -28,9 +29,8 @@ from .store.seller_shop_view import SellerShopView
 
 from utils.error_handler import error_handle
 
-def create_endpoints(app, services, database):
-    sample_user_service = services.sample_user_service
 
+def create_endpoints(app, services, database):
     """ 앤드 포인트 시작
 
             Args:
@@ -148,6 +148,34 @@ def create_endpoints(app, services, database):
                          'category_list_view',
                          services,
                          database
+                     ))
+
+    app.add_url_rule('/event-list',
+                     view_func=EventBannerListView.as_view(
+                        'event_banner_list_view',
+                        services,
+                        database
+                     ))
+
+    app.add_url_rule('/event-list/<int:event_id>',
+                     view_func=EventDetailProductListView.as_view(
+                        'event_detail_list_view',
+                        services,
+                        database
+                     ))
+
+    app.add_url_rule('/event-information/<int:event_id>',
+                     view_func=EventDetailInformationView.as_view(
+                        'event_detail_information',
+                        services,
+                        database
+                     ))
+
+    app.add_url_rule('/event-list/<int:event_id>/buttons',
+                     view_func=EventDetailButtonListView.as_view(
+                        'event_detail_button_list_view',
+                        services,
+                        database
                      ))
 
 # ----------------------------------------------------------------------------------------------------------------------
