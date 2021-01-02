@@ -1,7 +1,13 @@
 import pymysql
-from utils.custom_exceptions import EventDoesNotExist, CategoryMenuDoesNotMatch, CategoryDoesNotExist
-
-
+from utils.custom_exceptions import (
+    EventDoesNotExist,
+    CategoryMenuDoesNotMatch,
+    CategoryDoesNotExist,
+    CreateEventDenied,
+    CreateButtunDenied,
+    InsertProductIntoButtonDenied,
+    InsertProductIntoEventDenied
+)
 
 class EventDao:
     """ Persistence Layer
@@ -61,7 +67,8 @@ class EventDao:
                 2020-12-29(강두연): 이벤트 검색조건별 조회 작성
                 2020-12-30(강두연): 조회된 이벤트 총 갯수 반환기능 작성
             Raises:
-                404, {'message': 'event not exist', 'errorMessage': 'event does not exist'} : 이벤트 정보 조회 실패
+                404, {'message': 'event not exist',
+                      'errorMessage': 'event does not exist'} : 이벤트 정보 조회 실패
         """
 
         total_count_sql = """
@@ -158,6 +165,10 @@ class EventDao:
 
             History:
                 2020-12-30(강두연): 초기 생성
+
+            Raises:
+                404, {'message': 'event not exist',
+                      'errorMessage': 'event does not exist'} : 이벤트 정보 조회 실패
         """
 
         sql = """
@@ -361,12 +372,44 @@ class EventDao:
     def get_products_list_to_post(self, connection, data):
         """ 기획전에 추가할 상품 조회
 
-        Args:
-            connection:
-            data:
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
 
-        Returns:
+            Returns: {
+                "products": [
+                    {
+                        "discount_rate": 0.1,
+                        "discounted_price": 9000.0,
+                        "id": 99,
+                        "is_display": 1,
+                        "is_sale": 1,
+                        "original_price": 10000.0,
+                        "product.discounted_price": 9000.0,
+                        "product_name": "성보의하루99",
+                        "product_number": "P0000000000000000099",
+                        "seller_name": "나는셀러5",
+                        "thumbnail_image_url": "https://img.com/asdf"
+                    },
+                    {
+                        "discount_rate": 0.1,
+                        "discounted_price": 9000.0,
+                        "id": 98,
+                        "is_display": 1,
+                        "is_sale": 1,
+                        "original_price": 10000.0,
+                        "product.discounted_price": 9000.0,
+                        "product_name": "성보의하루98",
+                        "product_number": "P0000000000000000098",
+                        "seller_name": "나는셀러5",
+                        "thumbnail_image_url": "https://img.com/asdf"
+                    }
+                ],
+                "total_count": 31
+            }
 
+            History:
+                    2020-12-31(강두연): 초기 작성
         """
         total_count_sql = """
             SELECT
@@ -376,13 +419,12 @@ class EventDao:
         sql = """
             SELECT
                 product.id
-                , product.original_price AS original_price
+                , product.origin_price AS original_price
                 , product.discounted_price AS discounted_price
                 , product_image.image_url AS thumbnail_image_url
                 , product.product_code AS product_number
                 , product.`name` AS product_name
                 , seller.`name` AS seller_name
-                , product.origin_price AS original_price
                 , product.discounted_price AS discounted_price
                 , product.discount_rate AS discount_rate
                 , product.is_sale AS is_sale
@@ -442,7 +484,7 @@ class EventDao:
             cursor.execute(sql, data)
             products = cursor.fetchall()
             if not products:
-                return {'products': products, 'total_count': 0}
+                return {'products': [], 'total_count': 0}
             cursor.execute(total_count_sql, data)
             count = cursor.fetchone()
             return {'products': products, 'total_count': count['total_count']}
@@ -451,11 +493,109 @@ class EventDao:
         """  기획전에 추가될 상품 조회 검색조건에서 카테고리 불러오기
 
         Args:
-            connection:
-            data:
+            connection: 데이터베이스 연결 객체
+            data : 비지니스 레이어에서 넘겨 받은 딕셔너리
 
         Returns:
+            case 1: [
+                {
+                    "id": 4,
+                    "name": "트렌드"
+                },
+                {
+                    "id": 5,
+                    "name": "브랜드"
+                },
+                {
+                    "id": 6,
+                    "name": "뷰티"
+                }
+            ]
+            case 2: [
+                {
+                    "id": 1,
+                    "name": "아우터"
+                },
+                {
+                    "id": 2,
+                    "name": "상의"
+                },
+                {
+                    "id": 3,
+                    "name": "바지"
+                },
+                {
+                    "id": 4,
+                    "name": "원피스"
+                },
+                {
+                    "id": 5,
+                    "name": "스커트"
+                },
+                {
+                    "id": 6,
+                    "name": "신발"
+                },
+                {
+                    "id": 7,
+                    "name": "가방"
+                },
+                {
+                    "id": 8,
+                    "name": "주얼리"
+                },
+                {
+                    "id": 9,
+                    "name": "잡화"
+                },
+                {
+                    "id": 10,
+                    "name": "라이프웨어"
+                },
+                {
+                    "id": 11,
+                    "name": "빅사이즈"
+                }
+            ]
+            case 3: [
+                {
+                    "id": 1,
+                    "name": "자켓"
+                },
+                {
+                    "id": 2,
+                    "name": "가디건"
+                },
+                {
+                    "id": 3,
+                    "name": "코트"
+                },
+                {
+                    "id": 4,
+                    "name": "점퍼"
+                },
+                {
+                    "id": 5,
+                    "name": "패딩"
+                },
+                {
+                    "id": 6,
+                    "name": "무스탕/퍼"
+                },
+                {
+                    "id": 7,
+                    "name": "기타"
+                }
+            ]
+        History:
+            2020-12-31(강두연): 초기 작성
 
+        Raises:
+            400, {'message': 'menu id does not match with category id',
+                  'errorMessage': 'category and menu does not match'}: 카테고리와 메뉴가 매칭안됨
+
+            400, {'message': 'category not exist',
+                  'errorMessage': 'category doesnot exist'}: 카테고리가 존재하지 않음
        """
         if not data['menu_id'] and not data['first_category_id']:
             sql = """
@@ -505,5 +645,154 @@ class EventDao:
             cursor.execute(sql, data)
             result = cursor.fetchall()
             if not result:
-                raise CategoryDoesNotExist
+                raise CategoryDoesNotExist('category does not exist')
+            return result
+
+    def create_event(self, connection, data):
+        """ 기획전 생성
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                return 27 (생성된 기획전 프라이머리키 아이디)
+
+            History:
+                2020-01-02(강두연): 초기 작성
+
+            Raises:
+                400, {'message': 'unable to create event',
+                      'errorMessage': 'unable to create event'} : 이벤트 생성 실패
+        """
+        sql = """
+            INSERT INTO `events` (
+                `name`
+                , start_date
+                , end_date
+                , banner_image
+                , detail_image
+                , event_type_id
+                , event_kind_id
+                , is_display)
+            VALUES (
+                %(name)s
+                , %(start_datetime)s
+                , %(end_datetime)s
+                , %(banner_image)s
+                , %(detail_image)s
+                , %(event_type_id)s
+                , %(event_kind_id)s
+                , %(is_display)s);
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+            result = cursor.lastrowid
+            if not result:
+                raise CreateEventDenied('unable to create event')
+            return result
+
+    def create_button(self, connection, data):
+        """ 기획전 버튼 생성
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                return 27 (생성된 버튼 프라이머리키 아이디)
+
+            History:
+                2020-01-02(강두연): 초기 작성
+
+            Raises:
+                400, {'message': 'unable to create button',
+                      'errorMessage': 'unable to create button'} : 버튼 생성 실패
+        """
+        sql = """
+            INSERT INTO event_buttons (
+                `name`
+                , order_index
+                , event_id) 
+            VALUES (
+                %(button_name)s
+                , %(button_index)s
+                , %(event_id)s)
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+            result = cursor.lastrowid
+            if not result:
+                raise CreateButtunDenied('unable to create button')
+            return result
+
+    def insert_product_into_button(self, connection, data):
+        """ 기획전 버튼에 상품 연결
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                return 27 (연결된 기획전 상품 프라이머리키 아이디)
+
+            History:
+                2020-01-02(강두연): 초기 작성
+
+            Raises:
+                400, {'message': 'unable to insert product into button',
+                      'errorMessage': 'unable to insert product into button'} : 상품 연결 실패
+        """
+
+        sql = """
+            INSERT INTO events_products (
+                event_id
+                , product_id
+                , event_button_id) 
+            VALUES (
+                %(event_id)s
+                , %(product_id)s
+                , %(button_id)s);
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+            result = cursor.lastrowid
+            if not result:
+                raise InsertProductIntoButtonDenied('unable to insert product into button')
+            return result
+
+    def insert_product_into_event(self, connection, data):
+        """ 기획전에 상품 연결 (버튼형 x)
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                return 27 (연결된 기획전 상품 프라이머리키 아이디)
+
+            History:
+                2020-01-02(강두연): 초기 작성
+
+            Raises:
+                400, {'message': 'unable to insert product into event',
+                      'errorMessage': 'unable to insert product into event'} : 상품 연결 실패
+        """
+        sql = """
+            INSERT INTO events_products (
+                event_id
+                , product_id) 
+            VALUES (
+                %(event_id)s
+                , %(product_id)s);
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+            result = cursor.lastrowid
+            if not result:
+                raise InsertProductIntoEventDenied('unable to insert product into event')
             return result

@@ -662,3 +662,168 @@ class UnableToUpdate(CustomUserError):
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
+
+
+class EventKindDoesNotMatch(CustomUserError):
+    """ 기획전 종류가 버튼형이 아닌데 버튼데이터를 받은경우
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'Event kind does not match'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class ButtonsMinimumCount(CustomUserError):
+    """ 기획전 종류가 버튼형일때 버튼이 두개이상
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'at least two buttons should be created'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class StartAndEndDateContext(CustomUserError):
+    """ 시작날짜가 종료날짜보다 미래일 때
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'start date and end date context error'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class ImageIsRequired(CustomUserError):
+    """ 이미지가 필요함
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'image files are required'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+class CreateEventDenied(CustomUserError):
+    """ 이벤트 생성 실패
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable to create event'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class CreateButtunDenied(CustomUserError):
+    """ 이벤트 버튼 생성 실패
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable to create event button'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class ProductButtonNameRequired(CustomUserError):
+    """ 기획전 종류가 버튼인데 버튼이름 키,값이 상품데이터에 없을 때
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'button name is required in each product'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class InsertProductIntoButtonDenied(CustomUserError):
+    """ 버튼에 상품추가 실패
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable to insert product into button'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class InsertProductIntoEventDenied(CustomUserError):
+    """ 버튼에 상품추가 실패
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable to insert product into event'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class ButtonProductDoesNotMatch(CustomUserError):
+    """ 기획전 종류가 버튼형이고 상품추가할 객체가 있지만 상품과 매치된 버튼이 단 하나도 없음
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'although there are product and button objects, no buttons are matched'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)

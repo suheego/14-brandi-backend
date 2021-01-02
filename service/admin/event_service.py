@@ -1,3 +1,12 @@
+import datetime
+
+from werkzeug.utils import secure_filename
+from utils.custom_exceptions import ButtonProductDoesNotMatch
+from utils.amazon_s3 import S3FileManager, GenerateFilePath
+
+from config import S3_BUCKET_URL
+
+
 class EventService:
     """ Business Layer
 
@@ -202,6 +211,113 @@ class EventService:
             raise e
 
     def get_products_category_service(self, connection, data):
+        """ 기획전에 상품추가 페이지에서 상품 카테고리 받아오기
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data      : View 에서 넘겨받은 dict
+
+            Author: 강두연
+
+            Returns:
+                case 1: [
+                    {
+                        "id": 4,
+                        "name": "트렌드"
+                    },
+                    {
+                        "id": 5,
+                        "name": "브랜드"
+                    },
+                    {
+                        "id": 6,
+                        "name": "뷰티"
+                    }
+                ]
+                case 2: [
+                    {
+                        "id": 1,
+                        "name": "아우터"
+                    },
+                    {
+                        "id": 2,
+                        "name": "상의"
+                    },
+                    {
+                        "id": 3,
+                        "name": "바지"
+                    },
+                    {
+                        "id": 4,
+                        "name": "원피스"
+                    },
+                    {
+                        "id": 5,
+                        "name": "스커트"
+                    },
+                    {
+                        "id": 6,
+                        "name": "신발"
+                    },
+                    {
+                        "id": 7,
+                        "name": "가방"
+                    },
+                    {
+                        "id": 8,
+                        "name": "주얼리"
+                    },
+                    {
+                        "id": 9,
+                        "name": "잡화"
+                    },
+                    {
+                        "id": 10,
+                        "name": "라이프웨어"
+                    },
+                    {
+                        "id": 11,
+                        "name": "빅사이즈"
+                    }
+                ]
+                case 3: [
+                    {
+                        "id": 1,
+                        "name": "자켓"
+                    },
+                    {
+                        "id": 2,
+                        "name": "가디건"
+                    },
+                    {
+                        "id": 3,
+                        "name": "코트"
+                    },
+                    {
+                        "id": 4,
+                        "name": "점퍼"
+                    },
+                    {
+                        "id": 5,
+                        "name": "패딩"
+                    },
+                    {
+                        "id": 6,
+                        "name": "무스탕/퍼"
+                    },
+                    {
+                        "id": 7,
+                        "name": "기타"
+                    }
+                ]
+
+            Raises:
+                400, {'message': 'key error',
+                'errorMessage': 'key_error'} : 잘못 입력된 키값
+
+            History:
+                2020-12-31(강두연): 초기 작성
+        """
         try:
             return self.event_dao.get_product_category(connection, data)
 
@@ -211,12 +327,48 @@ class EventService:
     def get_products_to_post_service(self, connection, data):
         """ 기획전에 추가할 상품 조회
 
-        Args:
-            connection:
-            data:
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 뷰에서 넘겨 받은 딕셔너리
 
-        Returns:
+            Returns: {
+                "products": [
+                    {
+                        "discount_rate": 0.1,
+                        "discounted_price": 9000.0,
+                        "id": 99,
+                        "is_display": 1,
+                        "is_sale": 1,
+                        "original_price": 10000.0,
+                        "product.discounted_price": 9000.0,
+                        "product_name": "성보의하루99",
+                        "product_number": "P0000000000000000099",
+                        "seller_name": "나는셀러5",
+                        "thumbnail_image_url": "https://img.com/asdf"
+                    },
+                    {
+                        "discount_rate": 0.1,
+                        "discounted_price": 9000.0,
+                        "id": 98,
+                        "is_display": 1,
+                        "is_sale": 1,
+                        "original_price": 10000.0,
+                        "product.discounted_price": 9000.0,
+                        "product_name": "성보의하루98",
+                        "product_number": "P0000000000000000098",
+                        "seller_name": "나는셀러5",
+                        "thumbnail_image_url": "https://img.com/asdf"
+                    }
+                ],
+                "total_count": 31
+            }
 
+            Raises:
+                400, {'message': 'key error',
+                'errorMessage': 'key_error'} : 잘못 입력된 키값
+
+            History:
+                    2020-12-31(강두연): 초기 작성
         """
 
         try:
@@ -224,6 +376,91 @@ class EventService:
             if data['product_name']:
                 data['product_name'] = '% ' + data['product_name'] + ' %'
             return self.event_dao.get_products_list_to_post(connection, data)
+
+        except Exception as e:
+            raise e
+
+    def create_event_service(self, connection, data, buttons=None, products=None):
+        """ 기획전 등록
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data: 뷰에서 넘겨 받은 딕셔너리
+                buttons: 상품이 버튼형일때 버튼에 대한 정보를 담고있는 딕셔너리 리스트
+                products: 기획전에 추가할 상품이 있을 때 상품에 대한 정보를 담고있는 딕셔너리 리스트
+
+            Returns:
+                생성된 기획전 아이디
+
+            Raises:
+                400, {'message': 'key error',
+                      'errorMessage': 'key_error'} : 잘못 입력된 키값
+
+                400, {
+                    'message': 'although there are product and button objects, no buttons are matched',
+                    'errorMessage': ''there are product and button objects but no buttons are matched'
+                } : 기획전 종류가 버튼형이고 추가할 상 객체가 있지만 상품과 매치된 버튼이 단 하나도 없음
+
+            History:
+                    2020-01-02(강두연): 초기 작성
+        """
+        try:
+            banner_file_path = GenerateFilePath().generate_file_path(
+                4,
+                today=datetime.date.today().isoformat().replace('-', '/')
+            )
+
+            secured_banner_file_name = secure_filename(data['banner_image'].filename)
+
+            detail_file_path = GenerateFilePath().generate_file_path(
+                5,
+                today=datetime.date.today().isoformat().replace('-', '/')
+            )
+
+            secured_detail_file_name = secure_filename(data['detail_image'].filename)
+
+            # save to AMAZON S3
+            data['banner_image'] = S3FileManager().file_upload(
+                data['banner_image'],
+                banner_file_path + secured_banner_file_name
+            )
+
+            data['detail_image'] = S3FileManager().file_upload(
+                data['detail_image'],
+                detail_file_path + secured_detail_file_name
+            )
+
+            data['banner_image'] = S3_BUCKET_URL + data['banner_image']
+            data['detail_image'] = S3_BUCKET_URL + data['detail_image']
+            data['start_datetime'] += ':00'
+            data['end_datetime'] += ':00'
+
+            data['event_id'] = self.event_dao.create_event(connection, data)
+
+            if products and buttons:
+                button_product_matched = False
+
+            if buttons:
+                for button in buttons:
+                    button['event_id'] = data['event_id']
+                    button_id = self.event_dao.create_button(connection, button)
+                    if products:
+                        for product in products:
+                            if product['button_name'] == button['button_name']:
+                                product['button_id'] = button_id
+                                product['event_id'] = data['event_id']
+                                button_product_matched = True
+                                self.event_dao.insert_product_into_button(connection, product)
+
+            if not button_product_matched:
+                raise ButtonProductDoesNotMatch('there are product and button objects but no buttons are matched')
+
+            elif not buttons and products:
+                for product in products:
+                    product['event_id'] = data['event_id']
+                    self.event_dao.insert_product_into_event(connection, product)
+
+            return data['event_id']
 
         except Exception as e:
             raise e
