@@ -1,3 +1,4 @@
+import traceback
 from utils.custom_exceptions import CustomerPermissionDenied, CheckoutDenied
 
 
@@ -46,6 +47,7 @@ class StoreOrderService:
             return self.store_order_dao.get_store_order_dao(connection, data)
 
         except KeyError:
+            traceback.print_exc()
             raise KeyError('key_error')
 
     def post_order_service(self, connection, data):
@@ -121,4 +123,5 @@ class StoreOrderService:
             return order
 
         except KeyError:
+            traceback.print_exc()
             raise KeyError('key_error')

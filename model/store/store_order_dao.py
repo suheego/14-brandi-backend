@@ -1,4 +1,6 @@
-import pymysql, traceback
+import traceback
+import pymysql
+
 from utils.custom_exceptions import (
     OrderNotExist,
     OrderCreateDenied,

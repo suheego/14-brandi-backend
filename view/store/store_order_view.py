@@ -30,9 +30,9 @@ class StoreOrderView(MethodView):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
-        Param('order_id', PATH, str)
+        Param('order_id', PATH, int)
     )
     def get(self, *args):
         """ GET 메소드: 해당 유저가 직전에 마친 결제 정보를 조회
@@ -45,10 +45,13 @@ class StoreOrderView(MethodView):
         Author: 고수희
 
         Returns:
-            return {
-            "message": "success",
-            "result": {"totalPrice"":9000,
-
+            {
+                "message": "success",
+                "result": {
+                    "order_number": "20210101000001000",
+                    "total_price": 8000.0
+                }
+            }
 
         Raises:
             400, {'message': 'key error',
@@ -62,7 +65,8 @@ class StoreOrderView(MethodView):
 
         History:
             2020-12-28(고수희): 초기 생성
-            2020-12-30(고수희): 1차 수정 - 데코레이터 추가, 사용자 권한 체
+            2020-12-30(고수희): 1차 수정 - 데코레이터 추가, 사용자 권한 체크
+            2021-01-02(고수희): decorator 수정
         """
         data = {
             "order_id": args[0],
@@ -101,11 +105,11 @@ class StoreOrderAddView(MethodView):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
-        Param('productId', JSON, str, rules=[NumberRule()]),
-        Param('stockId', JSON, str, rules=[NumberRule()]),
-        Param('quantity', JSON, str, rules=[NumberRule()]),
+        Param('productId', JSON, int),
+        Param('stockId', JSON, int),
+        Param('quantity', JSON, int),
         Param('originalPrice', JSON, str, rules=[DecimalRule()]),
         Param('sale', JSON, str, rules=[DecimalRule()]),
         Param('discountedPrice', JSON, str, rules=[DecimalRule()]),
