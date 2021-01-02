@@ -27,22 +27,23 @@ class ProductListService:
             Author: 김민구
 
             Returns: 해당 이벤트 배너와 30개의 상품을 반환
-                [
-                    {
+
+                    "event": {
                         'id' : 1,
                         'banner_image' : 'url'
                     },
-                    {
-                        'image': 'url',
-                        'seller_id': 1,
-                        'seller_name': '둘리',
-                        'product_id': 1,
-                        'product_name': '성보의 하루',
-                        'origin_price': 10000.0,
-                        'discount_rate': 0.1,
-                        'discounted_price': 9000.0,
-                        'sales_count': 30
-                    },
+                    "product_list" : [
+                        {
+                            'image': 'url',
+                            'seller_id': 1,
+                            'seller_name': '둘리',
+                            'product_id': 1,
+                            'product_name': '성보의 하루',
+                            'origin_price': 10000.0,
+                            'discount_rate': 0.1,
+                            'discounted_price': 9000.0,
+                            'sales_count': 30
+                        },
                 ]
 
             Raises:
@@ -57,7 +58,7 @@ class ProductListService:
         if not event:
             return []
         product_list = self.product_dao.get_product_list(connection, event['event_id'])
-        return [event] + product_list
+        return {'event': event, 'product_list': product_list}
     
     def product_search_service(self, connection, search):
         """ 상품 검색 서비스

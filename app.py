@@ -1,4 +1,3 @@
-
 import decimal
 
 from flask.json import JSONEncoder
@@ -40,7 +39,8 @@ from service import (
     StoreOrderService,
     CategoryListService,
     SellerShopService,
-    BookmarkService
+    BookmarkService,
+    EventListService,
 )
 
 
@@ -70,7 +70,6 @@ class Services:
 def create_app(test_config=None):
     app = Flask(__name__)
     app.debug = True
-
     app.json_encoder = CustomJSONEncoder
     # By default, submission of cookies across domains is disabled due to the security implications.
     CORS(app, resources={r'*': {'origins': '*'}})
@@ -106,10 +105,11 @@ def create_app(test_config=None):
     services.store_order_service = StoreOrderService(store_order_dao)
     services.product_list_service = ProductListService()
     services.category_list_service = CategoryListService()
+    services.event_list_service = EventListService()
     services.sender_service = SenderService(sender_dao)
     services.event_service = EventService(event_dao)
     services.order_service = OrderService(order_dao)
-    services.seller_service = SellerService(seller_dao,app.config)
+    services.seller_service = SellerService(seller_dao, app.config)
     services.create_product_service = CreateProductService(create_product_dao)
     services.bookmark_service = BookmarkService()
 

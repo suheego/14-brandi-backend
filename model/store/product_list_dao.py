@@ -6,6 +6,16 @@ from utils.custom_exceptions import DatabaseError
 
 
 class ProductListDao:
+    """ Persistence Layer
+
+        Attributes: None
+
+        Author: 김민구, 김기용
+
+        History:
+            2020-12-30(김민구): 초기 생성
+            2020-12-31(김민구): 에러 문구 변경
+    """
 
     def get_search_products_dao(self, connection, search):
 
@@ -58,33 +68,33 @@ class ProductListDao:
         """
 
         sql = """
-        SELECT 
-            product_image.image_url AS image
-            , product.seller_id AS seller_id
-            , seller.`name` AS seller_name
-            , product.id AS product_id
-            , product.`name` AS product_name
-            , product.origin_price
-            , product.discount_rate
-            , product.discounted_price 
-            , product_sales_volume.sales_count
-        FROM
-        events_products AS event_product
-        INNER JOIN products AS product
-            ON event_product.product_id = product.id
-        INNER JOIN product_images AS product_image
-            ON product_image.product_id = product.id
-        INNER JOIN sellers AS seller
-            ON seller.account_id = product.seller_id
-        INNER JOIN product_sales_volumes AS product_sales_volume
-            ON product_sales_volume.product_id = product.id
-        WHERE
-            event_id = %s
-            AND product.is_deleted = 0
-            AND product.is_display = 1
-        ORDER BY
-            product.id DESC
-        LIMIT 30;
+            SELECT 
+                product_image.image_url AS image
+                , product.seller_id AS seller_id
+                , seller.`name` AS seller_name
+                , product.id AS product_id
+                , product.`name` AS product_name
+                , product.origin_price
+                , product.discount_rate
+                , product.discounted_price 
+                , product_sales_volume.sales_count
+            FROM
+            events_products AS event_product
+            INNER JOIN products AS product
+                ON event_product.product_id = product.id
+            INNER JOIN product_images AS product_image
+                ON product_image.product_id = product.id
+            INNER JOIN sellers AS seller
+                ON seller.account_id = product.seller_id
+            INNER JOIN product_sales_volumes AS product_sales_volume
+                ON product_sales_volume.product_id = product.id
+            WHERE
+                event_id = %s
+                AND product.is_deleted = 0
+                AND product.is_display = 1
+            ORDER BY
+                product.id DESC
+            LIMIT 30;
         """
 
         try:
