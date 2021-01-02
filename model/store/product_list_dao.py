@@ -17,20 +17,41 @@ class ProductListDao:
             2020-12-31(김민구): 에러 문구 변경
     """
 
-    def get_search_products_dao(self, connection, search):
+    def get_search_products_dao(self, connection, data):
+        """ 상품 검색 및 정렬
+
+        """
 
         sql = """
-        SELECT 
-        name
+        SELECT
+            product_image.image_url AS image
+            , product.name
+            , product.seller_id AS seller_id
+            , seller.name AS seller_name
+            , product.id AS product_id
+            , product.origin_price
+            , product.discounted_price
+            , product_sales_volume.sales_count
         FROM
-            products
+            products AS product
+        INNER JOIN product_images AS product_image
+            ON product_id = product_image.product_id
+            AND product_image.order_index = 1
+        INNER JOIN sellers AS seller
+            ON seller.account_id = product.seller_id
+        INNER JOIN product_sales_volumes AS product_sales_volume
+            ON product_sales_volume.product_id = product.id
         WHERE
-            name
-        LIKE %s;
+            product.name LIKE %(search)s
+        ORDER BY
+            (CASE WHEN %(sort_type)s=2 THEN sales_count END) DESC
+            , (CASE WHEN %(sort_type)s=3 THEN product.id END) DESC
+        LIMIT %(limit)s;
+
         """
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            search_string = "'%"+search+"%'"
-            cursor.execute(sql, search_string)
+            data['search'] = '%%' + data['search'] + '%%' 
+            cursor.execute(sql, data)
             result = cursor.fetchall()
             return result
 
@@ -154,3 +175,40 @@ class ProductListDao:
         except Exception:
             traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
+
+
+    def get_product_detail_dao(self, connection, data):
+
+        sql = """
+            SELECT
+	        product.id
+	        , product.name
+                , product.seller_id AS seller_id
+                , seller.name AS seller_name
+	        , product.origin_price
+	        , product.discount_rate
+                , product.discounted_price
+                , product.detail_infomation
+                , product_sales_volume.sales_count
+                , bookmark.bookmark_count
+            FROM
+	        products AS product
+	    INNER JOIN sellers AS seller
+		ON product.seller_id = seller.account_id
+	    INNER JOIN product_sales_volumes AS product_sales_volume
+		ON product_sales_volume.product_id = product.id
+            INNER JOIN bookmark_volumes AS bookmark
+                ON bookmark.product_id = product.id
+            WHERE 
+	        product.id = %(product_id)s;
+
+        """
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data)
+                result = cursor.fetchone()
+                return result
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
+

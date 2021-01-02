@@ -35,8 +35,7 @@ class DestinationDao:
         """
         with connection.cursor() as cursor:
             cursor.execute(sql, data)
-            # fetchone()
-            affected_row = cursor.fetchall()
+            affected_row = cursor.fetchone()
             if affected_row == 0:
                 raise UpdateDenied('unable_to_delete_destinations')
             #리턴값 통일.

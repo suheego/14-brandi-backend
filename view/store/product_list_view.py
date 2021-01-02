@@ -1,3 +1,8 @@
+
+import json
+from utils.decorator import signin_decorator
+
+
 from flask.views import MethodView
 from flask import jsonify, request
 
@@ -15,9 +20,36 @@ class ProductDetailView(MethodView):
     def __init__(self, service, database):
         self.service  = service
         self.database = database
+    
+    def get(self, product_id):
+        """ GET 메소드: 상품 상세정보 검색
 
-    def get(self):
-        pass
+        Args:
+
+        Author: 김기용
+
+        Returns:
+            200, {'message': 'success', 'result': 상품정보}   
+        
+        Raises:
+
+        History:
+
+                2020-12-31(김기용): 초기 생성
+                2021-01-01(김기용): 수정
+                2021-01-02(김기용): 수정
+        """
+        try:
+            data=dict()
+            data['product_id'] = product_id
+            connection = get_connection(self.database)
+            result = self.service.product_detail_service(connection, data)
+            return jsonify({'message': 'success', 'result': result})
+        except Exception as e:
+            raise e
+        finally:
+            if connection is not None:
+                connection.close()
 
 
 class ProductSearchView(MethodView):
@@ -25,13 +57,42 @@ class ProductSearchView(MethodView):
         self.service = service
         self.database = database
 
-    def get(self):
+    @validate_params(
+            Param('q', GET, str),
+            Param('limit', GET, int),
+            Param('sort_type', GET, str)
+            )
+    def get(self, *args):
         """ GET 메소드: 상품 검색 
+
+        Args:
+            search   : 검색키워드
+            limit    : 표시할 상품 개수
+            sort_type: 정렬 종류(최신순, 판매순, 추천순)
+
+        Author: 김기용
+
+        Returns:
+            200, {'message': 'success', 'result': 상품정보들}   
+        
+        Raises:
+
+        History:
+
+                2020-12-31(김기용): 초기 생성
+                2021-01-01(김기용): 수정
+                2021-01-02(김기용): 수정
         """
         try:
-            search = request.args.get('q')
+
+            data = {
+                    'search': args[0],
+                    'limit': args[1],
+                    'sort_type': args[2] 
+                    }
+
             connection = get_connection(self.database)
-            result = self.service.product_search_service(connection, search)
+            result = self.service.product_search_service(connection, data)
             return jsonify({'message': 'success', 'result': result})
         except Exception as e:
             raise e

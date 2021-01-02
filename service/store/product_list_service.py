@@ -60,7 +60,7 @@ class ProductListService:
         product_list = self.product_dao.get_product_list(connection, event['event_id'])
         return {'event': event, 'product_list': product_list}
     
-    def product_search_service(self, connection, search):
+    def product_search_service(self, connection, data):
         """ 상품 검색 서비스
 
             1. 입력받은 값과 같은 상품이 존재한지 알아본다.
@@ -77,7 +77,25 @@ class ProductListService:
 
             History:
                 2020-12-31(김기용): 초기 생성
+                2021-01-01(김기용): 수정
 
         """
-        return self.product_dao.get_search_products_dao(connection, search)
+        # 추천순:1
+        if data['sort_type'] == 1:
+            data['sort_type'] = 1
 
+        # 판매량:2
+        elif data['sort_type'] == '2':
+            data['sort_type'] = 2
+
+        # 최신순:3
+        else:
+            data['sort_type'] = 3
+
+        return self.product_dao.get_search_products_dao(connection, data)
+    
+    def product_detail_service(self, connection, data):
+        """
+        """
+        return self.product_dao.get_product_detail_dao(connection, data)
+        
