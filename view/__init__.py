@@ -21,6 +21,7 @@ from .store.store_order_view   import StoreOrderView, StoreOrderAddView
 # admin1
 from .admin.order_view import OrderView
 from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
+from .admin.enquiry_view import EnquiryView
 
 # admin2
 from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView
@@ -235,7 +236,7 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 이성보 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-    app.add_url_rule('/enquiries', view_func=EnquiryView.as_view('enquiry_view', services.enquiry_service, database))
+    app.add_url_rule('/enquiries',view_func=EnquiryView.as_view('enquiry_view', services.enquiry_service, database))
 # ----------------------------------------------------------------------------------------------------------------------
 # Admin 2 Section
 # ----------------------------------------------------------------------------------------------------------------------

@@ -1,21 +1,19 @@
 import json
+
 from flask import jsonify, request
 from flask.views import MethodView
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail, DateMissingOne, EventSearchTwoInput
 
-from utils.rules import NumberRule, EventStatusRule, EventExposureRule, DateRule
+from utils.rules import NumberRule, EventStatusRule, EventExposureRule, DateRule, PageRule
 from flask_request_validator import (
     Param,
+    PATH,
     JSON,
     GET,
     validate_params
 )
 
-def date_converter(o):
-    import datetime
-    if isinstance(o, datetime.datetime):
-        return o.__str__()
 
 class EnquiryView(MethodView):
 
@@ -32,7 +30,7 @@ class EnquiryView(MethodView):
         Param('type', JSON, str, required=False),
         Param('start_date', JSON, str, required=False),
         Param('end_date', JSON, str, required=False),
-        Param('page', JSON, int, required=True),
+        Param('page', JSON, int, required=True, rules=[PageRule()]),
         Param('length', JSON, int, required=True),
         Param('response_date', JSON, int, required=False)
     )
@@ -50,11 +48,6 @@ class EnquiryView(MethodView):
             'length': args[9],
             'response_date': args[10]
         }
-        if (data['start_date'] and not data['end_date']) or (not data['start_date'] and data['end_date']):
-            raise DateMissingOne('start_date or end_date is missing')
-
-        if data['product_name'] and data['seller_name']:
-            raise EventSearchTwoInput('search value accept only one of name or number')
 
         try:
             connection = get_connection(self.database)

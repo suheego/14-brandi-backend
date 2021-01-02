@@ -481,22 +481,11 @@ class EventSearchTwoInput(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-<<<<<<< HEAD
-class EventDoesNotExist(CustomUserError):
-=======
 class DateMissingOne(CustomUserError):
->>>>>>> 3fa1e6f9d40bd7812e16f4b2eb03bfbd59349887
     def __init__(self, error_message):
         status_code = 404
         message = 'event not exist'
         error_message = error_message
-<<<<<<< HEAD
-
-        super().__init__(status_code, message, error_message)
-
-
-class EnquiryDoesNotExist(CustomUserError):
-=======
 
         super().__init__(status_code, message, error_message)
 
@@ -511,7 +500,6 @@ class SearchTwoInput(CustomUserError):
 
 
 class EventDoesNotExist(CustomUserError):
->>>>>>> 3fa1e6f9d40bd7812e16f4b2eb03bfbd59349887
     def __init__(self, error_message):
         status_code = 404
         message = 'q&a not exist'
@@ -619,4 +607,22 @@ class SearchFilterRequired(CustomUserError):
         status_code = 400
         message = 'filter must be at least one'
         error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class EnquiryDoesNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'q&a not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class EnquiryFilterNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'must be date inputs or filter inputs'
+        error_message = error_message
+
         super().__init__(status_code, message, error_message)

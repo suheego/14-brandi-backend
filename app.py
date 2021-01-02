@@ -7,8 +7,8 @@ from flask_cors    import CORS
 from view import create_endpoints
 
 #admin
-from model   import OrderDao
-from service import OrderService
+from model   import OrderDao, EnquiryDao
+from service import OrderService, EnquiryService
 
 #admin2
 from model   import SellerInfoDao, SellerDao, ProductCreateDao, ProductManageDao
@@ -85,6 +85,7 @@ def create_app(test_config=None):
     event_dao          = EventDao()
     store_order_dao    = StoreOrderDao()
     order_dao          = OrderDao()
+    enquiry_dao        = EnquiryDao()
     
     # admin2
     seller_dao         = SellerDao()
@@ -107,6 +108,7 @@ def create_app(test_config=None):
     #admin1
     services.event_service = EventService(event_dao)
     services.order_service = OrderService(order_dao)
+    services.enquiry_service = EnquiryService(enquiry_dao)
     
     #admin2
     services.seller_service         = SellerService(seller_dao, app.config)

@@ -10,56 +10,70 @@ class EnquiryDao:
         Author: 이성보
 
         History:
-            2020-12-29(이성보): 초기 생성 및 조회 기능 작성
-            2020-12-30(이성보): Q&A 검색조건별 조회 작성
-        """
+            2020-12-28(이성보): 초기 생성 및 조회 기능 작성
+            2020-12-29(이성보): q&a 검색조건별 조회 작성
+            2020-12-30(이성보): q&a 상세정보 및 수정페이지 기능 작성
+    """
 
     def get_enquiries_list(self, connection, data):
-        """Q&A 정보 조회
+        """q&a 정보 조회
 
             Args:
                 connection: 데이터베이스 연결 객체
-                data   : 비지니스 레이어에서 넘겨 받은 검색 조건 키벨류
+                data   : 비지니스 레이어에서 넘겨 받은 딕셔너리
 
             Author: 이성보
 
             Returns:
-                return [
-                    {
-                        "created_at": "Mon, 28 Dec 2020 16:40:41 GMT",
-                        "end_date": "Mon, 01 Mar 2021 00:00:00 GMT",
-                        "event_kind": "버튼",
-                        "event_name": "성보의 하루 시리즈2(버튼형)",
-                        "event_number": 2,
-                        "event_status": "진행중",
-                        "event_type": "상품(이미지)",
-                        "is_display": "노출",
-                        "product_count": 59,
-                        "start_date": "Mon, 19 Oct 2020 00:00:00 GMT"
-                    },
-                    {
-                        "created_at": "Mon, 28 Dec 2020 16:40:41 GMT",
-                        "end_date": "Mon, 01 Mar 2021 00:00:00 GMT",
-                        "event_kind": "상품",
-                        "event_name": "성보의 하루 시리즈",
-                        "event_number": 1,
-                        "event_status": "진행중",
-                        "event_type": "상품(이미지)",
-                        "is_display": "노출",
-                        "product_count": 40,
-                        "start_date": "Mon, 19 Oct 2020 00:00:00 GMT"
-                    }
-                ]
+                {
+                    "enquiries": [
+                        {
+                            "answer": "답변입니다50",
+                            "answer_date": "2020-12-28 13:31:58",
+                            "answer_user": "seller8",
+                            "enquiry_type": "상품 문의",
+                            "id": 100,
+                            "is_answered": "답변",
+                            "is_secret": "비공개",
+                            "membership_number": 151,
+                            "phone_number": "01099990151",
+                            "product_name": "성보의하루1",
+                            "question": "질문이 있습니다(답변감사합니다)50",
+                            "registration_date": "2020-12-28 13:31:58",
+                            "seller_name": "나는셀러9"
+                        },
+                        {
+                            "answer": "답변입니다49",
+                            "answer_date": "2020-12-28 13:31:58",
+                            "answer_user": "seller8",
+                            "enquiry_type": "상품 문의",
+                            "id": 99,
+                            "is_answered": "답변",
+                            "is_secret": "비공개",
+                            "membership_number": 150,
+                            "phone_number": "01099990150",
+                            "product_name": "성보의하루1",
+                            "question": "질문이 있습니다(답변감사합니다)49",
+                            "registration_date": "2020-12-28 13:31:58",
+                            "seller_name": "나는셀러9"
+                        }
+                    ],
+                    "total_count": 2
+                }
 
             History:
-                2020-12-29(이성보): 초기 생성 및 조회 기능 작성
-                2020-12-30(이성보): Q&A 검색조건별 조회 작성
-
+                2020-12-28(이성보): 초기 생성 및 조회 기능 작성
+                2020-12-29(이성보): q&a 검색조건별 조회 작성
+                2020-12-30(이성보): 조회된 q&a 총 갯수 반환기능 작성
             Raises:
-                400, {'message': 'q&a not exist', 'errorMessage': 'q&a does not exist'} : Q&A 정보 조회 실패
+                404, {'message': 'q&a not exist', 'errorMessage': 'q&a does not exist'} : q&a 정보 조회 실패
         """
 
-        # COUNT(*) AS total_count
+        total_count_sql = """
+                    SELECT
+                        COUNT(*) AS total_count
+        """
+
         sql = """
             SELECT 
                 enquiry.id,
@@ -75,6 +89,9 @@ class EnquiryDao:
                 enquiry_reply.content AS answer,
                 enquiry_reply.created_at AS answer_date,
                 account.username AS answer_user
+        """
+
+        extra_sql = """
             FROM 
                 enquiries AS enquiry
                 INNER JOIN enquiry_types AS enquiry_type 
@@ -92,48 +109,38 @@ class EnquiryDao:
                 WHERE enquiry.is_deleted = 0
         """
 
-        # search option 1 : search by keyword (event_name or event_number)
+        # search option 1 : 답변여부 조건
         if data['is_answered'] == 'yes':
-            sql += ' AND EXISTS (SELECT id FROM enquiries WHERE enquiries.id = enquiry_reply.enquiry_id)'
+            extra_sql += ' AND enquiry_reply.id is null'
         elif data['is_answered'] == 'no':
-            sql += ' AND NOT EXISTS (SELECT id FROM enquiries WHERE enquiries.id = enquiry_reply.enquiry_id)'
+            extra_sql += ' AND enquiry_reply.id is not null'
 
-        # search option 1 : search by keyword (event_name or event_number)
+        # search option 2 : 검색어 조건
         if data['product_name']:
-            sql += ' AND product.`name` LIKE %(product_name)s'
+            extra_sql += ' AND product.`name` LIKE %(product_name)s'
         elif data['id']:
-            sql += ' AND enquiry.id = %(id)s'
+            extra_sql += ' AND enquiry.id = %(id)s'
         elif data['seller_name']:
-            sql += ' AND seller.`name` LIKE %(seller_name)s'
+            extra_sql += ' AND seller.`name` LIKE %(seller_name)s'
         elif data['membership_number']:
-            sql += ' AND `user`.account_id = %(membership_number)s'
+            extra_sql += ' AND `user`.account_id = %(membership_number)s'
 
-        # search option 1 : search by keyword (event_name or event_number)
-        if data['type'] == 'product_enquiry':
-            sql += ' AND enquiry_type.id = 1'
-        elif data['type'] == 'exchange':
-            sql += ' AND enquiry_type.id = 2'
-        elif data['type'] == 'faulty':
-            sql += ' AND enquiry_type.id = 3'
-        elif data['type'] == 'other':
-            sql += ' AND enquiry_type.id = 4'
-        elif data['type'] == 'shipping_enquiry':
-            sql += ' AND enquiry_type.id = 5'
-        elif data['type'] == 'one_day_delivery':
-            sql += ' AND enquiry_type.id = 6'
-        elif data['type'] == 'cancel_change':
-            sql += ' AND enquiry_type.id = 7'
+        # search option 3 : 문의유형 조건
+        if data['type']:
+            extra_sql += ' AND enquiry_type.id = %(type)s'
 
-        # search option 1 : search by keyword (event_name or event_number)
+        # search option 4 : 답변소요일 조건
         if data['response_date']:
-            sql += ' AND enquiry.created_at BETWEEN DATE_SUB(NOW(), INTERVAL %(response_date)s DAY) AND NOW()'
+            extra_sql += ' AND enquiry.created_at BETWEEN DATE_SUB(NOW(), INTERVAL %(response_date)s DAY) AND NOW()'
 
-        # search option 1 : search by keyword (event_name or event_number)
+        # search option 5 : 등록일 조건
         if data['start_date'] and data['end_date']:
-            sql += """
+            extra_sql += """
                 AND enquiry.created_at BETWEEN CONCAT(%(start_date)s, " 00:00:00") AND CONCAT(%(end_date)s, " 23:59:59")
             """
 
+        sql += extra_sql
+        total_count_sql += extra_sql
         sql += ' ORDER BY enquiry.id DESC LIMIT %(page)s, %(length)s;'
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -141,7 +148,6 @@ class EnquiryDao:
             enquiries = cursor.fetchall()
             if not enquiries:
                 raise EnquiryDoesNotExist('q&a does not exist')
-            return {'enquiries': enquiries}  # 'total_count': count['total_count']
-
-# total_count_sql sql 통합
-# if not enquiries 위치
+            cursor.execute(total_count_sql, data)
+            count = cursor.fetchone()
+            return {'enquiries': enquiries, 'total_count': count['total_count']}

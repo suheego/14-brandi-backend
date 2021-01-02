@@ -8,6 +8,7 @@ from .sample_user_dao         import SampleUserDao
 
 from .admin.event_dao         import EventDao
 from .admin.order_dao         import OrderDao
+from .admin.enquiry_dao       import EnquiryDao
 
 from .admin.seller_dao         import SellerDao, SellerInfoDao
 from .admin.product_create_dao import ProductCreateDao

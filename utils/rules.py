@@ -204,10 +204,7 @@ class IsDeleteRule(AbstractRule):
             errors.append('0 과 1 값만 받는다.')
         return value, errors
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 3fa1e6f9d40bd7812e16f4b2eb03bfbd59349887
 class EventStatusRule(AbstractRule):
     def validate(self, value):
         status_set = ('progress', 'wait', 'end')
@@ -255,9 +252,6 @@ class DateRule(AbstractRule):
         errors = []
         if not regex.match(value):
             errors.append('accept only alphabetic characters')
-<<<<<<< HEAD
-        return value, errors
-=======
         return value, errors
 
 
@@ -298,4 +292,3 @@ class PageRule(AbstractRule):
         if value <= 0:
             errors.append('page cannot be less than 1')
         return value, errors
->>>>>>> 3fa1e6f9d40bd7812e16f4b2eb03bfbd59349887
