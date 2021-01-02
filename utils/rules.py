@@ -238,10 +238,10 @@ class EventExposureRule(AbstractRule):
 
 class OrderStatusRule(AbstractRule):
     def validate(self, value):
-        status_set = [1, 2, 3, 8]
+        status_set = [1, 2, 3, 4, 5, 6, 7, 8]
         errors = []
         if value not in status_set:
-            errors.append('order status must be one of 1, 2, 3, 8')
+            errors.append('order status must be one of 1, 2, 3, 4, 5, 6, 7, 8')
         return value, errors
 
 

@@ -509,6 +509,13 @@ class EventDoesNotExist(CustomUserError):
 
 
 class OrderFilterNotExist(CustomUserError):
+    """ 필터 조건 없음
+
+        Author: 김민서
+
+        History:
+            2020-12-31(김민서): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 400
         message = 'must be date inputs or filter inputs'
@@ -554,8 +561,8 @@ class CheckoutDenied(CustomUserError):
         super().__init__(status_code, message, error_message)
 
         
-class NoPermissionGetOrderList(CustomUserError):
-    """ 주문 리스트 조회 권한 없음
+class NoPermission(CustomUserError):
+    """ 권한 없음
 
         Author: 김민서
 
@@ -564,7 +571,22 @@ class NoPermissionGetOrderList(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 403
-        message = 'no permission to get order list'
+        message = 'no permission'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class NotAllowedStatus(CustomUserError):
+    """ 주문 상태 변경 가능 상태가 아님
+
+        Author: 김민서
+
+        History:
+            2021-01-01(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'now order status is not allowed to update status'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -606,5 +628,37 @@ class SearchFilterRequired(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'filter must be at least one'
+
+        super().__init__(status_code, message, error_massage)
+
+
+class DateInputDoesNotExist(CustomUserError):
+    """날짜 조건 없음
+
+        Author: 김민서
+
+        History:
+            2020-12-31(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'must be other date input'
         error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class UnableToUpdate(CustomUserError):
+    """수정 내역 없음
+
+        Author: 김민서
+
+        History:
+            2020-12-31(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable to update order status'
+        error_message = error_message
+
         super().__init__(status_code, message, error_message)
