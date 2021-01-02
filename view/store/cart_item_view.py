@@ -25,15 +25,16 @@ class CartItemView(MethodView):
     History:
         2020-12-28(고수희): 초기 생성
         2021-01-01(고수희): response 수정
+        2020-01-02(고수희): decorator 수정
     """
 
     def __init__(self, service, database):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
-        Param('cart_id', PATH, str)
+        Param('cart_id', PATH, int)
     )
     def get(self, *args):
         """ GET 메소드: 해당 유저의 장바구니 상품 정보를 조회.
@@ -80,7 +81,8 @@ class CartItemView(MethodView):
 
         History:
             2020-12-28(고수희): 초기 생성
-            2020-12-30(고수희): 1차 수정 - 데코레이터 추가, 사용자 권한 체
+            2020-12-30(고수희): 1차 수정 - 데코레이터 추가, 사용자 권한 체크
+            2020-01-02(고수희): decorator 수정
         """
         data = {
             "cart_id": args[0],
@@ -113,17 +115,18 @@ class CartItemAddView(MethodView):
 
     History:
         2020-12-28(고수희): 초기 생성
+        2020-01-02(고수희): decorator 수정
     """
 
     def __init__(self, service, database):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
-        Param('productId', JSON, str, rules=[NumberRule()]),
-        Param('stockId', JSON, str, rules=[NumberRule()]),
-        Param('quantity', JSON, str, rules=[NumberRule()]),
+        Param('productId', JSON, int),
+        Param('stockId', JSON, int),
+        Param('quantity', JSON, int),
         Param('originalPrice', JSON, str, rules=[DecimalRule()]),
         Param('sale', JSON, str, rules=[DecimalRule()]),
         Param('discountedPrice', JSON, str, rules=[DecimalRule()])
