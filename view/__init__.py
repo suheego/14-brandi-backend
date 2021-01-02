@@ -24,7 +24,7 @@ from .store.store_order_view import StoreOrderView, StoreOrderAddView
 
 
 
-from .store.seller_shop_view import SellerShopView
+from .store.seller_shop_view import SellerShopView, SellerShopSearchView
 
 from utils.error_handler import error_handle
 
@@ -153,6 +153,7 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 고수희
 # ----------------------------------------------------------------------------------------------------------------------
+    #장바구니 상품 추가 엔드포인트
     app.add_url_rule('/checkout/cart',
                      view_func=CartItemAddView.as_view(
                          'cart_item_add_view',
@@ -160,6 +161,7 @@ def create_endpoints(app, services, database):
                          database
                      ))
 
+    # 장바구니 상품 조회 엔드포인트
     app.add_url_rule('/checkout/cart/<int:cart_id>',
                      view_func=CartItemView.as_view(
                          'cart_item_view',
@@ -167,6 +169,7 @@ def create_endpoints(app, services, database):
                          database
                      ))
 
+    # 주문자 정보 조회 엔드포인트
     app.add_url_rule('/checkout/sender',
                     view_func=SenderView.as_view(
                         'sender_view',
@@ -174,6 +177,7 @@ def create_endpoints(app, services, database):
                         database
                     ))
 
+    # 상품 결제 엔드포인트
     app.add_url_rule('/checkout',
                      view_func=StoreOrderAddView.as_view(
                         'store_order_add_view',
@@ -181,6 +185,7 @@ def create_endpoints(app, services, database):
                         database
                     ))
 
+    # 상품 결제 조회 엔드포인트
     app.add_url_rule('/checkout/<int:order_id>',
                     view_func=StoreOrderView.as_view(
                         'store_order_view',
@@ -188,13 +193,22 @@ def create_endpoints(app, services, database):
                         database
                     ))
 
-
+    # 셀러샵 셀러 정보 조회 엔드포인트
     app.add_url_rule('/shops/<int:seller_id>',
                     view_func=SellerShopView.as_view(
                         'seller_shop_view',
                         seller_shop_service,
                         database
                     ))
+
+    # 셀러샵 셀러 상품 검색 엔드포인트
+    app.add_url_rule('/shops/<int:seller_id>/search',
+                    view_func=SellerShopSearchView.as_view(
+                        'seller_shop_search_view',
+                        seller_shop_service,
+                        database
+                    ))
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Admin 1 Section
