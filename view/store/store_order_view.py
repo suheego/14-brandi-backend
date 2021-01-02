@@ -9,7 +9,7 @@ from flask_request_validator import (
 
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
-from utils.rules import NumberRule, DecimalRule, EmailRule, PostalCodeRule, PhoneRule
+from utils.rules import DecimalRule, EmailRule, PostalCodeRule, PhoneRule
 from utils.decorator import signin_decorator
 
 
@@ -70,7 +70,8 @@ class StoreOrderView(MethodView):
         """
         data = {
             "order_id": args[0],
-            "user_id": g.account_id
+            "user_id": g.account_id,
+            "user_permission": g.permission_type_id
         }
 
         try:
@@ -107,6 +108,7 @@ class StoreOrderAddView(MethodView):
 
     @signin_decorator(True)
     @validate_params(
+        Param('cartId', JSON, int),
         Param('productId', JSON, int),
         Param('stockId', JSON, int),
         Param('quantity', JSON, int),
@@ -123,7 +125,7 @@ class StoreOrderAddView(MethodView):
         Param('address1', JSON, str),
         Param('address2', JSON, str),
         Param('postNumber', JSON, str, rules=[PostalCodeRule()]),
-        Param('deliveryId', JSON, str, rules=[NumberRule()]),
+        Param('deliveryId', JSON, int),
         Param('deliveryMemo', JSON, str, required=False),
         Param('deliveryMemoDefault', JSON, bool)
     )
@@ -154,31 +156,34 @@ class StoreOrderAddView(MethodView):
         """
         data = {
             'user_id': g.account_id,
-            'product_id': args[0],
-            'stock_id': args[1],
-            'quantity': args[2],
-            'original_price': args[3],
-            'sale': args[4],
-            'discounted_price': args[5],
-            'total_price':args[6],
-            'sold_out': args[7],
-            'sender_name': args[8],
-            'sender_phone': args[9],
-            'sender_email': args[10],
-            'recipient_name': args[11],
-            'recipient_phone': args[12],
-            'address1': args[13],
-            'address2': args[14],
-            'post_number': args[15],
-            'delivery_memo_type_id': args[16],
-            'delivery_content': args[17],
-            'delivery_default': args[18]
+            'user_permission': g.permission_type_id,
+            'cart_id': args[0],
+            'product_id': args[1],
+            'stock_id': args[2],
+            'quantity': args[3],
+            'original_price': args[4],
+            'sale': args[5],
+            'discounted_price': args[6],
+            'total_price': args[7],
+            'sold_out': args[8],
+            'sender_name': args[9],
+            'sender_phone': args[10],
+            'sender_email': args[11],
+            'recipient_name': args[12],
+            'recipient_phone': args[13],
+            'address1': args[14],
+            'address2': args[15],
+            'post_number': args[16],
+            'delivery_memo_type_id': args[17],
+            'delivery_content': args[18],
+            'delivery_default': args[19]
         }
+
         try:
             connection = get_connection(self.database)
             order_id = self.service.post_order_service(connection, data)
             connection.commit()
-            return {'message': 'success', 'result': {"cartId": order_id}}, 201
+            return {'message': 'success', 'result': {"order_id": order_id}}, 201
 
         except Exception as e:
             connection.rollback()
@@ -188,5 +193,6 @@ class StoreOrderAddView(MethodView):
             try:
                 if connection:
                     connection.close()
+
             except Exception:
                 raise DatabaseCloseFail('database close fail')

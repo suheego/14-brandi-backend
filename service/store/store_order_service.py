@@ -34,13 +34,13 @@ class StoreOrderService:
             'errorMessage': 'key_error'} : 잘못 입력된 키값
             403, {'message': 'key error',
             'errorMessage': 'customer_permission_denied'} : 사용자 권한이 없음
+
         History:
             2020-12-30(고수희): 초기 생성
         """
         try:
             #사용자의 권한 체크
-            permission_check = self.store_order_dao.get_user_permission_check_dao(connection, data)
-            if permission_check['permission_type_id'] != 3:
+            if data['user_permissions'] != 3:
                 raise CustomerPermissionDenied('customer_permission_denied')
 
             #상품 결제 완료 결과 조회
@@ -75,8 +75,7 @@ class StoreOrderService:
 
         try:
             #사용자 권한 체크
-            permission_check = self.store_order_dao.get_user_permission_check_dao(connection, data)
-            if permission_check['permission_type_id'] != 3:
+            if data['user_permission'] != 3:
                 raise CustomerPermissionDenied('customer_permission_denied')
 
             #상품 구매 가능 여부 체크
@@ -89,7 +88,7 @@ class StoreOrderService:
                 raise CheckoutDenied('unable_to_checkout')
 
             #배송 정보 추가 (배송 메모가 직접 입력일 경우)
-            if data['delivery_memo_type_id'] == '5':
+            if data['delivery_memo_type_id'] == 5:
                 custom_memo = self.store_order_dao.post_delivery_type_dao(connection, data)
                 data['delivery_memo_type_id'] = custom_memo
 
@@ -99,27 +98,31 @@ class StoreOrderService:
 
             #주문 정보 추가 (주문자 정보, 배송지 정보, 기타 배송 정보)
             order = self.store_order_dao.post_store_order_dao(connection, data)
+            data['order_id'] = order
+            data['order_item_status_type_id'] = 1
 
-            # #주문 상품 추가 (주문 상품에 대한 정보)
-            # self.store_order_dao.post_store_order_item_dao(connection, data)
-            #
-            # #주문 상품 정보 이력 추가
-            # self.store_order_dao.post_store_order_item_history_dao(connection, data)
-            #
-            # #주문 상품 타입 추가
-            # self.store_order_dao.post_store_order_item_status_dao(connection, data)
-            #
-            # #주문한 상품 수량 만큼 상품 판매량 추가
-            # self.store_order_dao.post_product_sales_rate_dao(connection, data)
-            #
-            # #주문한 상품 수량 만큼 재고 감소 처리
-            # self.store_order_dao.patch_product_remain_dao(connection, data)
-            #
-            # #장바구니 상품 논리 삭제 처리
-            # self.store_order_dao.is_delete_cart_item_dao(connection, data)
-            #
-            # #주문자 정보 추가/수정
-            # cart_item = self.store_order_dao.customer_information_dao(connection, data)
+            #주문 상품 추가 (주문 상품에 대한 정보)
+            self.store_order_dao.post_store_order_item_dao(connection, data)
+
+            #주문 상품 정보 이력 추가
+            self.store_order_dao.post_store_order_item_history_dao(connection, data)
+
+            #주문한 상품 수량 만큼 재고 감소 처리
+            self.store_order_dao.patch_product_remain_dao(connection, data)
+
+            #장바구니 상품 논리 삭제 처리
+            self.store_order_dao.patch_is_delete_cart_item_dao(connection, data)
+
+            #주문자 정보 조회
+            sender_info = self.store_order_dao.get_customer_information_dao(connection, data)
+
+            #주문자 정보가 없으면 주문자 정보 추가
+            if sender_info is None:
+                self.store_order_dao.post_customer_information_dao(connection, data)
+
+            #주문자 정보가 있으면 주문자 정보 수정
+            self.store_order_dao.patch_customer_information_dao(connection, data)
+
             return order
 
         except KeyError:

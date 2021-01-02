@@ -631,3 +631,77 @@ class NotExistBookmark(CustomUserError):
         message = 'not_exist_bookmark'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+
+
+
+
+
+
+
+
+
+
+
+class OrderHistoryCreateDenied(CustomUserError):
+    """ 상품 정보 이력 추가 실패
+
+        Author: 고수희
+
+        History:
+            2020-01-02(고수희): 초기생성
+    """
+
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'order history create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ProductSalesRateCreateDenied(CustomUserError):
+    """ 상품 판매량 추가 실패
+
+        Author: 고수희
+
+        History:
+            2021-01-02(고수희): 초기생성
+    """
+
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'order history create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class ProductRemainUpdateDenied(CustomUserError):
+    """ 상품 재고 업데이트 실패
+
+        Author: 고수희
+
+        History:
+            2021-01-02(고수희): 초기생성
+    """
+
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'product remain update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class CustomerInformationCreateDenied(CustomUserError):
+    """ 주문자 정보 추가 실패
+
+        Author: 고수희
+
+        History:
+            2021-01-02(고수희): 초기생성
+    """
+
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'customer information create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
