@@ -115,29 +115,23 @@ class SellerShopDao:
 
         sql = """
         SELECT 
-            product_image.image_url AS image
-            , product.seller_id AS seller_id
-            , seller.name AS seller_name
-            , product.id AS product_id
-            , product.name AS product_name
-            , product.origin_price AS origin_price
-            , product.discount_rate AS discount_rate
-            , product.discounted_price AS discounted_price
-            , product_sales_volume.sales_count AS product_sales_count
-        FROM 
-            products AS product
-            INNER JOIN product_images AS product_image
-                ON product.id = product_image.product_id AND product_image.order_index = 1
-            INNER JOIN sellers AS seller 
-                ON seller.account_id = product.seller_id
-            LEFT JOIN product_sales_volumes AS product_sales_volume
-                ON product_sales_volume.product_id = product.id
-        WHERE 
-            product.seller_id = %(seller_id)s 
-            AND product.name LIKE %(keyword)s
-            AND product.is_deleted = 0
-        ORDER BY 
-            product.id DESC
+        pi.image_url AS image
+        , pd.seller_id AS seller_id
+        , se.name AS seller_name
+        , pd.id AS product_id
+        , pd.name AS product_name
+        , pd.origin_price AS origin_price
+        , pd.discount_rate AS discount_rate
+        , pd.discounted_price AS discounted_price
+        , psv.sales_count AS product_sales_count
+        FROM products AS pd
+        INNER JOIN product_images AS pi ON pi.product_id = pd.id AND pi.order_index = 1
+        INNER JOIN sellers AS se ON se.account_id = pd.seller_id
+        LEFT JOIN product_sales_volumes AS psv ON psv.product_id = pd.id
+        WHERE pd.seller_id = %(seller_id)s 
+        AND pd.name LIKE %(keyword)s
+        AND pd.is_deleted = 0
+        ORDER BY pd.id DESC
         LIMIT %(limit)s
         OFFSET %(offset)s
         ; 
@@ -264,32 +258,36 @@ class SellerShopDao:
 
         sql = """
         SELECT 
-            product_image.image_url AS image
-            , product.seller_id AS seller_id
-            , seller.name AS seller_name
-            , product.id AS product_id
-            , product.name AS product_name
-            , product.origin_price AS origin_price
-            , product.discount_rate AS discount_rate
-            , product.discounted_price AS discounted_price
-            , product_sales_volume.sales_count AS product_sales_count
-        FROM 
-            products AS product
-            INNER JOIN product_images AS product_image
-                ON product.id = product_image.product_id AND product_image.order_index = 1
-            INNER JOIN sellers AS seller 
-                ON seller.account_id = product.seller_id
-            LEFT JOIN product_sales_volumes AS product_sales_volume
-                ON product_sales_volume.product_id = product.id
+        pi.image_url AS image
+        , pd.seller_id AS seller_id
+        , se.name AS seller_name
+        , pd.id AS product_id
+        , pd.name AS product_name
+        , pd.origin_price AS origin_price
+        , pd.discount_rate AS discount_rate
+        , pd.discounted_price AS discounted_price
+        , psv.sales_count AS product_sales_count
+        FROM products AS pd
+        INNER JOIN product_images AS pi ON pi.product_id = pd.id AND pi.order_index = 1
+        INNER JOIN sellers AS se ON se.account_id = pd.seller_id
+        LEFT JOIN product_sales_volumes AS psv ON psv.product_id = pd.id
         """
 
         try:
+            #특정 카테고리를 선택한 경우
+            if not data['category'] is None:
+                category_sql = """
+                WHERE pd.main_category_id = %(category)s
+                """
+
+                sql += category_sql
+
             # 최신순 정렬일 경우
             if data['type'] == "latest":
                 latest_sql = """
-                WHERE product.seller_id = %(seller_id)s 
-                AND product.is_deleted = 0
-                ORDER BY product.id DESC
+                AND pd.seller_id = %(seller_id)s 
+                AND pd.is_deleted = 0
+                ORDER BY pd.id DESC
                 LIMIT %(limit)s
                 OFFSET %(offset)s
                 ;
@@ -300,8 +298,8 @@ class SellerShopDao:
             #인기순 정렬일 경우
             else:
                 popular_sql = """
-                WHERE product.seller_id = %(seller_id)s 
-                AND product.is_deleted = 0
+                AND pd.seller_id = %(seller_id)s 
+                AND pd.is_deleted = 0
                 ORDER BY product_sales_count DESC
                 LIMIT %(limit)s
                 OFFSET %(offset)s 
