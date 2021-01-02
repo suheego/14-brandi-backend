@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify
 from flask.views import MethodView
 from flask_request_validator import (
     GET,
@@ -10,7 +10,6 @@ from flask_request_validator import (
 
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
-from utils.rules import NumberRule, DecimalRule
 from utils.decorator import signin_decorator
 
 
@@ -31,6 +30,7 @@ class SellerShopView(MethodView):
         self.service = service
         self.database = database
 
+    @signin_decorator(False)
     @validate_params(
         Param('seller_id', PATH, int)
     )
@@ -103,6 +103,7 @@ class SellerShopSearchView(MethodView):
         self.service = service
         self.database = database
 
+    @signin_decorator(False)
     @validate_params(
         Param('seller_id', PATH, int),
         Param('keyword', GET, str),
@@ -143,6 +144,7 @@ class SellerShopSearchView(MethodView):
             "seller_id": 4,
             "seller_name": "나는셀러4"
             }]}
+
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
@@ -167,7 +169,6 @@ class SellerShopSearchView(MethodView):
             return jsonify({'message': 'success', 'result': search_product_list})
 
         except Exception as e:
-            traceback.print_exc()
             raise e
 
         finally:
