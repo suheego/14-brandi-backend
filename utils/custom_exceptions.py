@@ -634,17 +634,17 @@ class StockNotNotExist(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-class ProductSearchListZero(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 200
-        message = 'product search result zero'
-        error_message = error_message
-        super().__init__(status_code, message, error_message)
-
-
 class LookUpDateFieldRequiredCheck(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'both date field required'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class SellerAttributeTypeException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'invalid seller attribute type'
         error_message = error_message
         super().__init__(status_code, message, error_message)

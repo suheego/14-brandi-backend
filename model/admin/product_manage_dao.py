@@ -1,10 +1,14 @@
 import pymysql
 
-from utils.custom_exceptions import ProductNotExist, ProductImageNotExist, StockNotNotExist, ProductSearchListZero
+from utils.custom_exceptions import (
+    ProductNotExist,
+    ProductImageNotExist,
+    StockNotNotExist
+)
 
 class ProductManageDao:
     """ Persistence Layer
-    
+        
         Attributes: None
         
         Author: 심원두
@@ -13,100 +17,76 @@ class ProductManageDao:
             2020-12-31(심원두): 초기 생성
             2021-01-03(심원두): 상품 리스트 기능 구현, 상품 상세 정보 조회 기능 작성 중
     """
-
-    def convert_where_condition(self, data):
-        """상품 리스트 조회 기능. 특정 조건에 따른 유동적 조건문 작성
+    def __generate_where_sql(self, data):
+        """상품 리스트 검색에 필요한 조건 쿼리문 편집
             
             Args:
-                data : 비지니스 레이어에서 넘겨 받은 딕셔너리 객체
+                data :
+                    내부 메서드 get_products_total_count(), search_products() 에서
+                    넘겨 받은 딕셔너리 객체
             
             Author: 심원두
             
+            Returns:
+                return result (상품 총 갯수)
+            
             History:
                 2020-12-31(심원두): 초기 생성
-                2021-01-03(심원두): 초기 생성 및 검색 조건 별 쿼리문 생성 기능 작성
-                
-            Returns: where 조건 쿼리 + order by 쿼리 + offset limit 쿼리
+                2021-01-03(심원두): 쿼리문 수정. 검색자가 셀러일 경우 조건문 추가 구현 예정
             
-            Raises:
-                400, {'message': 'key error', 'errorMessage': format(e)} : 키에러
+            Raises: -
         """
-        
         where_condition = ""
         
         try:
             if data['lookup_start_date'] and data['lookup_end_date']:
                 where_condition += \
-                    "AND product.updated_at " \
-                    "BETWEEN CAST('{lookup_start_date} 00:00:00' AS DATETIME) " \
-                    "AND CAST('{lookup_end_date} 23:59:59' AS DATETIME)" \
-                    .format(
-                        lookup_start_date=data['lookup_start_date'],
-                        lookup_end_date  =data['lookup_end_date']
-                    ) + '\n'
+                    "\nAND product.updated_at" \
+                    "\nBETWEEN CONCAT(%(lookup_start_date)s, ' 00:00:00')" \
+                    "\nAND CONCAT(%(lookup_end_date)s, ' 23:59:59')"
             
             if data['seller_name']:
-                where_condition += "\t" + \
-                    "AND seller.`name` = '{seller_name}'" \
-                    .format(seller_name=data['seller_name']) + '\n'
+                where_condition += "\nAND seller.`name` = %(seller_name)s"
             
             if data['product_name']:
-                where_condition += "\t" + \
-                    "AND product.`name` LIKE '%{product_name}%'" \
-                    .format(product_name=data['product_name']) + '\n'
+                where_condition += "\nAND product.`name` LIKE %(product_name)s"
             
             if data['product_id']:
-                where_condition += "\t" + \
-                    "AND product.id = '{product_id}'" \
-                    .format(product_id=data['product_id']) + '\n'
+                where_condition += "\nAND product.id = %(product_id)s"
             
             if data['product_code']:
-                where_condition += "\t" + \
-                    "AND product.product_code = '{product_code}'" \
-                    .format(product_code=data['product_code']) + '\n'
+                where_condition += "\nAND product.product_code = %(product_code)s"
             
-            if data['seller_attribute_type_id']:
-                where_condition += "\t" + \
-                    "AND seller_attribute_type.id = '{seller_attribute_type_id}'" \
-                    .format(seller_attribute_type_id=data['seller_attribute_type_id']) + '\n'
-            
+            if data['seller_attribute_type_ids']:
+                where_condition += "\nAND seller_attribute_type.id IN %(seller_attribute_type_ids)s "
+                
             if data['is_sale']:
-                where_condition += "\t" + \
-                    "AND product.is_sale = '{is_sale}'" \
-                    .format(is_sale=data['is_sale']) + '\n'
+                if int(data['is_sale']) != 1:
+                    data['is_sale'] = "0"
+                where_condition += "\nAND product.is_sale = %(is_sale)s"
             
             if data['is_display']:
-                where_condition += "\t" + \
-                    "AND product.is_display = '{is_display}'" \
-                    .format(is_display=data['is_display'])
+                if int(data['is_display']) != 1:
+                    data['is_display'] = "0"
+                where_condition += "\nAND product.is_display = %(is_display)s"
             
             if data['is_discount']:
-                where_condition += "\t" + \
-                    "AND CASE WHEN product.discount_rate = {is_discount} " \
-                    "THEN product.discount_rate = 0 " \
-                    "ELSE product.discount_rate > 0 " \
-                    "END " \
-                    .format(is_discount=data['is_discount']) + '\n'
+                if int(data['is_discount']) == 1:
+                    where_condition += "\nAND product.discount_rate > 0"
+                else:
+                    where_condition += "\nAND product.discount_rate = 0"
             
             # TODO: Login Decorator : seller sign-in not master
             # if not data.get('seller_id', None):
             #     where_condition += "\t" + \
             #        "AND product.seller_id = '{seller_id}'" \
             #        .format(seller_id=data['seller_id'])
-            
-            order_by = "\tORDER BY product.id DESC" + '\n'
-            
-            limit = "\tLIMIT {offset}, {limit};" \
-                    .format(
-                        offset=data['offset'],
-                        limit =data['limit']
-                    ) + '\n'
-            
-        except KeyError as e:
+        
+        except Exception as e:
             raise e
         
-        return where_condition + order_by + limit
-    
+        return where_condition
+        
     def get_total_products_count(self, connection, data):
         """상품 리스트 총 갯수 취득
         
@@ -125,7 +105,6 @@ class ProductManageDao:
             
             Raises: -
         """
-        
         sql = """
         SELECT
             COUNT(*) AS total_count
@@ -142,13 +121,11 @@ class ProductManageDao:
             AND product_image.is_deleted = 0
             AND product_image.order_index = 1
         """
-        
-        where_condition = self.convert_where_condition(data)
+        sql += self.__generate_where_sql(data)
         
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql + where_condition)
+            cursor.execute(sql, data)
             result = cursor.fetchone()
-            
             return result
     
     def search_products(self, connection, data):
@@ -164,12 +141,11 @@ class ProductManageDao:
             
             History:
                 2020-12-31(심원두): 초기 생성
-                2021-01-03(심원두): 상품 리스트 검색 쿼리 작성
-                
+                2021-01-03(심원두): 쿼리 수정
+                 -seller_attribute_type 검색 조건을 완전 일치 검색에서 IN 으로 수정
             Raises:
-                500, {'message': 'product search result zero', 'errorMessage': 'product_search_result_zero'} : 검색 결과 없음
+                -
         """
-        
         sql = """
         SELECT
             product.updated_at AS 'updated_at'
@@ -197,64 +173,74 @@ class ProductManageDao:
             AND product_image.is_deleted = 0
             AND product_image.order_index = 1
         """
+        sql     += self.__generate_where_sql(data)
+        order_by = "\nORDER BY product.id DESC"
+        limit    = "\nLIMIT %(offset)s, %(limit)s;"
         
-        where_condition = self.convert_where_condition(data)
+        sql += order_by + limit
         
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql + where_condition)
+            cursor.execute(sql, data)
             result = cursor.fetchall()
-            
-            if not result:
-                raise ProductSearchListZero('product_search_result_zero')
-            
             return result
     
     def get_product_detail(self, connection, data):
-        """상품 상세 정보 조회
-        
+        """상품 상세 정보 취득
+            
             Args:
                 connection : 데이터베이스 연결 객체
                 data       : 서비스 레이어에서 넘겨 받은 상품 검색에 사용될 키값
                 
             Author: 심원두
             
-            Returns: [{}]
+            Returns:
+                result : 상품 정보
             
             History:
                 2021-01-02(심원두): 초기 생성
+                2021-01-02(심원두): 쿼리문 수정
             
             Raises:
-                500, {'message': '-', 'errorMessage': '-'} : --
+                500, {'message': 'product does not exist',
+                      'errorMessage': 'product_does_not_exist'} : 상품 정보 취득 실패
         """
-        
         sql = """
-            SELECT
-                `product_code` AS 'product_code'
-                ,`is_sale` AS 'is_sale'
-                ,`is_display` AS 'is_display'
-                ,`main_category_id` AS 'main_category_id'
-                ,`sub_category_id` AS 'sub_category_id'
-                ,`is_product_notice` AS 'is_product_notice'
-                ,`manufacturer` AS 'manufacturer'
-                ,`manufacturing_date` AS 'manufacturing_date'
-                ,`product_origin_type_id` AS 'product_origin_type_id'
-                ,`name` AS 'product_name'
-                ,`description` AS 'description'
-                ,`detail_information` AS 'detail_information'
-                ,`origin_price` AS 'origin_price'
-                ,`discount_rate` AS 'discount_rate'
-                ,`discounted_price` AS 'discounted_price'
-                ,`discount_start_date` AS 'discount_start_date'
-                ,`discount_end_date` AS 'discount_end_date'
-                ,`minimum_quantity` AS 'minimum_quantity'
-                ,`maximum_quantity` AS 'maximum_quantity'
-                ,`updated_at` AS 'updated_at'
-                ,`id` AS 'product_id'
-            FROM
-                products
-            WHERE
-                is_deleted = 0
-                AND `product_code` = %(product_code)s
+        SELECT
+            product.`product_code` AS 'product_code'
+            ,product.`is_sale` AS 'is_sale'
+            ,product.`is_display` AS 'is_display'
+            ,product.main_category_id AS 'main_category_id'
+            ,main_category.`name` AS 'main_category_name'
+            ,product.sub_category_id AS 'sub_category_id'
+            ,sub_category.`name` AS 'sub_category_name'
+            ,product.`is_product_notice` AS 'is_product_notice'
+            ,product.`manufacturer` AS 'manufacturer'
+            ,product.`manufacturing_date` AS 'manufacturing_date'
+            ,product.`product_origin_type_id` AS 'product_origin_type_id'
+            ,product_origin_type.`name` AS 'product_origin_type_name'
+            ,product.`name` AS 'product_name'
+            ,product.`description` AS 'description'
+            ,product.`detail_information` AS 'detail_information'
+            ,product.`origin_price` AS 'origin_price'
+            ,product.`discount_rate` AS 'discount_rate'
+            ,product.`discounted_price` AS 'discounted_price'
+            ,product.`discount_start_date` AS 'discount_start_date'
+            ,product.`discount_end_date` AS 'discount_end_date'
+            ,product.`minimum_quantity` AS 'minimum_quantity'
+            ,product.`maximum_quantity` AS 'maximum_quantity'
+            ,product.`updated_at` AS 'updated_at'
+            ,product.`id` AS 'product_id'
+        FROM
+            products AS product
+        INNER JOIN main_categories AS main_category
+            ON product.main_category_id = main_category.id
+        INNER JOIN sub_categories AS sub_category
+            ON product.sub_category_id = sub_category.id
+        INNER JOIN product_origin_types AS product_origin_type
+            ON product.product_origin_type_id = product_origin_type.id
+        WHERE
+            product.is_deleted = 0
+            AND product.`product_code` = %(product_code)s
         """
         
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -267,30 +253,36 @@ class ProductManageDao:
             return result
     
     def get_product_images(self, connection, data):
-        """상품 이미지 리스트 검색
+        """상품 이미지 정보 리스트 취득
+        
             Args:
                 connection : 데이터베이스 연결 객체
                 data       : 서비스 레이어에서 넘겨 받은 상품 이미지 취득에 사용될 키값
+                
             Author: 심원두
-            Returns: [{}]
+            
+            Returns:
+                result : 상품 이미지 정보 리스트
+            
             History:
                 2021-01-02(심원두): 초기 생성
+                2021-01-03(심원두): 불필요한 취득 항목 삭제
+                
             Raises:
-                500, {'message': '-',
-                      'errorMessage': '-'} : --
+                500, {'message': 'product image not exist',
+                      'errorMessage': 'product_image_not_exist'}: 상품 이미지 정보 취득 실패
         """
         sql = """
-            SELECT
-                id AS 'product_image_id'
-                ,image_url AS 'image_url'
-                ,order_index AS 'order_index'
-            FROM
-                product_images
-            WHERE
-                is_deleted = 0
-                AND product_id = %(product_id)s
-            ORDER BY
-                order_index ASC;
+        SELECT
+            image_url AS 'product_image_url'
+            ,order_index AS 'order_index'
+        FROM
+            product_images
+        WHERE
+            is_deleted = 0
+            AND product_id = %(product_id)s
+        ORDER BY
+            order_index ASC;
         """
         
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -298,44 +290,50 @@ class ProductManageDao:
             result = cursor.fetchall()
             
             if not result:
-                raise ProductImageNotExist('product_image_does_not_exist')
+                raise ProductImageNotExist('product_image_not_exist')
             
             return result
     
     def get_product_options(self, connection, data):
-        """상품 옵션 리스트 검색
+        """상품 옵션 리스트 취득
+            
             Args:
                 connection : 데이터베이스 연결 객체
                 data       : 서비스 레이어에서 넘겨 받은 상품 옵션 정보 취득에 사용될 키값
+                
             Author: 심원두
-            Returns: [{}]
+            
+            Returns:
+                result : 상품 옵셥 리스트
+                
             History:
                 2021-01-02(심원두): 초기 생성
+                2021-01-03(심원두): 컬럼 is_stock_manage 추가 대응
             Raises:
-                500, {'message': '-',
-                      'errorMessage': '-'} : --
+                500, {'message': 'stock info not exist',
+                      'errorMessage': 'stock_does_not_exist'} : 옵션 정보 취득 실패
         """
         sql = """
-            SELECT
-                stock.id AS 'stock_id'
-                ,stock.product_option_code AS 'product_option_code'
-                ,stock.remain AS 'remain'
-                ,stock.`is_stock_manage` AS 'is_stock_manage'
-                ,color.`id` AS 'color_id'
-                ,color.`name` AS 'color_name'
-                ,size.`id` AS 'size_id'
-                ,size.`name` AS 'size_name'
-            FROM
-                stocks AS stock
-                INNER JOIN colors AS color
-                    ON stock.color_id = color.id
-                INNER JOIN sizes AS size
-                    ON stock.size_id = size.id
-            WHERE
-                stock.is_deleted = 0
-                AND stock.product_id = %(product_id)s
-            ORDER BY
-                stock.product_option_code ASC;
+        SELECT
+            stock.id AS 'stock_id'
+            ,stock.product_option_code AS 'product_option_code'
+            ,color.`id` AS 'color_id'
+            ,color.`name` AS 'color_name'
+            ,size.`id` AS 'size_id'
+            ,size.`name` AS 'size_name'
+            ,stock.remain AS 'remain'
+            ,stock.`is_stock_manage` AS 'is_stock_manage'
+        FROM
+            stocks AS stock
+            INNER JOIN colors AS color
+                ON stock.color_id = color.id
+            INNER JOIN sizes AS size
+                ON stock.size_id = size.id
+        WHERE
+            stock.is_deleted = 0
+            AND stock.product_id = %(product_id)s
+        ORDER BY
+            stock.product_option_code ASC;
         """
         
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:

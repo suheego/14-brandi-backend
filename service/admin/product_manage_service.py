@@ -1,6 +1,9 @@
-from datetime import datetime
 from config                  import S3_BUCKET_URL
-from utils.custom_exceptions import DateCompareException, LookUpDateFieldRequiredCheck
+from utils.custom_exceptions import (
+    DateCompareException,
+    LookUpDateFieldRequiredCheck,
+    SellerAttributeTypeException
+)
 
 
 class ProductManageService:
@@ -47,23 +50,20 @@ class ProductManageService:
                     "total_count": 951
             
             Raises:
-                200, {'message': 'product search result zero',
-                      'errorMessage': 'product_search_result_zero'} : 검색 결과 없음
-                      
                 400, {'message': 'key error',
-                      'errorMessage': 'key_error' + format(e)} : 잘못 입력된 키값
+                      'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키 값
                       
                 400, {'message': 'both date field required',
-                      'errorMessage': 'both_date_field_required'} : 필수 값 유효성 검사
+                      'errorMessage': 'both_date_field_required'}: 필수 값 유효성 체크 에러
                       
                 400, {'message': 'start date is greater than end date',
-                      'errorMessage': 'start_date_is_greater_than_end_date'} : 날짜 비교 유효성 검사
+                      'errorMessage': 'start_date_is_greater_than_end_date'}: 날짜 비교 유효성 체크 에러
+                
+                400, {'message': 'invalid seller attribute type',
+                      'errorMessage': 'invalid_seller_attribute_type'}: 셀러 타입 유효성 체크 에러
         """
         
         try:
-            page_number = int(data['page_number'])
-            limit       = int(data['limit'])
-            
             if data['lookup_start_date'] and not data['lookup_end_date']:
                 raise LookUpDateFieldRequiredCheck('both_date_field_required')
 
@@ -74,7 +74,18 @@ class ProductManageService:
                 if data['lookup_start_date'] > data['lookup_end_date']:
                     raise DateCompareException('start_date_is_greater_than_end_date')
             
-            data['offset'] = (page_number * limit) - limit
+            if data['seller_attribute_type_ids']:
+                for type_id in data['seller_attribute_type_ids']:
+                    if type_id < 0 or type_id > 7:
+                        raise SellerAttributeTypeException("invalid_seller_attribute_type")
+            
+            if data['product_name']:
+                data['product_name'] = '%' + data['product_name'] + '%'
+            
+            data['page_number'] = int(data['page_number'])
+            data['limit']       = int(data['limit'])
+            
+            data['offset']      = (data['page_number'] * data['limit']) - data['limit']
             
             total_count  = self.product_manage_dao.get_total_products_count(
                                 connection,
@@ -114,63 +125,134 @@ class ProductManageService:
         except Exception as e:
             raise e
     
-    def detail_product_service(self, connection, product_code):
+    def detail_product_service(self, connection, data):
         """ 해당 상품 코드의 상세 정보 취득
-
+            
             Parameters:
-                connection   : 데이터베이스 연결 객체
-                product_code : View 에서 넘겨받은 상품 코드
-
+                connection : 데이터베이스 연결 객체
+                data       : View 에서 넘겨받은 딕셔너리 객체 (상품 코드)
+            
             Author: 심원두
-
+            
             Returns:
-                -
-
+                "result": {
+                    "product_detail": {
+                    "description": "상품 설명===999",
+                    "detail_information": "html==============",
+                    "discount_end_date": "2021-12-25 23:59:00",
+                    "discount_rate": 0.1,
+                    "discount_start_date": "2020-11-01 09:00:00",
+                    "discounted_price": 9000.0,
+                    "is_display": 1,
+                    "is_product_notice": 0,
+                    "is_sale": 1,
+                    "main_category_id": 1,
+                    "main_category_name": "아우터",
+                    "manufacturer": "패션의 완성 위코드(제조)",
+                    "manufacturing_date": "Wed, 01 Jan 2020 00:00:00 GMT",
+                    "maximum_quantity": 20,
+                    "minimum_quantity": 1,
+                    "origin_price": 10000.0,
+                    "product_code": "P0000000000000000999",
+                    "product_id": 999,
+                    "product_name": "성보의하루999",
+                    "product_origin_type_id": 3,
+                    "product_origin_type_name": "한국",
+                    "sub_category_id": 6,
+                    "sub_category_name": "무스탕/퍼",
+                    "updated_at": "2020-12-31 13:25:08"
+                },
+                "product_images": [
+                    {
+                        "order_index": 1,
+                        "product_image_url": "https://brandi-intern-8.s3.amazonaws.com/free-psd/simple-black
+                    }
+                ],
+                "product_options": [
+                    {
+                        "color_id": 1,
+                        "color_name": "Black",
+                        "is_stock_manage": 0,
+                        "product_option_code": "1194001008",
+                        "remain": 100,
+                        "size_id": 1,
+                        "size_name": "Free",
+                        "stock_id": 999
+                    }
+                ]
+            }
+            
             Raises:
                 400, {'message': 'key error',
                       'errorMessage': 'key_error' + format(e)} : 잘못 입력된 키값
+                
+                500, {'message': 'product does not exist',
+                      'errorMessage': 'product_does_not_exist'} : 상품 정보 취득 실패
+                      
+                500, {'message': 'product image not exist',
+                      'errorMessage': 'product_image_not_exist'}: 상품 이미지 정보 취득 실패
+                
+                500, {'message': 'stock info not exist',
+                      'errorMessage': 'stock_does_not_exist'}: 옵션 정보 취득 실패
         """
-        
-        data = dict()
-        
         try:
-            # 상품 정보
-            data['product_code'] = product_code
             product_detail = self.product_manage_dao.get_product_detail(connection, data)
-
-            print("======================")
-            print(product_detail)
             
-            # 상품 이미지 정보
             data['product_id'] = product_detail['product_id']
-            product_images = self.product_manage_dao.get_product_images(connection, data)
-
-            print("======================")
-            print(product_images)
-            # S3_BUCKET_URL
-            
-            # 상품 옵션 정보
-            product_options = self.product_manage_dao.get_product_options(connection, data)
-            
-            print("======================")
-            print(product_options)
+            product_images     = self.product_manage_dao.get_product_images(connection, data)
+            product_options    = self.product_manage_dao.get_product_options(connection, data)
             
             result = {
-                'product_detail' : product_detail,
+                'product_detail' : {
+                    'product_code'             : product_detail['product_code'],
+                    'is_sale'                  : product_detail['is_sale'],
+                    'is_display'               : product_detail['is_display'],
+                    'main_category_id'         : product_detail['main_category_id'],
+                    'main_category_name'       : product_detail['main_category_name'],
+                    'sub_category_id'          : product_detail['sub_category_id'],
+                    'sub_category_name'        : product_detail['sub_category_name'],
+                    'is_product_notice'        : product_detail['is_product_notice'],
+                    'manufacturer'             : product_detail['manufacturer'],
+                    'manufacturing_date'       : product_detail['manufacturing_date'].isoformat(),
+                    'product_origin_type_id'   : product_detail['product_origin_type_id'],
+                    'product_origin_type_name' : product_detail['product_origin_type_name'],
+                    'product_name'             : product_detail['product_name'],
+                    'description'              : product_detail['description'],
+                    'detail_information'       : product_detail['detail_information'],
+                    'origin_price'             : product_detail['origin_price'],
+                    'discount_rate'            : product_detail['discount_rate'],
+                    'discounted_price'         : product_detail['discounted_price'],
+                    'discount_start_date'      : product_detail['discount_start_date'],
+                    'discount_end_date'        : product_detail['discount_end_date'],
+                    'minimum_quantity'         : product_detail['minimum_quantity'],
+                    'maximum_quantity'         : product_detail['maximum_quantity'],
+                    'updated_at'               : product_detail['updated_at'],
+                    'product_id'               : product_detail['product_id'],
+                },
                 'product_images' : [
                     {
                         'product_image_url' : S3_BUCKET_URL + image['product_image_url'],
                         'order_index'       : image['order_index']
-                    } for image in product_images],
-                'product_options' : [
+                    } for image in product_images
+                ],
+                'product_options': [
                     {
-                        'color_id'          : option['color_id'],
-                        'size_id'           : option['size_id'],
-                        'remain'            : option['remain']
-                    } for option in product_options]
+                        'stock_id'            : option['stock_id'],
+                        'product_option_code' : option['product_option_code'],
+                        'color_id'            : option['color_id'],
+                        'color_name'          : option['color_name'],
+                        'size_id'             : option['size_id'],
+                        'size_name'           : option['size_name'],
+                        'remain'              : option['remain'],
+                        'is_stock_manage'     : option['is_stock_manage'],
+                    } for option in product_options
+                ]
             }
             
             return result
-
-        except Exception:
-            raise Exception('알 수 없는 에러')
+        
+        except KeyError as e:
+            raise e
+        
+        except Exception as e:
+            raise e
