@@ -34,12 +34,18 @@ class SenderView(MethodView):
                     "name": "고수희",
                     "phone": "01021341234,
                     "email": "gosuhee@gmail.com"
+                    }
 
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
-            403, {'message': 'key error',
-            'errorMessage': 'customer_permission_denied'} : 사용자 권한이 없음
+            400, {'message': 'unable to close database',
+            'errorMessage': 'unable_to_close_database'} : 커넥션 종료 실패
+            403, {'message': 'customer permission denied',
+            'errorMessage': 'customer_permission_denied'} : 사용자 권한이 아님
+            500, {'message': 'internal server error',
+            'errorMessage': format(e)}) : 서버 에러
+
 
         History:
             2020-12-30(고수희): 초기 생성

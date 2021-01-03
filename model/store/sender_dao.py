@@ -24,10 +24,15 @@ class SenderDao:
         Author: 고수희
 
         Returns:
-            return {"name": "고수희",
-                    "phone": "01012341234",
-                    "email": "gosuhee@gmail.com",
-                    }
+            {"name": "고수희",
+            "phone": "01012341234",
+            "email": "gosuhee@gmail.com",
+            }
+
+        Raises:
+            500 {"message": "server error",
+            "error_message: "server_error"} 서버 에러
+
 
         History:
             2020-12-30(고수희): 초기 생성
