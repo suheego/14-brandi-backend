@@ -32,17 +32,17 @@ class ProductManageSearchView(MethodView):
         self.database = database
     
     @validate_params(
-        Param('lookup_start_date',        GET, str,  required=False, rules=[DateRule(), NotEmpty()]),
-        Param('lookup_end_date',          GET, str,  required=False, rules=[DateRule(), NotEmpty()]),
-        Param('seller_name',              GET, str,  required=False, rules=[DefaultRule(), NotEmpty(), MaxLength(20)]),
-        Param('product_name',             GET, str,  required=False, rules=[DefaultRule(), NotEmpty(), MaxLength(100)]),
-        Param('product_id',               GET, str,  required=False, rules=[NumberRule(), NotEmpty()]),
-        Param('product_code',             GET, str,  required=False, rules=[DefaultRule(), NotEmpty(), MaxLength(20)]),
-        Param('is_sale',                  GET, int,  required=False, rules=[Enum(1, 2)]),
-        Param('is_display',               GET, int,  required=False, rules=[Enum(1, 2)]),
-        Param('is_discount',              GET, int,  required=False, rules=[Enum(1, 2)]),
-        Param('page_number',              GET, int,  required=True,  rules=[PageRule()]),
-        Param('limit',                    GET, int,  required=True,  rules=[Enum(10, 20, 50)])
+        Param('lookup_start_date', GET, str,  required=False, rules=[DateRule(), NotEmpty()]),
+        Param('lookup_end_date',   GET, str,  required=False, rules=[DateRule(), NotEmpty()]),
+        Param('seller_name',       GET, str,  required=False, rules=[DefaultRule(), NotEmpty(), MaxLength(20)]),
+        Param('product_name',      GET, str,  required=False, rules=[DefaultRule(), NotEmpty(), MaxLength(100)]),
+        Param('product_id',        GET, str,  required=False, rules=[NumberRule(), NotEmpty()]),
+        Param('product_code',      GET, str,  required=False, rules=[DefaultRule(), NotEmpty(), MaxLength(20)]),
+        Param('is_sale',           GET, int,  required=False, rules=[Enum(1, 2)]),
+        Param('is_display',        GET, int,  required=False, rules=[Enum(1, 2)]),
+        Param('is_discount',       GET, int,  required=False, rules=[Enum(1, 2)]),
+        Param('page_number',       GET, int,  required=True,  rules=[PageRule()]),
+        Param('limit',             GET, int,  required=True,  rules=[Enum(10, 20, 50)])
     )
     def get(self, *args):
         """GET 메소드: 특정 조건에 해당하는 상품 리스트를 조회한다.

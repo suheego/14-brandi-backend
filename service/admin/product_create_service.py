@@ -1,16 +1,22 @@
-import fleep
+import io
 import base64
+
+from PIL                     import Image
 from werkzeug.utils          import secure_filename
 
+from config                  import S3_BUCKET_URL
 from utils.amazon_s3         import S3FileManager, GenerateFilePath
 from utils.custom_exceptions import (
-    CorrelationCheckException,
     RequiredFieldException,
     NotValidFileException,
     FileSizeException,
-    FileExtensionException
+    FileExtensionException,
+    CompareQuantityCheck,
+    ComparePriceCheck,
+    DateCompareException,
+    FileScaleException,
+    FileUploadFailException
 )
-
 
 class ProductCreateService:
     """ Business Layer
@@ -23,11 +29,12 @@ class ProductCreateService:
         History:
             2020-12-29(심원두): 초기 생성
             2020-12-30(심원두): 예외처리 추가
+            2020-01-03(심원두): 이미지 등록 예외 처리 수정, 업로드 시 파일 손상 이슈 수정
     """
-
+    
     def __init__(self, create_product_dao):
         self.create_product_dao = create_product_dao
-
+    
     def create_product_service(self, connection, data):
         """ product 생성
 
@@ -36,160 +43,103 @@ class ProductCreateService:
                 data       : View 에서 넘겨받은 dict 객체
 
             Author: 심원두
-
+            
             Returns:
                 product_id : 생성한 products 테이블의 키 값
-
+                
             Raises:
                 400, {'message': 'key error',
-                      'errorMessage': 'key_error' + format(e)}                  : 잘못 입력된 키값
+                      'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키값
 
                 400, {'message': 'required field is blank',
-                      'errorMessage': 'required_field_check_fail'}              : 필수 입력 항목 에러
+                      'errorMessage': 'required_manufacture_information'}: 제조 정보 필드 없음
+                
+                400, {'message': 'required field is blank',
+                      'errorMessage': 'required_discount_start_or_end_date'}: 필수 입력 항목 없음
+                
+                400, {'message': 'compare quantity field check error',
+                      'errorMessage': 'minimum_quantity_cannot_greater_than_maximum_quantity'}: 최소 구매 수량이 최대 보다 큼
+                
+                400, {'message': 'compare price field check error',
+                      'errorMessage': 'discounted_price_cannot_greater_than_origin_price'}: 할인가가 판매가 보다 큼
 
-                400, {'message': 'correlation check fail',
-                      'errorMessage': '_minimum_quantity_maximum_quantity'}     : 최소구매, 최대구매 수량 비교
-
-                400, {'message': 'correlation check fail',
-                      'errorMessage': '_discounted_price_origin_price'}         : 판매가, 할인가 비교
-
-                400, {'message': 'correlation check fail',
-                      'errorMessage': '_discount_start_date__discount_end_date'}: 할인 시작일, 할인 종료일 비교
-
+                400, {'message': 'compare price field check error',
+                      'errorMessage': 'wrong_discounted_price'}: 판매가와 할인가 일치하지 않음
+                
+                400, {'message': 'compare price field check error',
+                      'errorMessage': 'required_discount_start_or_end_date'}: 할인 시작, 종료 일자 필드 없음
+                
+                400, {'message': 'start date is greater than end date',
+                      'errorMessage': 'start_date_cannot_greater_than_end_date'}: 할인 시작일이 종료일 보다 큼
+                
+                400, {'message': 'compare price field check error',
+                      'errorMessage': 'discounted_price_have_to_same_with_origin_price'}: 할인가, 판매가 불일치(할인율 0)
+                
                 500, {'message': 'product create denied',
                       'errorMessage': 'unable_to_create_product'}               : 상품 정보 등록 실패
-
+            
             History:
                 2020-12-29(심원두): 초기 생성
                 2020-12-30(심원두): 예외처리 구현
+                2020-01-03(심원두): 예외처리 추가/수정
         """
         try:
-            # is_product_notice      = data['is_product_notice']
-            # manufacturer           = data['manufacturer']
-            # manufacturing_date     = data['manufacturing_date']
-            # product_origin_type_id = data['product_origin_type_id']
-            # minimum_quantity       = data['minimum_quantity']
-            # maximum_quantity       = data['maximum_quantity']
-            # origin_price           = data['origin_price']
-            # discount_rate          = data['discount_rate']
-            # discounted_price       = data['discounted_price']
-            # discount_start_date    = data['discount_start_date']
-            # discount_end_date      = data['discount_end_date']
-            #
-            # print('상품 등록 서비스1')
-            #
-            # # is_product_notice 가 True 일 때 하위 항목 필수 입력 처리
-            # if int(is_product_notice):
-            #     if not manufacturer or not manufacturing_date or not product_origin_type_id:
-            #         raise RequiredFieldException('required_field_check_fail')
-            #
-            # print('상품 등록 서비스2')
-            # # 최소 판매량, 최대 판매량 비교 예외처리
-            # if int(minimum_quantity) > int(maximum_quantity):
-            #     raise CorrelationCheckException(
-            #         '_minimum_quantity' +
-            #         '_maximum_quantity'
-            #     )
-            #
-            # print('상품 등록 서비스3')
-            # # 기본 판매가격, 할인 판매 가격 비교 예외처리
-            # if not discounted_price:
-            #     discounted_price = 0
-            #
-            # if int(discounted_price) > int(origin_price):
-            #     raise CorrelationCheckException(
-            #         '_discounted_price' +
-            #         '_origin_price'
-            #     )
-            #
-            # print('상품 등록 서비스4')
-            # # 세일 시작 날짜가 존재할 경우, 세일 종료 날짜 필수 항목 예외처리
-            # if discount_start_date:
-            #     if not discount_end_date:
-            #         raise RequiredFieldException('required_field_check_fail')
-            #
-            # print('상품 등록 서비스5')
-            # # 세일 종료 날짜가 존재할 경우, 세일 시작 날짜 필수 항목 예외처리
-            # if discount_end_date:
-            #     if not discount_start_date:
-            #         raise RequiredFieldException('required_field_check_fail')
-            #
-            # print('상품 등록 서비스6')
-            # # 세일 시작 날짜, 세일 종료 날짜 비교 예외처리
-            # if discount_start_date > discount_end_date:
-            #     raise CorrelationCheckException(
-            #         '_discount_start_date' +
-            #         '_discount_end_date'
-            #     )
-            #
-            # print('상품 등록 서비스7')
-            # # 할인율 Decimal(3,2)
-            # data['discount_rate'] = float(data['discount_rate']) / 100
+            # 상품 고시 - 직접입력의 경우 하위 필드 필수 체크
+            if int(data['is_product_notice']) == 1:
+                if not data['manufacturer'] or \
+                    not data['manufacturing_date'] or \
+                    not data['product_origin_type_id']:
+                    raise RequiredFieldException('required_manufacture_information')
+
+            # 최소 판매 수량, 최대 판매 수량 비교 체크
+            if int(data['minimum_quantity']) > int(data['maximum_quantity']):
+                raise CompareQuantityCheck('minimum_quantity_cannot_greater_than_maximum_quantity')
             
-            payload = dict()
-            # payload['seller_id']              = data['seller_id']
-            # payload['account_id']             = data['account_id']
-            # payload['is_sale']                = data['is_sale']
-            # payload['is_display']             = data['is_display']
-            # payload['main_category_id']       = data['main_category_id']
-            # payload['sub_category_id']        = data['sub_category_id']
-            # payload['is_product_notice']      = data['is_product_notice']
-            # payload['manufacturer']           = data['manufacturer']
-            # payload['manufacturing_date']     = data['manufacturing_date']
-            # payload['product_origin_type_id'] = data['product_origin_type_id']
-            # payload['product_name']           = data['product_name']
-            # payload['description']            = data['description']
-            payload['detail_information']     = data['detail_information']
-            # payload['minimum_quantity']       = data['minimum_quantity']
-            # payload['maximum_quantity']       = data['maximum_quantity']
-            # payload['origin_price']           = data['origin_price']
-            # payload['discount_rate']          = data['discount_rate']
-            # payload['discounted_price']       = data['discounted_price']
-            # payload['discount_start_date']    = data['discount_start_date']
-            # payload['discount_end_date']      = data['discount_end_date']
+            # 할인율 0이 아닌 경우
+            if int(data['discount_rate']) != 0:
+                
+                # 할인가가 판매가 보다 클 경우
+                if float(data['discounted_price']) > float(data['origin_price']):
+                    raise ComparePriceCheck('discounted_price_cannot_greater_than_origin_price')
+
+                # [판매가 - 할인가격 != 할인가] 의 경우
+                if (float(data['origin_price']) * (1 - float(data['discount_rate']))) != \
+                    float(data['discounted_price']):
+                    raise ComparePriceCheck('wrong_discounted_price')
+                
+                # 할인율이 0이 아닌 경우, [할인 시작 일자, 할이 종료 일자] 필수 체크
+                if not data['discount_start_date'] or not data['discount_end_date']:
+                    raise RequiredFieldException('required_discount_start_or_end_date')
+                
+                # [할인 시작 일자 > 할인 종료 일자] 의 경우
+                if data['discount_start_date'] > data['discount_end_date']:
+                    raise DateCompareException('start_date_cannot_greater_than_end_date')
+            else:
+                
+                # 할인율이 0 인 경우, [판매가 != 할인가]
+                if data['discounted_price'] != data['origin_price']:
+                    raise ComparePriceCheck('discounted_price_have_to_same_with_origin_price')
             
-            # if not data.get('manufacturing_date'):
-            #     payload['manufacturing_date'] = None
-            #
-            # if not data.get('product_origin_type_id'):
-            #     payload['product_origin_type_id'] = None
-            #
-            # if not data.get('discount_start_date'):
-            #     payload['discount_start_date'] = None
-            #
-            # if not data.get('discount_end_date'):
-            #     payload['discount_end_date'] = None
-            #
-            # if not data.get('discounted_price'):
-            #     payload['discounted_price'] = 0.0
+            data['discount_rate'] = float(data['discount_rate']) / 100
             
-            # print('payload::', payload)
-            # payload['detail_information'] = ""
-            
-            # 1번째 시도
-            html = payload['detail_information']
-            # encode = base64.b64encode(html)
-            encode = html.encode("utf-8")
-            print(encode)
-            
-            # payload['detail_information'] = html
-            payload['detail_information'] = encode
-            
+            #TODO : HTML with image 파일 DB 저장
+            # 1. encode 방법
             # html = payload['detail_information']
-            # print('html::', type(html), html)
-            #
-            # a = base64.b64encode(html.encode()).decode()
-            # print('encoded::', a)
-            # payload['detail_information'] = a
-
-            # encoded = base64.b64decode(html.encode().decode())
+            # encode = html.encode("utf-8")
+            # payload['detail_information'] = encode
+            # 2. base64 방법
+            # html = payload['detail_information']
+            # encode = base64.b64encode(html.encode()).decode()
+            # payload['detail_information'] = encode
             
-            print('상품 등록 서비스8')
-            return self.create_product_dao.insert_product(connection, payload)
-
-        except KeyError:
-            raise KeyError('key_error')
-
+            return self.create_product_dao.insert_product(connection, data)
+            
+        except KeyError as e:
+            raise e
+        
+        except Exception as e:
+            raise e
+    
     def update_product_code_service(self, connection, product_id):
         """ 상품 코드(product_code) 생성 후 상품 코드 업데이트
 
@@ -198,143 +148,160 @@ class ProductCreateService:
                 product_id : View 에서 상품정보 등록 성공 후 넘겨 받은 해당 상품 정보 테이블의 id
 
             Author: 심원두
-
+            
             Returns:
-                None
+                0: 상품 코드 갱신 실패
+                1: 상품 코드 갱신 성공
 
             Raises:
-                400, {'message'     : 'key error',
-                      'errorMessage': 'key_error' + format(e)}        : 잘못 입력된 키값
+                400, {'message': 'key error',
+                      'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키값
 
-                500, {'message'     : 'product code update denied',
+                500, {'message': 'product code update denied',
                       'errorMessage': 'unable_to_update_product_code'}: 상품 코드 갱신 실패
-
+            
             History:
                 2020-12-29(심원두): 초기 생성
         """
-
         try:
-            data = dict()
-            print("상품 코드 수정 서비스1")
-            # 상품 코드 생성
-            data['product_code'] = 'P' + str(product_id).zfill(18)
-            data['product_id']   = product_id
-
-            print("상품 코드 수정 서비스2")
-            # 상품 코드 업데이트 DAO 호출
-            self.create_product_dao.update_product_code(connection, data)
             
-        except KeyError:
-            raise KeyError('key_error')
+            # 상품 코드 생성
+            data = {
+                'product_code' : 'P' + str(product_id).zfill(18),
+                'product_id'   : product_id
+            }
+            
+            return self.create_product_dao.update_product_code(connection, data)
+        
+        except KeyError as e:
+            raise e
+        
+        except Exception as e:
+            raise e
 
     def create_product_images_service(self, connection, seller_id, product_id, product_images):
         """ 상품 이미지 등록
-
+            
             Args:
-                connection     : 데이터베이스 연결 객체
-                product_id     : View 에서 상품정보 등록 성공 후 넘겨 받은 상품 정보 테이블의 id
-                product_images : View 에서 넘겨 받은 이미지 파일
-
+                'connection'     : 데이터베이스 연결 객체
+                'seller_id'      : View 에서 넘겨 받은 셀러 아이디
+                'product_id'     : View 에서 넘겨 받은 상품 아이디
+                'product_images' : View 에서 넘겨 받은 이미지 파일
+            
             Author: 심원두
-
+            
             Returns:
-                None
+                0: 상품 이미지 테이블 등록 실패
+                1: 상품 이미지 테이블 등록 성공
 
             Raises:
-                400, {'message'     : 'key error',
-                      'errorMessage': 'key_error' + format(e)}         : 잘못 입력된 키값
+                413, {'message': 'invalid file',
+                      'errorMessage': 'invalid_file'}: 파일 이름이 공백, 혹은 파일을 정상적으로 받지 못함
+                
+                413, {'message': 'file size too large',
+                      'errorMessage': 'file_size_too_large'}: 파일 사이즈 정책 위반 (4메가 이상인 경우)
+                
+                413, {'message': 'file scale too small, 640 * 720 at least',
+                      'errorMessage': 'file_scale_at_least_640*720'}: 파일 스케일 정책 위반 (680*720 미만인 경우)
 
-                400, {'message'     : 'invalid file',
-                      'errorMessage': 'key_error' + format(e)}         : 유효하지 않은 파일
+                413, {'message': 'only allowed jpg type',
+                      'errorMessage': 'only_allowed_jpg_type'}: 파일 확장자 정책 위반 (JPG, JPEG 아닌 경우)
+                
+                500, {'message': 'image_file_upload_to_amazon_fail',
+                      'errorMessage': 'image_file_upload_fail'}: 이미지 업로드 실패
 
-                400, {'message'     : 'only allowed jpg type',
-                      'errorMessage': 'key_error' + format(e)}         : 유효하지 않은 파일 확장자
-
-                413, {'message'     : 'file size too large',
-                      'errorMessage': 'key_error' + format(e)}         : 파일 사이즈 정책 위반
-
-                500, {'message'     : 'product image create denied',
+                500, {'message': 'product image create denied',
                       'errorMessage': 'unable_to_create_product_image'}: 상품 이미지 등록 실패
-
+            
             History:
                 2020-12-29(심원두): 초기 생성
+                2020-01-03(심원두): 이미지 업로드 예외 처리 수정, 파일 손상 이슈 수정
         """
-
         try:
-            data = dict()
-            print("상품 이미지 서비스1")
-            for index, image in enumerate(product_images):
-    
-                print("상품 이미지 서비스2")
-                # 이미지 파일 존재 유효성 검사
-                if not image or not image.filename:
-                    print("===")
+            for index, product_image in enumerate(product_images):
+                
+                if not product_image or not product_image.filename:
                     raise NotValidFileException('invalid_file')
-
-                print("상품 이미지 서비스3")
-                # 확장자 체크 (이미지 손상됨)
-                # info = fleep.get(image.read(128))
-                # if info.extension[0] != 'jpg':
-                #     raise FileExtensionException('only_allowed_jpg_type')
                 
-                # 파일 사이즈 체크 (이미지 파일 잃어버림)
-                # if len(image.read()) > 4194304:
-                #     raise FileSizeException('file_size_too_large')
+                # 바이트 객체
+                buffer = io.BytesIO()
+                # 이미지 열기 (읽기 모드)
+                image = Image.open(product_image, 'r')
+                # 임시 저장
+                image.save(buffer, image.format)
+                # 포인터 리와인드
+                buffer.seek(0)
                 
-                # TODO : check image size(640, 720)
-
-                print("상품 이미지 서비스4")
+                # 파일 크기 체크 (4메가 이상인 경우 에러)
+                if buffer.getvalue().__sizeof__() > 4194304:
+                    raise FileSizeException('file_size_too_large')
+                
+                # 파일 사이즈(가로, 세로) 체크 (640*720 미만인 경우 에러)
+                # if image.size[0] < 640 or image.size[1] < 720:
+                #     raise FileScaleException('file_scale_at_least_640*720')
+                
+                # 파일 확장자 체크 (JPEG, JPG 허용)
+                if image.format != "JPEG":
+                    raise FileExtensionException('only_allowed_jpg_type')
+                
+                # 이미지 파일 패스 생성
                 file_path = GenerateFilePath().generate_file_path(
                     3,
                     seller_id  = seller_id,
                     product_id = product_id
                 )
                 
-                secured_file_name = secure_filename(image.filename)
-
-                print("상품 이미지 서비스5")
-                # save to AMAZON S3
-                url = S3FileManager().file_upload(image, file_path + secured_file_name)
+                # 아마존 업로더
+                url = S3FileManager().file_upload(
+                    buffer,
+                    file_path + secure_filename(product_image.filename)
+                )
                 
-                if url:
-                    data['image_url']   = url
-                    data['product_id']  = product_id
-                    data['order_index'] = index
-
-                    print("상품 이미지 서비스6")
-                    self.create_product_dao.insert_product_image(connection, data)
-
-        except KeyError:
-            raise KeyError('key_error')
-
+                # 아마존 업로드 후 url 리턴 받지 못한 경우
+                if not url:
+                    raise FileUploadFailException('image_file_upload_fail')
+                
+                data = {
+                    'image_url'   : url,
+                    'product_id'  : product_id,
+                    'order_index' : index
+                }
+                
+                self.create_product_dao.insert_product_image(connection, data)
+        
+        except Exception as e:
+            raise e
+    
     def create_stock_service(self, connection, product_id, stocks):
         """ 상품 옵션 정보 등록
-
+            
             Args:
                 connection : 데이터베이스 연결 객체
                 product_id : View 에서 상품정보 등록 성공 후 넘겨 받은 상품 정보 테이블의 id
                 stocks     : View 에서 넘겨 받은 상품 옵션 정보
-
+            
             Author: 심원두
-
+            
             Returns:
-                None
-
+                0: 옵션 테이블 등록 실패
+                1: 옵션 테이블 등록 성공
+            
             Raises:
                 400, {'message': 'key error',
-                      'errorMessage': 'key_error' + format(e)}  : 잘못 입력된 키값
+                      'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키값
 
                 500, {'message': 'stock create denied',
                       'errorMessage': 'unable_to_create_stocks'}: 상품 옵션 정보 등록 실패
-
+            
             History:
                 2020-12-29(심원두): 초기 생성
+                2020-01-03(심원두): 프론트엔드 상의 후 재고 관리 컬럼 추가에 대한 대응
         """
-        
         try:
-            data = dict()
-            print('상품 옵션 등록 서비스1')
+            data = {}
+            
             for stock in stocks:
+                # 상품 옵션 코드 생성
                 product_option_code = \
                     str(product_id) + \
                     str(stock['color']).zfill(3) + \
@@ -350,12 +317,14 @@ class ProductCreateService:
                 if not data['is_stock_manage']:
                     data['remain'] = 0
                 
-                print('상품 옵션 등록 서비스2')
                 self.create_product_dao.insert_stock(connection, data)
-
-        except KeyError:
-            raise KeyError('key_error')
-
+        
+        except KeyError as e:
+            raise e
+        
+        except Exception as e:
+            raise e
+    
     def create_product_history_service(self, connection, product_id, data):
         """ 상품 이력 정보 등록
 
@@ -367,19 +336,19 @@ class ProductCreateService:
             Author: 심원두
 
             Returns:
-                None
-
+                0: 상품 이력 정보 등록 실패
+                1: 상품 이력 정보 등록 성공
+            
             Raises:
                 400, {'message': 'key error',
-                      'errorMessage': 'key_error' + format(e)}           : 잘못 입력된 키값
+                      'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키값
 
                 500, {'message': 'product history create denied',
                       'errorMessage': 'unable_to_create_product_history'}: 상품 이력 등록 실패
-
+            
             History:
                 2020-12-29(심원두): 초기 생성
         """
-
         try:
             data['product_id']    = product_id
             data['discount_rate'] = float(data['discount_rate'])/100
@@ -394,59 +363,325 @@ class ProductCreateService:
                 data['discounted_price'] = None
             
             return self.create_product_dao.insert_product_history(connection, data)
-
-        except KeyError:
-            raise KeyError('key_error')
-
+            
+        except KeyError as e:
+            raise e
+        
+        except Exception as e:
+            raise e
+    
     def create_product_sales_volumes_service(self, connection, product_id):
+        """ 상품 판매량 정보 초기 등록
+
+            Args:
+                connection : 데이터 베이스 연결 객체
+                product_id : View 에서 상품정보 등록 성공 후 넘겨 받은 상품 정보 테이블의 id
+
+            Author: 심원두
+
+            Returns:
+                0: 상품 판매량 정보 초기 등록 실패
+                1: 상품 판매량 정보 초기 등록 성공
+            
+            Raises:
+                500, {'message': 'product history create denied',
+                      'errorMessage': 'unable_to_create_product_history'}: 상품 이력 등록 실패
+            
+            History:
+                2020-12-29(심원두): 초기 생성
+        """
         try:
-            print("상품 볼륨 서비스1")
             return self.create_product_dao.insert_product_sales_volumes(connection, product_id)
-
+        
         except Exception as e:
             raise e
-
+        
     def main_category_list_service(self, connection):
+        """ 메인 카테고리 정보 취득
+            
+            Args:
+                connection : 데이터 베이스 연결 객체
+            
+            Author: 심원두
+            
+            Returns:
+                "result": [
+                    {
+                        "main_category_id": 1,
+                        "main_category_name": "아우터"
+                    },
+                    {
+                        "main_category_id": 2,
+                        "main_category_name": "상의"
+                    },
+                ]
+            
+            Raises:
+                500, {'message': 'fail to get main category list',
+                      'errorMessage': 'fail_to_get_main_category_list'}: 메인 카테고리 정보 취득 실패
+            
+            History:
+                2020-01-01(심원두): 초기 생성
+                2020-01-03(심원두): 결과 편집 처리 수정
+        """
         try:
-            return self.create_product_dao.get_main_category_list(connection)
-
-        except Exception as e:
+            main_category_list = self.create_product_dao.get_main_category_list(connection)
+            
+            result = [
+                {
+                    'main_category_id'  : main_category_info['id'],
+                    'main_category_name': main_category_info['name']
+                } for main_category_info in main_category_list
+            ]
+            
+            return result
+        
+        except KeyError as e:
             raise e
-
-    def get_color_list_service(self, connection):
-        try:
-            return self.create_product_dao.get_color_list(connection)
-
-        except Exception as e:
-            raise e
-
-    def get_size_list_service(self, connection):
-        try:
-            return self.create_product_dao.get_size_list(connection)
-
-        except Exception as e:
-            raise e
-
-    def get_product_origin_types_service(self, connection):
-        try:
-            return self.create_product_dao.get_product_origin_types(connection)
         
         except Exception as e:
             raise e
 
+    def get_color_list_service(self, connection):
+        """ 색상 리스트 취득
+            
+            Args:
+                connection : 데이터 베이스 연결 객체
+
+            Author: 심원두
+
+            Returns:
+                "result": [
+                    {
+                        "color_id": 1,
+                        "color_name": "Black"
+                    },
+                    {
+                        "color_id": 2,
+                        "color_name": "White"
+                    },
+                ]
+
+            Raises:
+                500, {'message': 'fail to get color list',
+                      'errorMessage': 'fail_to_get_color_list'}: 색상 정보 취득 실패
+            
+            History:
+                2020-01-01(심원두): 초기 생성
+                2020-01-03(심원두): 결과 편집 처리 수정
+        """
+        try:
+            color_list = self.create_product_dao.get_color_list(connection)
+            
+            result = [
+                {
+                    'color_id'  : color['id'],
+                    'color_name': color['name']
+                } for color in color_list
+            ]
+            
+            return result
+        
+        except KeyError as e:
+            raise e
+        
+        except Exception as e:
+            raise e
+    
+    def get_size_list_service(self, connection):
+        """ 사이즈 리스트 취득
+            
+            Args:
+                connection : 데이터 베이스 연결 객체
+
+            Author: 심원두
+
+            Returns:
+                [
+                    {
+                        "color_id": 1,
+                        "color_name": "Black"
+                    },
+                    {
+                        "color_id": 2,
+                        "color_name": "White"
+                    },
+                ]
+            
+            Raises:
+                500, {'message': 'fail to get color list',
+                      'errorMessage': 'fail_to_get_color_list'}: 색상 정보 취득 실패
+
+            History:
+                2020-01-01(심원두): 초기 생성
+                2020-01-03(심원두): 결과 편집 처리 수정
+        """
+        try:
+            size_list = self.create_product_dao.get_size_list(connection)
+            
+            result = [
+                {
+                    'size_id'  : size['id'],
+                    'size_name': size['name']
+                } for size in size_list
+            ]
+            
+            return result
+        
+        except KeyError as e:
+            raise e
+        
+        except Exception as e:
+            raise e
+    
+    def get_product_origin_types_service(self, connection):
+        """ 원산지 리스트 취득
+
+            Args:
+                connection : 데이터 베이스 연결 객체
+
+            Author: 심원두
+
+            Returns:
+                [
+                    {
+                        "product_origin_type_id": 1,
+                        "product_origin_type_name": "기타 "
+                    },
+                    {
+                        "product_origin_type_id": 2,
+                        "product_origin_type_name": "중국"
+                    },
+                ]
+            
+            Raises:
+                500, {'message': 'fail to get product origin types',
+                      'errorMessage': 'fail_to_get_product_origin_types'} : 원산지 정보 취득 실패
+
+            History:
+                2020-01-01(심원두): 초기 생성
+                2020-01-03(심원두): 결과 편집 처리 수정
+        """
+        try:
+            product_origin_types = self.create_product_dao.get_product_origin_types(connection)
+            
+            result = [
+                {
+                    'product_origin_type_id'  : product_origin_type['id'],
+                    'product_origin_type_name': product_origin_type['name']
+                } for product_origin_type in product_origin_types
+            ]
+            
+            return result
+        
+        except KeyError as e:
+            raise e
+        
+        except Exception as e:
+            raise e
+    
     def search_seller_list_service(self, connection, data):
+        """ 셀러 리스트 취득
+            
+            Args:
+                connection : 데이터 베이스 연결 객체
+                data       : View 에서 넘겨 받은 셀러명
+            Author: 심원두
+
+            Returns:
+                [
+                    {
+                        "profile_image_url": "https://brandi-intern-8.s3.amazonaws.co...,
+                        "seller_id": 10,
+                        "seller_name": "나는셀러10"
+                    },
+                    {
+                        "profile_image_url": "https://brandi-intern-8.s3.amazonaws.co...
+                        "seller_id": 100,
+                        "seller_name": "나는셀러100"
+                    },
+
+            Raises:
+                400, {'message': 'key error',
+                      'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키값
+
+            History:
+                2020-01-01(심원두): 초기 생성
+                2020-01-03(심원두): 결과 편집 처리 수정
+        """
         try:
             if data['seller_name']:
                 data['seller_name'] = '%' + data['seller_name'] + '%'
-
-            return self.create_product_dao.search_seller_list(connection, data)
-
+            
+            seller_info = \
+                self.create_product_dao.search_seller_list(
+                    connection,
+                    data
+                )
+            
+            result = [
+                {
+                    'seller_id'         : seller['seller_id'],
+                    'seller_name'       : seller['seller_name'],
+                    'profile_image_url' : S3_BUCKET_URL + seller['profile_image_url']
+                } for seller in seller_info
+            ]
+            
+            return result
+        
+        except KeyError as e:
+            raise e
+        
         except Exception as e:
             raise e
-
+    
     def get_sub_category_list_service(self, connection, data):
+        """ 셀러 리스트 취득
+            
+            Args:
+                connection : 데이터 베이스 연결 객체
+                data       : View 에서 넘겨 받은 메인 카테고리 아이디
+            
+            Author: 심원두
+            
+            Returns:
+                [
+                    {
+                        "sub_category_id": 13,
+                        "sub_category_name": "청바지"
+                    },
+                    {
+                        "sub_category_id": 14,
+                        "sub_category_name": "슬랙스"
+                    },
+                ]
+            
+            Raises:
+                500, {'message': 'fail to get sub category list',
+                      'errorMessage': 'fail_to_get_sub_category_list'}: 색상 정보 취득 실패
+            
+            History:
+                2020-01-01(심원두): 초기 생성
+                2020-01-03(심원두): 결과 편집 처리 수정
+        """
         try:
-            return self.create_product_dao.get_sub_category_list(connection, data)
-
+            sub_category_list = \
+                self.create_product_dao.get_sub_category_list(
+                    connection,
+                    data
+                )
+            
+            result = [
+                {
+                    'sub_category_id'   : sub_category['sub_category_id'],
+                    'sub_category_name' : sub_category['sub_category_name'],
+                } for sub_category in sub_category_list
+            ]
+            
+            return result
+        
+        except KeyError as e:
+            raise e
+        
         except Exception as e:
             raise e

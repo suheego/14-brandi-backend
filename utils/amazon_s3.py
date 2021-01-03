@@ -61,17 +61,17 @@ class GenerateFilePath:
     def generate_file_path(self, path_type, **kwargs):
         # TODO
         event_path = ""
-
+        
         seller_path = 'sellers/' + str(kwargs['seller_id'])
-
+        
         if path_type is 1:
             return seller_path + '/profile/'
 
         if path_type is 2:
             return seller_path + '/background/'
-
+        
         if path_type is 3:
-            return seller_path + '/products/' + str(kwargs['product_id']) + '/images/'
-
+            return 'productImages/' + str(kwargs['seller_id']) + '/' + str(kwargs['product_id']) + '/' + 'images'
+        
         if path_type is 4:
             pass

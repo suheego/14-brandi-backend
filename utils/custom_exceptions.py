@@ -209,10 +209,18 @@ class RequiredFieldException(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-class CorrelationCheckException(CustomUserError):
+class CompareQuantityCheck(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
-        message = 'correlation check fail'
+        message = 'compare quantity field check error'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ComparePriceCheck(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'compare price field check error'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -321,10 +329,26 @@ class FileSizeException(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
+class FileScaleException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 413
+        message = 'file scale too small, 640 * 720 at least'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
 class FileExtensionException(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'only allowed jpg type'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class FileUploadFailException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'image_file_upload_to_amazon_fail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
