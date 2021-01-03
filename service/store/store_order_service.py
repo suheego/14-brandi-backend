@@ -113,14 +113,7 @@ class StoreOrderService:
             #장바구니 상품 논리 삭제 처리
             self.store_order_dao.patch_is_delete_cart_item_dao(connection, data)
 
-            #주문자 정보 조회
-            sender_info = self.store_order_dao.get_customer_information_dao(connection, data)
-
-            #주문자 정보가 없으면 주문자 정보 추가
-            if sender_info is None:
-                self.store_order_dao.post_customer_information_dao(connection, data)
-
-            #주문자 정보가 있으면 주문자 정보 수정
+            #주문자 정보가 없으면 주문자 정보 추가, 있으면 수정
             self.store_order_dao.patch_customer_information_dao(connection, data)
 
             return order

@@ -446,40 +446,8 @@ class StoreOrderDao:
             traceback.print_exc()
             raise ServerError('server_error')
 
-    def get_customer_information_dao(self, connection, data):
-        """주문자 정보 조회
-
-        Args:
-            connection: 데이터베이스 연결 객체
-            data      : 서비스 레이어에서 넘겨 받아 추가할 data
-
-        Author: 고수희
-
-        Returns: account_id
-
-        History:
-            2020-12-31(고수희): 초기 생성
-        """
-
-        sql = """
-        SELECT account_id
-        FROM customer_information
-        WHERE account_id = %(user_id)s
-        ;
-        """
-
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(sql, data)
-                result = cursor.fetchone()
-                return result
-
-        except Exception:
-            traceback.print_exc()
-            raise ServerError('server error')
-
-    def post_customer_information_dao(self, connection, data):
-        """주문자 정보 추가
+    def patch_customer_information_dao(self, connection, data):
+        """주문자 정보 추가 및 수정
 
         Args:
             connection: 데이터베이스 연결 객체
@@ -488,10 +456,6 @@ class StoreOrderDao:
         Author: 고수희
 
         Returns: None
-
-        Raises:
-            400, {'message': 'customer information create denied',
-            'errorMessage': 'unable_to_create'} : 주문자 정보 추가 실패
 
         History:
             2020-12-31(고수희): 초기 생성
@@ -509,55 +473,17 @@ class StoreOrderDao:
         , %(sender_name)s
         , %(sender_email)s
         , %(sender_phone)s
-        );
-        """
-
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(sql, data)
-                result = cursor.lastrowid
-                if not result:
-                    raise CustomerInformationCreateDenied('unable_to_create')
-
-        except CustomerInformationCreateDenied as e:
-            traceback.print_exc()
-            raise e
-
-        except Exception:
-            traceback.print_exc()
-            raise ServerError('server error')
-
-    def patch_customer_information_dao(self, connection, data):
-        """주문자 정보 수정
-
-        Args:
-            connection: 데이터베이스 연결 객체
-            data      : 서비스 레이어에서 넘겨 받아 추가할 data
-
-        Author: 고수희
-
-        Returns: None
-
-        Raises:
-            400, {'message': 'customer information update denied',
-            'errorMessage': 'unable_to_update'} : 주문자 정보 수정 실패
-
-        History:
-            2020-12-31(고수희): 초기 생성
-        """
-        sql = """
-        UPDATE customer_information
-        SET
+        )
+        ON DUPLICATE KEY UPDATE
         name = %(sender_name)s
         , email = %(sender_email)s
         , phone = %(sender_phone)s
-        WHERE account_id = %(user_id)s
         ;
         """
 
         try:
             with connection.cursor() as cursor:
-                cursor.execute(sql, data) #주문자 정보가 동일하면 업데이트 될게 없기 때문에 raise가 없음
+                cursor.execute(sql, data)
 
         except Exception:
             traceback.print_exc()
