@@ -504,10 +504,3 @@ class OrderDetailDao():
             affect_row = cursor.execute(sql, data)
             if affect_row == 0:
                 raise DeniedUpdate('denied to update')
-
-
-
-
-
-
-
