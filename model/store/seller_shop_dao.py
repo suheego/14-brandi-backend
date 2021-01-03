@@ -278,14 +278,22 @@ class SellerShopDao:
             if not data['category'] is None:
                 category_sql = """
                 WHERE pd.main_category_id = %(category)s
+                AND pd.seller_id = %(seller_id)s 
                 """
 
                 sql += category_sql
 
+            #특정 카테고리를 선택하지 않은 경우
+            else:
+                all_sql = """
+                WHERE pd.seller_id = %(seller_id)s
+                """
+
+                sql += all_sql
+
             # 최신순 정렬일 경우
             if data['type'] == "latest":
                 latest_sql = """
-                AND pd.seller_id = %(seller_id)s 
                 AND pd.is_deleted = 0
                 ORDER BY pd.id DESC
                 LIMIT %(limit)s
@@ -298,7 +306,6 @@ class SellerShopDao:
             #인기순 정렬일 경우
             else:
                 popular_sql = """
-                AND pd.seller_id = %(seller_id)s 
                 AND pd.is_deleted = 0
                 ORDER BY product_sales_count DESC
                 LIMIT %(limit)s
