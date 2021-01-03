@@ -233,6 +233,23 @@ class DateRule(AbstractRule):
         return value, errors
 
 
+class DateTimeRule(AbstractRule):
+    """ 날짜 시간 형식 벨리데이터 (YYYY-MM-DD HH:MM:SS)
+
+        Author: 김민서
+
+        History:
+            2020-12-29(김민서): 날짜 시간 형식 벨리데이터 역할 규칙 작성
+    """
+    def validate(self, value):
+        pattern = '^([0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}:[0-9]{2})$'
+        regex = re.compile(pattern)
+        errors = []
+        if not regex.match(value):
+            errors.append('datetime must be "YYYY-MM-DD HH:MM:SS"')
+        return value, errors
+
+
 class ProductMenuRule(AbstractRule):
     """ 상품 분류 메뉴 규칙 (트렌드, 브랜드, 뷰티) id는 (4, 5, 6)
 
@@ -270,3 +287,5 @@ class PageRule(AbstractRule):
         if value <= 0:
             errors.append('page cannot be less than 1')
         return value, errors
+
+

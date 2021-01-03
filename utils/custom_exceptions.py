@@ -440,6 +440,9 @@ class OrderDoesNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 404
         message = 'order does not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
 
 
 class CategoryMenuDoesNotMatch(CustomUserError):
@@ -495,20 +498,6 @@ class NotAllowedStatus(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-class NoPermissionUpdateOrderStatus(CustomUserError):
-    """ 주문 상태 변경 권한 없음
-
-        Author: 김민서
-
-        History:
-            2021-01-01(김민서): 초기생성
-    """
-    def __init__(self, error_message):
-        status_code = 403
-        message = 'no permission to update order status'
-        error_message = error_message
-        super().__init__(status_code, message, error_message)
-
 
 class NoPermissionUpdateOrderStatus(CustomUserError):
     """ 주문 상태 변경 권한 없음
@@ -524,8 +513,9 @@ class NoPermissionUpdateOrderStatus(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-class NotAllowedStatus(CustomUserError):
-    """ 주문 상태 변경 권한 없음
+
+class DoesNotOrderDetail(CustomUserError):
+    """ 주문 상세 정보 없음
 
         Author: 김민서
 
@@ -533,12 +523,10 @@ class NotAllowedStatus(CustomUserError):
             2021-01-01(김민서): 초기생성
     """
     def __init__(self, error_message):
-        status_code = 403
-        message = 'no permission to update order status'
+        status_code = 400
+        message = 'does not exist order detail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
-
-
 
 
 class OrderCreateDenied(CustomUserError):
@@ -598,17 +586,65 @@ class DateInputDoesNotExist(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-class UnableToUpdate(CustomUserError):
-    """수정 내역 없음
+class InputDoesNotExist(CustomUserError):
+    """ 수정 정보 존재하지 않음
 
         Author: 김민서
 
         History:
-            2020-12-31(김민서): 초기생성
+            2021-01-02(김민서): 초기생성
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'unable to update order status'
+        message = 'input does not exists'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class UnableUpdateAddress(CustomUserError):
+    """ 수정할 주소 정보 부족
+
+        Author: 김민서
+
+        History:
+            2021-01-02(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'one of address inputs does not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class UnableToUpdate(CustomUserError):
+    """ 수정 불가
+
+        Author: 김민서
+
+        History:
+            2021-01-02(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable to update'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class DeniedUpdate(CustomUserError):
+    """ 수정 실패
+
+        Author: 김민서
+
+        History:
+            2021-01-02(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'denied to update'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)

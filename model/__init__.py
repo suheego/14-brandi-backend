@@ -9,7 +9,7 @@ from .sample_user_dao import SampleUserDao
 from .admin.create_product_dao import CreateProductDao
 from .admin.seller_dao import SellerDao
 from .admin.event_dao import EventDao
-from .admin.order_dao import OrderDao
+from .admin.order_dao import OrderDao, OrderDetailDao
 
 from .store.user_dao import UserDao
 from .store.product_list_dao import ProductListDao

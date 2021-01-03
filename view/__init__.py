@@ -9,7 +9,7 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 """
 from .sample_user_view import SampleUserView
 
-from .admin.order_view import OrderView
+from .admin.order_view import OrderView, OrderDetailView
 from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
 from .admin.seller_view import SellerSignupView, SellerSigninView
 from .admin.create_product_view import CreateProductView
@@ -56,6 +56,7 @@ def create_endpoints(app, services, database):
     seller_service = services.seller_service
     create_product_service = services.create_product_service
     order_service = services.order_service
+    order_detail_service = services.order_detail_service
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -219,8 +220,34 @@ def create_endpoints(app, services, database):
 # 김민서 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
 
-    app.add_url_rule('/orders', view_func=OrderView.as_view('order_view', order_service, database))
-    app.add_url_rule('/orders/<int:status_id>', view_func=OrderView.as_view('order_update_status_view', order_service, database))
+    app.add_url_rule('/admin/orders',
+                     view_func=OrderView.as_view(
+                        'order_view',
+                         order_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/orders/<int:status_id>',
+                     view_func=OrderView.as_view(
+                         'order_update_status_view',
+                         order_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/orders/detail/<int:order_item_id>',
+                     view_func=OrderDetailView.as_view(
+                         'order_detail_view',
+                         order_detail_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/orders/detail',
+                     view_func=OrderDetailView.as_view(
+                         'order_detail_update_view',
+                         order_detail_service,
+                         database
+                     ))
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 이성보 ◟( ˘ ³˘)◞ ♡
