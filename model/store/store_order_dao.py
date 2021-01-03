@@ -38,12 +38,14 @@ class StoreOrderDao:
         Returns:
             return
 
+        Raises:
+           400, {'message': 'order does not exist',
+            'errorMessage': 'order_does_not_exist'} : 결제 상품 정보 조회 실패
+            500, {'message: server_error',
+            'errorMessage': 'server_error'} :서버 에러 발생
+
         History:
             2020-12-30(고수희): 초기 생성
-
-        Raises:
-            400, {'message': 'order does not exist',
-            'errorMessage': 'order_does_not_exist'} : 결제 상품 정보 조회 실패
         """
 
         sql = """
@@ -85,6 +87,8 @@ class StoreOrderDao:
         Raises:
             400, {'message': 'product does not exist',
             'errorMessage': 'product_does_not_exist'} : 상품을 조회할 수 없음
+            500, {'message: server_error',
+            'errorMessage': 'server_error'} :서버 에러 발생
 
         History:
             2020-12-30(고수희): 초기 생성
@@ -129,8 +133,10 @@ class StoreOrderDao:
         Returns: 생성된 delivery_type_id 반환
 
         Raises:
-            400, {'message': 'unable to create',
-            'errorMessage': 'unable_to_create'} : 장바구니 상품 추가 실패
+            400, {'message': 'delivery memo create denied',
+            'errorMessage': 'unable_to_create'} : 배송 정보 추가 실패
+            500, {'message: server_error',
+            'errorMessage': 'server_error'} :서버 에러 발생
 
         History:
             2020-12-30(고수희): 초기 생성
@@ -164,18 +170,14 @@ class StoreOrderDao:
             raise ServerError('server_error')
 
     def get_today_order_number_dao(self, connection):
-        """주문번호 생성을 위한 당일 주문량 파악
+        """주문번호 생성을 위한 당일 주문번호 채번
 
         Args:
             connection: 데이터베이스 연결 객체
 
         Author: 고수희
 
-        Returns: 생성된 order_id 반환
-
-        Raises:
-            400, {'message': 'unable to create',
-            'errorMessage': 'unable_to_create'} : 결 추가 실패
+        Returns: 당일 주문량 +1
 
         History:
             2020-12-30(고수희): 초기 생성
@@ -209,8 +211,10 @@ class StoreOrderDao:
         Returns: 생성된 order_id 반환
 
         Raises:
-            400, {'message': 'unable to create',
+            400, {'message': 'order create denied',
             'errorMessage': 'unable_to_create'} : 주문 정보 추가 실패
+            500, {'message: server_error',
+            'errorMessage': 'server_error'} :서버 에러 발생
 
         History:
             2020-12-30(고수희): 초기 생성
@@ -272,8 +276,10 @@ class StoreOrderDao:
         Returns: 생성된 cart의 id 반환
 
         Raises:
-            400, {'message': 'order item craete denied',
+            400, {'message': 'order item create denied',
             'errorMessage': 'unable_to_create'} : 주문 상품 추가 실패
+            500, {'message: server_error',
+            'errorMessage': 'server_error'} :서버 에러 발생
 
         History:
             2020-12-30(고수희): 초기 생성
@@ -335,6 +341,8 @@ class StoreOrderDao:
         Raises:
             400, {'message': 'order history create denied',
             'errorMessage': 'unable_to_create'} : 주문 상품 정보 이력 추가 실패
+            500, {'message: server_error',
+            'errorMessage': 'server_error'} :서버 에러 발생
 
         History:
             2020-12-30(고수희): 초기 생성
@@ -381,6 +389,8 @@ class StoreOrderDao:
         Raises:
             400, {'message': 'product remain update denied',
             'errorMessage': 'unable_to_update'} : 상품 재고 업데이트 실패
+            500, {'message: server_error',
+            'errorMessage': 'server_error'} :서버 에러 발생
 
         History:
             2020-12-31(고수희): 초기 생성
@@ -421,6 +431,8 @@ class StoreOrderDao:
         Raises:
             400, {'message': 'invalid_delete_command_access',
             'errorMessage': 'unable_to_delete'} : 논리삭제 실패
+            500, {'message: server_error',
+            'errorMessage': 'server_error'} :서버 에러 발생
 
         History:
             2020-12-31(고수희): 초기 생성
@@ -456,6 +468,10 @@ class StoreOrderDao:
         Author: 고수희
 
         Returns: None
+
+        Raises:
+            500, {'message: server_error',
+            'errorMessage': 'server_error'} :서버 에러 발생
 
         History:
             2020-12-31(고수희): 초기 생성

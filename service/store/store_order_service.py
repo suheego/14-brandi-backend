@@ -32,7 +32,9 @@ class StoreOrderService:
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
-            403, {'message': 'key error',
+            400, {'message': 'order does not exist',
+            'errorMessage': 'order_does_not_exist'} : 결제 상품 정보 조회 실패
+            403, {'message': 'customer permission denied',
             'errorMessage': 'customer_permission_denied'} : 사용자 권한이 없음
 
         History:
@@ -65,10 +67,25 @@ class StoreOrderService:
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
-            400, {'message': 'unable to create',
-            'errorMessage': 'unable_to_create'} : 장바구니 상품 추가 실패
-            403, {'message': 'key error',
+            400, {'message': 'product does not exist',
+            'errorMessage': 'product_does_not_exist'} : 상품을 조회할 수 없음
+            400, {'message': 'delivery memo create denied',
+            'errorMessage': 'unable_to_create'} : 배송 정보 추가 실패
+            400, {'message': 'order create denied',
+            'errorMessage': 'unable_to_create'} : 주문 정보 추가 실패
+            400, {'message': 'order item create denied',
+            'errorMessage': 'unable_to_create'} : 주문 상품 추가 실패
+            400, {'message': 'order history create denied',
+            'errorMessage': 'unable_to_create'} : 주문 상품 정보 이력 추가 실패
+            400, {'message': 'product remain update denied',
+            'errorMessage': 'unable_to_update'} : 상품 재고 업데이트 실패
+            400, {'message': 'invalid_delete_command_access',
+            'errorMessage': 'unable_to_delete'} : 논리삭제 실패
+            403, {'message': 'customer permissions denied',
             'errorMessage': 'customer_permission_denied'} : 사용자 권한이 없음
+            500, {'message: server_error',
+            'errorMessage': 'server_error'} :서버 에러 발생
+
         History:
             2020-12-30(고수희): 초기 생성
         """

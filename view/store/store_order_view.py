@@ -127,7 +127,6 @@ class StoreOrderAddView(MethodView):
         Param('postNumber', JSON, str, rules=[PostalCodeRule()]),
         Param('deliveryId', JSON, int),
         Param('deliveryMemo', JSON, str, required=False),
-        Param('deliveryMemoDefault', JSON, bool)
     )
     def post(self, *args):
         """POST 메소드: 장바구니 상품 생성
@@ -142,8 +141,9 @@ class StoreOrderAddView(MethodView):
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
-            400, {'message': 'cart item create error',
-            'errorMessage': 'cart_item_create_error'} : 결제 실패
+
+
+
             400, {'message': 'unable to close database',
             'errorMessage': 'unable_to_close_database'} : 커넥션 종료 실패
             403, {'message': 'customer permission denied',
@@ -176,7 +176,6 @@ class StoreOrderAddView(MethodView):
             'post_number': args[16],
             'delivery_memo_type_id': args[17],
             'delivery_content': args[18],
-            'delivery_default': args[19]
         }
 
         try:
