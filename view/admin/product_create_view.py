@@ -202,8 +202,7 @@ class CreateProductView(MethodView):
     def post(self, *args):
         """ POST 메소드: 상품 정보 등록
             
-            Args: None
-            
+            Args:
             - 사용자 입력 값(상품 이미지 최대 5개) : imageFiles
             - 사용자 입력 값
             Form-Data: (
@@ -275,7 +274,7 @@ class CreateProductView(MethodView):
                       'errorMessage': format(e)})                                       : 서버 에러
             History:
                 2020-12-29(심원두): 초기 생성
-                2020-12-30(심원두):
+                2020-01-03(심원두): 발리데이터 추가
         """
         try:
             data = {
