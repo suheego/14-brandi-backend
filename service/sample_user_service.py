@@ -1,5 +1,5 @@
 from utils.custom_exceptions import UserAlreadyExist
-from datetime import datetime
+
 
 class SampleUserService:
     """ Business Layer
@@ -19,9 +19,6 @@ class SampleUserService:
         self.sample_user_dao = sample_user_dao
 
     def get_sample_user_service(self, connection, data):
-        
-        
-        
         """해당 아이디를 가진 유저를 검색 함수
 
         Args:

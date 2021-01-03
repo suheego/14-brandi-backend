@@ -30,7 +30,7 @@ class SampleUserView(MethodView):
         self.database = database
 
     @validate_params(
-        Param('user_id', JSON, str, rules=[NumberRule()]),
+        Param('user_id', JSON, str, rules=[NumberRule()])
     )
     def get(self, *args):
         data = {
@@ -58,7 +58,7 @@ class SampleUserView(MethodView):
             2020-20-21(홍길동): 1차 수정
             2020-20-22(홍길동): 2차 수정
         """
-        
+
         try:
             connection = get_connection(self.database)
             user = self.service.get_sample_user_service(connection, data)
