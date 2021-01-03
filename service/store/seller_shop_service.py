@@ -30,6 +30,10 @@ class SellerShopService:
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
+            400, {'message': 'seller does not exist',
+            'errorMessage': 'seller_does_not_exist'} : 셀러 정보 조회 실패
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
 
         History:
             2021-01-01(고수희): 초기 생성
@@ -57,6 +61,8 @@ class SellerShopService:
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
 
         History:
             2021-01-02(고수희): 초기 생성
@@ -79,11 +85,20 @@ class SellerShopService:
         Author: 고수희
 
         Returns:
-            return (): 조회한 상품 정보와 상품 품절 여부 반환
+            [{"main_category_id": 1,
+            "name": "아우터"
+            },
+            {"main_category_id": 2,
+            "name": "상의"
+            }]
 
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
+            400, {'message': 'seller category does not exist',
+            'errormessage': 'seller_category_not_exist'} : 셀러 카테고리 조회 실패
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
 
         History:
             2021-01-02(고수희): 초기 생성
@@ -111,6 +126,8 @@ class SellerShopService:
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
 
         History:
             2021-01-02(고수희): 초기 생성

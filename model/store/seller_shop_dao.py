@@ -43,6 +43,8 @@ class SellerShopDao:
         Raises:
             400, {'message': 'seller does not exist',
             'errorMessage': 'seller_does_not_exist'} : 셀러 정보 조회 실패
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
         """
 
         sql = """
@@ -108,6 +110,10 @@ class SellerShopDao:
             "seller_name": "나는셀러4"
             }
             ]
+
+        Raises:
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
 
         History:
             2021-01-02(고수희): 초기 생성
@@ -183,10 +189,9 @@ class SellerShopDao:
 
         Raises:
             400, {'message': 'seller category does not exist',
-            'errorMessage': 'seller_category_not_exist'} : 셀러 카테고리 조회 실패
-            400, {'message': 'category does not exist',
-            'errorMessage': 'category_not_exist'} : 카테고리 조회 실패
-
+            'errormessage': 'seller_category_not_exist'} : 셀러 카테고리 조회 실패
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
         """
 
         sql = """
@@ -250,7 +255,10 @@ class SellerShopDao:
                         "seller_id": 4,
                         "seller_name": "나는셀러4"
                     }
-                ]
+
+        Raises:
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
 
         History:
             2021-01-02(고수희): 초기 생성

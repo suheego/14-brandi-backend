@@ -39,7 +39,7 @@ class SellerShopView(MethodView):
 
         account_id에 해당되는 셀러 정보를 테이블에서 조회 후 가져옴
 
-        Args: args = ('account_id')
+        Args: args = ('seller_id')
 
         Author: 고수희
 
@@ -202,15 +202,34 @@ class SellerShopCategoryView(MethodView):
         Param('seller_id', PATH, int)
     )
     def get(self, *args):
-        """ GET 메소드: 해당 셀러의 상품 검색 결과 출력
+        """ GET 메소드: 해당 셀러의 카테고리 출력
 
-        keyword에 해당되는 셀러 정보를 테이블에서 조회 후 가져옴
-
-        Args: args = ('seller_id', 'keyword', 'offset', 'limit')
+        seller_id에 해당되는 셀러 정보를 테이블에서 조회 후 가져옴
 
         Author: 고수희
 
         Returns:
+                {
+                    "message": "success",
+                    "result": [
+                        {
+                            "main_category_id": 1,
+                            "name": "아우터"
+                        },
+                        {
+                            "main_category_id": 2,
+                            "name": "상의"
+                        }
+                    ]
+                }
+
+        Raises:
+            400, {'message': 'key error',
+            'errorMessage': 'key_error'} : 잘못 입력된 키값
+            400, {'message': 'seller category does not exist',
+            'errormessage': 'seller_category_not_exist'} : 셀러 카테고리 조회 실패
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
 
         History:
             2021-01-02(고수희): 초기 생성
@@ -264,7 +283,7 @@ class SellerShopProductListView(MethodView):
     def get(self, *args):
         """ GET 메소드: 해당 셀러의 상품 검색 결과 출력
 
-        seller_id와 type에 해당되는 셀러 정보를 테이블에서 조회 후 가져옴
+        seller_id와 ,category, type에 해당되는 셀러 정보를 테이블에서 조회 후 가져옴
 
         Args: args = ('seller_id', 'keyword', 'offset', 'limit', 'type')
 
@@ -298,6 +317,12 @@ class SellerShopProductListView(MethodView):
                 }
             ]
         }
+
+        Raises:
+            400, {'message': 'key error',
+            'errorMessage': 'key_error'} : 잘못 입력된 키값
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
 
         History:
             2021-01-03(고수희): 초기 생성
