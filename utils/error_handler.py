@@ -16,7 +16,6 @@
     @app.errorhandler(Exception)
     def handle_error(e):
         return jsonify({'message': 'type your error message here', 'errorMessage': format(e)}), 500
-
 """
 
 from flask import jsonify
@@ -47,5 +46,4 @@ def error_handle(app):
     # customized exception
     @app.errorhandler(CustomUserError)
     def handle_error(e):
-        return jsonify({"message": e.message, "errorMessage": e.error_message}), e.status_code
-
+        return jsonify({"message": e.message, "error_message": e.error_message}), e.status_code
