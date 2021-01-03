@@ -227,7 +227,7 @@ def create_endpoints(app, services, database):
                          database
                      ))
 
-    app.add_url_rule('/admin/orders/<int:status_id>',
+    app.add_url_rule('/admin/orders',
                      view_func=OrderView.as_view(
                          'order_update_status_view',
                          order_service,

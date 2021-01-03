@@ -423,7 +423,7 @@ class OrderFilterNotExist(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'must be date inputs or filter inputs'
+        message = 'must_be_date_inputs_or_filter_inputs'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
@@ -438,7 +438,7 @@ class OrderDoesNotExist(CustomUserError):
             2020-12-31(김민서): 초기생성
     """
     def __init__(self, error_message):
-        status_code = 404
+        status_code = 400
         message = 'order does not exist'
         error_message = error_message
 
@@ -479,8 +479,9 @@ class NoPermission(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 403
-        message = 'no permission'
+        message = 'no_permission'
         error_message = error_message
+
         super().__init__(status_code, message, error_message)
 
 
@@ -494,23 +495,9 @@ class NotAllowedStatus(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'now order status is not allowed to update status'
+        message = 'now_order_status_is_not_allowed_to_update_status'
         error_message = error_message
-        super().__init__(status_code, message, error_message)
 
-
-class NoPermissionUpdateOrderStatus(CustomUserError):
-    """ 주문 상태 변경 권한 없음
-
-        Author: 김민서
-
-        History:
-            2021-01-01(김민서): 초기생성
-    """
-    def __init__(self, error_message):
-        status_code = 403
-        message = 'no permission to update order status'
-        error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
@@ -524,7 +511,7 @@ class DoesNotOrderDetail(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'does not exist order detail'
+        message = 'does_not_exist_order_detail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -580,7 +567,7 @@ class DateInputDoesNotExist(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'must be other date input'
+        message = 'must_be_other_date_input'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
@@ -596,7 +583,7 @@ class InputDoesNotExist(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'input does not exists'
+        message = 'input_does_not_exist'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
@@ -612,7 +599,7 @@ class UnableUpdateAddress(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'one of address inputs does not exist'
+        message = 'one_of_address_inputs_does_not_exist'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
@@ -628,7 +615,7 @@ class UnableToUpdate(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'unable to update'
+        message = 'unable_to_update'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
@@ -644,7 +631,7 @@ class DeniedUpdate(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'denied to update'
+        message = 'denied_to_update'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)

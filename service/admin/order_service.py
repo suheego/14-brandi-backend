@@ -25,15 +25,18 @@ class OrderService:
 
     def get_orders_service(self, connection, data):
         try:
+            # 권한 체크
             if not (data['permission'] == 1 or data['permission'] == 2):
-                raise NoPermission('no_permission')
+                raise NoPermission('no permission')
 
+            # 2개의 날짜 조건 모두 있는지 확인
             if (data['start_date'] and not data['end_date']) or (not data['start_date'] and data['end_date']):
-                raise DateInputDoesNotExist('must_be_other_date_input')
+                raise DateInputDoesNotExist('must be other date input')
 
-            if data['start_date'] and data['end_date'] and data['number'] and data['detail_number'] and data['sender_name'] \
-                      and data['sender_phone'] and data['seller_name'] and data['product_name']:
-                raise OrderFilterNotExist('must_be_date_inputs_or_filter_inputs')
+            # 날짜 조건과 필터 조건 둘 중 하나의 조건은 반드시 필요
+            if not(data['start_date'] or data['end_date'] or data['number'] or data['detail_number']
+                    or data['sender_name'] or data['sender_phone'] or data['seller_name'] or data['product_name']):
+                raise OrderFilterNotExist('must be date inputs or filter inputs')
 
             data['length'] = int(data['length'])
             data['page'] = (data['page'] - 1) * data['length']
@@ -52,10 +55,10 @@ class OrderService:
     def update_order_status_service(self, connection, data):
         try:
             if not (data['permission'] == 1 or data['permission'] == 2):
-                raise NoPermission('no_permission')
+                raise NoPermission('no permission')
 
             if not (data['status'] == 1 or data['status'] == 2):
-                raise NotAllowedStatus('now_order_status_is_not_allowed_to_update_status')
+                raise NotAllowedStatus('now order status is not allowed to update status')
 
             data['new_status'] = data['status'] + 1
             update_data = [[id, data['new_status'], data['account']] for id in data['ids']]
@@ -70,7 +73,7 @@ class OrderService:
     def get_order_detail_service(self, connection, data):
         try:
             if not (data['permission'] == 1 or data['permission'] == 2):
-                raise NoPermission('no_permission')
+                raise NoPermission('no permission')
             order_item_id = data["order_item_id"]
 
             order_info           = self.admin_order_dao.get_order_info_dao(connection, order_item_id)
@@ -89,14 +92,14 @@ class OrderService:
                 "updated_at_time": updated_at_time
             }
 
-        except KeyError:
-            return 'key_error'
+        except Exception as e:
+            raise e
 
 
     def update_order_detail_service(self, connection, data):
         try:
             if not (data['permission'] == 1 or data['permission'] == 2):
-                raise NoPermission('no_permission')
+                raise NoPermission('no permission')
 
             order_item_id = data['order_item_id']
             updated_at_time = data['updated_at_time']
@@ -105,28 +108,26 @@ class OrderService:
             address1 = data['address1']
             address2 = data['address2']
 
-            if (sender_phone and recipient_phone and address1 and address2) in data:
-                raise InputDoesNotExist('input_does_not_exists')
+            if not (sender_phone or recipient_phone or address1 or address2):
+                raise InputDoesNotExist('input does not exist')
 
             if (not address1 and address2) or (not address2 and address1):
-                raise UnableUpdateAddress('one_of_address_inputs_does_not_exist')
+                raise UnableUpdateAddress('one of address inputs does not exist')
 
             time = self.admin_order_dao.get_updated_time_dao(connection, order_item_id)
             time = time[0].strftime("%Y-%m-%d %H:%M:%S")
 
             if time != updated_at_time:
-                raise UnableToUpdate('unable_to_update')
+                raise UnableToUpdate('unable to update')
 
             if address1 and address2:
                 self.admin_order_dao.update_address_dao(connection, data)
 
             if sender_phone:
-                data = {'order_item_id': order_item_id, 'sender_phone': sender_phone}
                 self.admin_order_dao.update_sender_phone_dao(connection, data)
 
             if recipient_phone:
-                data = {'order_item_id': order_item_id, 'recipient_phone': recipient_phone}
                 self.admin_order_dao.update_recipient_phone_dao(connection, data)
 
-        except KeyError:
-            return 'key_error'
+        except Exception as e:
+            raise e

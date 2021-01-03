@@ -108,24 +108,29 @@ class OrderDao:
 
         # 페이지 조건
         sql += " LIMIT %(page)s, %(length)s;"
-        print(sql)
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, data)
             list = cursor.fetchall()
-            print(list)
             if not list:
                 raise OrderDoesNotExist('order does not exist')
             cursor.execute(total_count_sql, data)
             count = cursor.fetchall()
 
             return {'total_count': count[0]['total_count'], 'order_lists': list}
-        # except Exception:
-        #     traceback.print_exc()
-        #     raise ServerError('server_error')
+
 
 
     def update_order_status_dao(self, connection, data):
+        """ 주문 상태 업데이트
+
+            Args:
+                connection : 데이터베이스 연결 객체
+                data       : 비지니스 레이어에서 넘겨 받은 data 객체
+
+            History:
+                2021-01-03(김민서): 작성
+        """
         sql = """
             UPDATE order_items
             SET order_item_status_type_id = %(new_status)s
@@ -138,6 +143,15 @@ class OrderDao:
                 raise UnableToUpdate('unable to update status')
 
     def add_order_history_dao(self, connection, update_data):
+        """ 주문 상태 변경 히스토리 생성
+
+            Args:
+                connection : 데이터베이스 연결 객체
+                data       : 비지니스 레이어에서 넘겨 받은 data 객체
+
+            History:
+                2021-01-03(김민서): 작성
+        """
         sql = """
             INSERT
             INTO order_item_histories (order_item_id, order_item_status_type_id, updater_id)
@@ -162,6 +176,19 @@ class OrderDetailDao():
     """
 
     def get_order_info_dao(self, connection, order_item_id):
+        """ 주문 정보
+
+            Args:
+                connection   : 데이터베이스 연결 객체
+                order_item_id: 비지니스 레이어에서 넘겨 받은 인자
+
+            Returns:
+                [{'order_id': 2, 'order_number': '20201225000000002',
+                'order_purchased_date': datetime.datetime(2020, 12, 31, 13, 25, 3), 'total_price': Decimal('9000')}]
+
+            History:
+                2021-01-03(김민서): 작성
+        """
         sql = """
             SELECT 
                 `order`.id AS order_id, 
@@ -192,11 +219,24 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                return DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('does not exist order detail')
             return result
 
 
     def get_order_detail_info_dao(self, connection, order_item_id):
+        """ 주문 상세 정보
+
+            Args:
+                connection   : 데이터베이스 연결 객체
+                order_item_id: 비지니스 레이어에서 넘겨 받은 인자
+
+            Returns:
+                [{'order_item_id': 3, 'order_detail_number': 'oidt00003', 'status': '배송중',
+                'order_item_purchased_date': datetime.datetime(2020, 12, 31, 13, 25, 3), 'customer_phone': '01990103'}]
+
+            History:
+                2021-01-03(김민서): 작성
+        """
         sql = """
             SELECT 
                 order_item.id AS order_item_id,
@@ -228,11 +268,24 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                return DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('does not exist order detail')
             return result
 
 
     def get_product_info_dao(self, connection, order_item_id):
+        """ 상품 정보
+
+            Args:
+                connection   : 데이터베이스 연결 객체
+                order_item_id: 비지니스 레이어에서 넘겨 받은 인자
+
+            Returns:
+                [{'product_number': 'P0000000000000000001', 'product_name': '성보의하루1', 'price': '10000 원 (할인가 9000원)',
+                'discount_rate': Decimal('0.10'), 'brand_name': '나는셀러3',' option_information': 'Black/Free', 'qauntity': 1}]
+
+            History:
+                2021-01-03(김민서): 작성
+        """
         sql = """
             SELECT 
                 product.product_code AS product_number,
@@ -266,11 +319,24 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                return DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('does not exist order detail')
             return result
 
 
     def get_recipient_info_dao(self, connection, order_item_id):
+        """ 수취자 정보
+
+            Args:
+                connection   : 데이터베이스 연결 객체
+                        order_item_id: 비지니스 레이어에서 넘겨 받은 인자
+
+            Returns:
+                [{'user_id': 102, 'customer_name': 'user2', 'recipient_name': '도우너', 'recipient_phone': '01055555555',
+                'destination': '서울특별시 역삼동 (123321)', 'delivery_memo': '문
+
+            History:
+                2021-01-03(김민서): 작성
+        """
         sql = """
             SELECT 
                 `order`.user_id AS user_id,
@@ -303,11 +369,24 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                return DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('does not exist order detail')
             return result
 
 
     def get_order_status_history_info_dao(self, connection, order_item_id):
+        """ 주문 상태 변경 이력
+
+            Args:
+                connection   : 데이터베이스 연결 객체
+                order_item_id: 비지니스 레이어에서 넘겨 받은 인자
+
+            Returns:
+                [{'date': datetime.datetime(2021, 1, 3, 1, 27, 48), 'status': '배송중'},
+                {'date': datetime.datetime(2020, 12, 31, 13, 25, 1), 'status': '상품준비'}]
+
+            History:
+                2021-01-03(김민서): 작성
+        """
         sql = """
             SELECT 
                 order_item_history.created_at AS `date`,
@@ -324,11 +403,23 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                return DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('does not exist order detail')
             return result
 
 
     def get_updated_time_dao(self, connection, order_item_id):
+        """ 업데이트 시각
+
+            Args:
+                connection   : 데이터베이스 연결 객체
+                order_item_id: 비지니스 레이어에서 넘겨 받은 인자
+
+            Returns:
+                (datetime.datetime(2020, 12, 31, 13, 25, 3),)
+
+            History:
+                2021-01-03(김민서): 작성
+        """
         sql = """
             SELECT orders.updated_at
             FROM orders 
@@ -344,6 +435,15 @@ class OrderDetailDao():
 
 
     def update_sender_phone_dao(self, connection, data):
+        """ 주문자 번호 수정
+
+            Args:
+                connection : 데이터베이스 연결 객체
+                data       : 비지니스 레이어에서 넘겨 받은 data 객체
+
+            History:
+                2021-01-03(김민서): 작성
+        """
         sql = """
             UPDATE orders 
             INNER JOIN order_items 
@@ -352,17 +452,23 @@ class OrderDetailDao():
             WHERE order_items.id = %(order_item_id)s;
         """
 
-        try:
-            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-                affect_row = cursor.execute(sql, data)
-                if affect_row == 0:
-                    raise DeniedUpdate('denied to update')
-        except Exception:
-            traceback.print_exc()
-            raise ServerError('server_error')
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            affect_row = cursor.execute(sql, data)
+            if affect_row == 0:
+                raise DeniedUpdate('denied to update')
+
 
 
     def update_recipient_phone_dao(self, connection, data):
+        """ 수취자 연락처 수정
+
+            Args:
+                connection : 데이터베이스 연결 객체
+                data       : 비지니스 레이어에서 넘겨 받은 data 객체
+
+            History:
+                2021-01-03(김민서): 작성
+        """
         sql = """
             UPDATE orders 
             INNER JOIN order_items 
@@ -370,19 +476,23 @@ class OrderDetailDao():
             SET recipient_phone = %(recipient_phone)s 
             WHERE order_items.id = %(order_item_id)s;
         """
-        print('a')
-        try:
-            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-                affect_row = cursor.execute(sql, data)
-                print(affect_row)
-                if affect_row == 0:
-                    raise DeniedUpdate('denied to update')
-        except Exception:
-            traceback.print_exc()
-            raise ServerError('server_error')
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            affect_row = cursor.execute(sql, data)
+            if affect_row == 0:
+                raise DeniedUpdate('denied to update')
 
 
     def update_address_dao(self, connection, data):
+        """ 배송지 주소 수정
+
+            Args:
+                connection : 데이터베이스 연결 객체
+                data       : 비지니스 레이어에서 넘겨 받은 data 객체
+
+            History:
+                2021-01-03(김민서): 작성
+        """
         sql = """
         UPDATE orders
         INNER JOIN order_items ON orders.id = order_items.order_id
@@ -390,14 +500,11 @@ class OrderDetailDao():
         WHERE order_items.id = %(order_item_id)s;
         """
 
-        try:
-            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-                affect_row = cursor.execute(sql, data)
-                if affect_row == 0:
-                    raise DeniedUpdate('denied to update')
-        except Exception:
-            traceback.print_exc()
-            raise ServerError('server_error')
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            affect_row = cursor.execute(sql, data)
+            if affect_row == 0:
+                raise DeniedUpdate('denied to update')
+
 
 
 

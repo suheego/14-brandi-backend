@@ -3,7 +3,8 @@ from flask.views import MethodView
 
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
-from utils.rules import OrderStatusRule, DateTimeRule, NumberRule, PhoneRule, PageRule, DateRule
+from utils.rules import DateTimeRule, NumberRule, PhoneRule, PageRule, DateRule
+from utils.decorator import signin_decorator
 
 from flask_request_validator import (
     Param,
@@ -19,17 +20,17 @@ class OrderView(MethodView):
         self.service = service
         self.database = database
 
-
+    @signin_decorator
     @validate_params(
-        Param('status', GET, int, rules=[OrderStatusRule()]),
+        Param('status', GET, int),
         Param('number', GET, str, required=False),
         Param('detail_number', GET, str, required=False),
         Param('sender_name', GET, str, required=False),
-        Param('sender_phone', GET, str, required=False, rules=[NumberRule], default=''),
+        Param('sender_phone', GET, str, required=False, rules=[NumberRule]),
         Param('seller_name', GET, str, required=False),
         Param('product_name', GET, str, required=False),
-        Param('start_date', GET, str, required=False, rules=[DateRule()], default=''),
-        Param('end_date', GET, str, required=False, rules=[DateRule()], default=''),
+        Param('start_date', GET, str, required=False, rules=[DateRule()]),
+        Param('end_date', GET, str, required=False, rules=[DateRule()]),
         Param('attributes', GET, list, required=False),
         Param('order_by', GET, str, required=False),
         Param('page', GET, int, rules=[PageRule()]),
@@ -37,10 +38,8 @@ class OrderView(MethodView):
     )
     def get(self, *args):
         data = {
-            'permission': 1,
-            'account': 1,
-            #'permission': g.permission_id,
-            #'account': g.acount_id,
+            'permission': g.permission_type_id,
+            'account': g.acount_id,
             'status': args[0],
             'number': args[1],
             'detail_number': args[2],
@@ -105,32 +104,34 @@ class OrderView(MethodView):
             }
 
         Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'} : 잘못 입력된 키값
-            400, {'message': 'must be date inputs or filter inputs', 'errorMessage': 'must_be_date_inputs_or_filter_inputs'}: 필터 조건 없음
-            400, {'message': 'must be other date input', 'errorMessage': 'must_be_other_date_input'} : 날짜 조건 없음
-            400, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
-            403, {'message': 'no permission to get order list', 'errorMessage': 'no_permission_to_get_order_list'} : 주문 리스트 조회 권한 없음
-            404, {'message': 'order does not exist', 'errorMessage': 'order_does_not_exist'} : 주문 리스트 없음
+            400, {'message': 'key_error', 
+                'errorMessage': 'key error'} : 잘못 입력된 키값
+                
+            400, {'message': 'must_be_date_inputs_or_filter_inputs', 
+                'errorMessage': 'must be date inputs or filter inputs'}: 필터 조건 없음
+                
+            400, {'message': 'must_be_other_date_input', 
+                'errorMessage': 'must be other date input'} : 날짜 조건 없음
+                
+            400, {'message': 'unable_to_close_database', 
+                'errorMessage': 'unable to close database'}: 커넥션 종료 실패
+                
+            403, {'message': 'no_permission_to_get_order_list', 
+                'errorMessage': 'no permission to get order list'} : 주문 리스트 조회 권한 없음
+                
+            400, {'message': 'order_does_not_exist', 
+                'errorMessage': 'order does not exist'} : 주문 리스트 없음
             
 
         History:
             2020-12-29(김민서): 초기 생성
-            2020-12-30(김민서): 1차 수정
-            2020-12-31(김민서): 2차 수정
+            2020-01-03(김민서): 1차 수정
         """
-        print(data)
+
         try:
             connection = get_connection(self.database)
-
-            contexts = self.service.get_orders_service(connection, data)
-            result = []
-
-            for order_list in contexts['order_lists']:
-                order_list['total_price'] = str(order_list['total_price'])
-                order_list['option_extra_cost'] = str(order_list['option_extra_cost'])
-                result.append(order_list)
-
-            return jsonify({'message': 'success', 'totalCount': contexts['total_count'], 'results': result}), 200
+            result = self.service.get_orders_service(connection, data)
+            return jsonify({'message': 'success', 'totalCount': result['total_count'], 'results': result['order_lists']}), 200
         except Exception as e:
             raise e
         finally:
@@ -140,20 +141,20 @@ class OrderView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database close fail')
 
+    @signin_decorator
     @validate_params(
-        Param('status_id', PATH, int, rules=[OrderStatusRule()]),
+        Param('status_id', GET, int),
         Param('id', GET, list)
     )
     def patch(self, *args):
         data = {
-            #'permission': g.permission_id,
-            #'account': g.acount_id,
+            'permission': g.permission_type_id,
+            'account': g.acount_id,
             'permission': 1,
             'account': 1,
             "status": args[0],
             "ids": args[1]
         }
-        print(data['ids'])
 
         """PATCH 메소드: 주문 상태 변경
 
@@ -173,6 +174,9 @@ class OrderView(MethodView):
                     
             400, {'message': 'now order status is not allowed to update status', 
                     'errorMessage': 'now_order_status_is_not_allowed_to_update_status'}: 주문 상태 변경 불가능 상태
+                    
+            400, {'message': 'unable to update status', 
+                    'errorMessage': 'unable_to_update_status'}: 수정 불가
                     
             403, {'message': 'no permission', 
                     'errorMessage': 'no_permission'} : 권한 없음
@@ -203,13 +207,13 @@ class OrderDetailView(MethodView):
         self.service = service
         self.database = database
 
+    @signin_decorator
     @validate_params(
-        Param('order_item_id', PATH, str, rules=[NumberRule()])
+        Param('order_item_id', PATH, int)
     )
     def get(self, *args):
         data = {
-            #"permission": g.permission_id,
-            "permission": 1,
+            "permission": g.permission_type_id,
             "order_item_id": args[0]
         }
 
@@ -277,17 +281,29 @@ class OrderDetailView(MethodView):
             }
             
         Raises:
-            400, {'message': 'key error',
-                    'errorMessage': 'key_error'} : 잘못 입력된 키값
+            400, {'message': 'key_error',
+                    'errorMessage': 'key error'} : 잘못 입력된 키값
                     
-            400, {'message': 'does not exist order detail',
-                    'errorMessage': 'does_not_exist_order_detail'} : 주문 상세 정보 없음
+            400, {
+                    "error_message:": "order_item_id이 유효하지 않습니다.",
+                    "message": {
+                        "order_item_id": [
+                            "Value is required"
+                        ]
+                    }
+                } : 필수 입력값 없음
                     
-            403, {'message': 'no permission',
-                     'errorMessage': 'no_permission'} : 권한 없음
+            400, {'message': 'does_not_exist_order_detail',
+                    'errorMessage': 'does not exist order detail'} : 주문 상세 정보 없음
+                    
+            403, {'message': 'no_permission',
+                     'errorMessage': 'no permission'} : 권한 없음
                         
-            400, {'message': 'unable to close database',
-                    'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
+            400, {'message': 'unable_to_close_database',
+                    'errorMessage': 'unable to close database'}: 커넥션 종료 실패
+                    
+            500, {'message': 'internal_server_error',
+                     'errorMessage': 'internal server error'} : 알 수 없는 에러
             
         History:
             2021-01-01(김민서): 초기 생성    
@@ -296,8 +312,7 @@ class OrderDetailView(MethodView):
         try:
             connection = get_connection(self.database)
             result = self.service.get_order_detail_service(connection, data)
-
-            return {"message": "success", "result": result}
+            return jsonify({"message": "success", "result": result}), 200
         except Exception as e:
             raise e
         finally:
@@ -306,7 +321,7 @@ class OrderDetailView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database close fail')
 
-
+    @signin_decorator
     @validate_params(
         Param('order_item_id', GET, str, rules=[NumberRule()]),
         Param("updated_at_time", GET, str, rules=[DateTimeRule()]),
@@ -317,8 +332,7 @@ class OrderDetailView(MethodView):
     )
     def patch(self, *args):
         data = {
-            # "permission": g.permission_id,
-            "permission": 1,
+            "permission": g.permission_type_id,
             "order_item_id": args[0],
             "updated_at_time": args[1],
             "sender_phone": args[2],
@@ -337,24 +351,27 @@ class OrderDetailView(MethodView):
         Returns: {'message': 'success'}
 
         Raises:
-            400, {'message': 'key error', 
-                    'errorMessage': 'key_error'} : 잘못 입력된 키값
+            400, {'message': 'key_error', 
+                    'errorMessage': 'key error'} : 잘못 입력된 키값
                     
-            400, {'message': 'unable to close database', 
-                    'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
+            400, {'message': 'unable_to_close_database', 
+                    'errorMessage': 'unable to close database'}: 커넥션 종료 실패
                     
-            403, {'message': 'no permission', 
-                    'errorMessage': 'no_permission'} : 권한 없음
+            403, {'message': 'no_permission', 
+                    'errorMessage': 'no permission'} : 권한 없음
                     
-            400, {'message': input does not exists, 
-                    'errorMessage': 'input_does_not_exists'} : 수정 정보 존재하지 않음
+            400, {'message': input_does_not_exist, 
+                    'errorMessage': 'input does not exist'} : 수정 정보 존재하지 않음
                     
-            400, {'message': 'one of address inputs does not exist', 
-                    'errorMessage': 'one_of_address_inputs_does_not_exist'} : 수정할 주소 정보 부족
+            400, {'message': 'one_of_address_inputs_does_not_exist', 
+                    'errorMessage': 'one of address inputs does not exist'} : 수정할 주소 정보 부족
                     
-            400, {'message': 'unable to update', 
-                    'errorMessage': 'unable_to_update'} : 수정 불가       
-            
+            400, {'message': 'unable_to_update', 
+                    'errorMessage': 'unable to update'} : 수정 불가   
+                    
+            400, {'message': 'denied_to_update', 
+                    'errorMessage': 'denied_to_update'} : 수정 실패
+                    
 
         History:
             2021-01-01(김민서): 초기 생성    
@@ -364,7 +381,7 @@ class OrderDetailView(MethodView):
             connection = get_connection(self.database)
             self.service.update_order_detail_service(connection, data)
             connection.commit()
-            return {"message": "success"}
+            return jsonify({"message": "success"}), 200
         except Exception as e:
             connection.rollback()
             raise e
