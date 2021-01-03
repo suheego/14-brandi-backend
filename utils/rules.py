@@ -236,15 +236,6 @@ class BooleanRule(AbstractRule):
         return value, errors
 
 
-class OrderStatusRule(AbstractRule):
-    def validate(self, value):
-        status_set = [1, 2, 3, 4, 5, 6, 7, 8]
-        errors = []
-        if value not in status_set:
-            errors.append('order status must be one of 1, 2, 3, 4, 5, 6, 7, 8')
-        return value, errors
-
-
 class DateRule(AbstractRule):
     """ 날짜 형식 벨리데이터 (YYYY-MM-DD)
 
@@ -260,6 +251,7 @@ class DateRule(AbstractRule):
         if not regex.match(value):
             errors.append('date format should be YYYY-MM-DD')
         return value, errors
+
 
 
 class DateTimeRule(AbstractRule):
@@ -279,6 +271,23 @@ class DateTimeRule(AbstractRule):
             errors.append('datetime format should be YYYY-MM-DD hh:mm')
         finally:
             return value, errors
+
+          
+class SecondDateTimeRule(AbstractRule):
+    """ 날짜 시간 형식 벨리데이터 (YYYY-MM-DD HH:MM:SS)
+
+        Author: 김민서
+
+        History:
+            2020-12-29(김민서): 날짜 시간 형식 벨리데이터 역할 규칙 작성
+    """
+    def validate(self, value):
+        pattern = '^([0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}:[0-9]{2})$'
+        regex = re.compile(pattern)
+        errors = []
+        if not regex.match(value):
+            errors.append('datetime must be "YYYY-MM-DD HH:MM:SS"')
+        return value, errors
 
 
 class ProductMenuRule(AbstractRule):
@@ -318,3 +327,5 @@ class PageRule(AbstractRule):
         if value <= 0:
             errors.append('page cannot be less than 1')
         return value, errors
+
+

@@ -518,7 +518,7 @@ class OrderFilterNotExist(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'must be date inputs or filter inputs'
+        message = 'must_be_date_inputs_or_filter_inputs'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
@@ -533,8 +533,11 @@ class OrderDoesNotExist(CustomUserError):
             2020-12-31(김민서): 초기생성
     """
     def __init__(self, error_message):
-        status_code = 404
+        status_code = 400
         message = 'order does not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
 
 
 class CategoryMenuDoesNotMatch(CustomUserError):
@@ -571,8 +574,9 @@ class NoPermission(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 403
-        message = 'no permission'
+        message = 'no_permission'
         error_message = error_message
+
         super().__init__(status_code, message, error_message)
 
 
@@ -586,7 +590,23 @@ class NotAllowedStatus(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'now order status is not allowed to update status'
+        message = 'now_order_status_is_not_allowed_to_update_status'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class DoesNotOrderDetail(CustomUserError):
+    """ 주문 상세 정보 없음
+
+        Author: 김민서
+
+        History:
+            2021-01-01(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'does_not_exist_order_detail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -642,23 +662,71 @@ class DateInputDoesNotExist(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'must be other date input'
+        message = 'must_be_other_date_input'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class InputDoesNotExist(CustomUserError):
+    """ 수정 정보 존재하지 않음
+
+        Author: 김민서
+
+        History:
+            2021-01-02(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'input_does_not_exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class UnableUpdateAddress(CustomUserError):
+    """ 수정할 주소 정보 부족
+
+        Author: 김민서
+
+        History:
+            2021-01-02(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'one_of_address_inputs_does_not_exist'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
 
 
 class UnableToUpdate(CustomUserError):
-    """수정 내역 없음
+    """ 수정 불가
 
         Author: 김민서
 
         History:
-            2020-12-31(김민서): 초기생성
+            2021-01-02(김민서): 초기생성
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'unable to update order status'
+        message = 'unable_to_update'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class DeniedUpdate(CustomUserError):
+    """ 수정 실패
+
+        Author: 김민서
+
+        History:
+            2021-01-02(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'denied_to_update'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
