@@ -1,21 +1,23 @@
-
 import decimal
 
-from flask.json import JSONEncoder
-from flask import Flask
-from flask_cors import CORS
+from flask.json    import JSONEncoder
+from flask         import Flask
+from flask_cors    import CORS
 
 from view import create_endpoints
 
 #admin
+from model   import OrderDao
+
 from model import OrderDao, OrderDetailDao
 from model import SellerDao
 from model import CreateProductDao
 
 from service import OrderService
-from service import SellerService
-from service import CreateProductService
-from service import EventService
+
+#admin2
+from model   import SellerInfoDao, SellerDao, ProductCreateDao, ProductManageDao
+from service import SellerService, SellerInfoService, ProductCreateService, ProductManageService
 
 #service
 from model import (
@@ -61,6 +63,9 @@ class CustomJSONEncoder(JSONEncoder):
 
 
 # for getting multiple service classes
+
+
+
 class Services:
     pass
 
@@ -79,9 +84,8 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     database = app.config['DB']
-    secret_key = app.config['SECRET_KEY']
 
-    # persistence Layers
+    # persistence Layer
     sample_user_dao = SampleUserDao()
     destination_dao = DestinationDao()
     cart_item_dao = CartItemDao()
@@ -89,27 +93,48 @@ def create_app(test_config=None):
     event_dao = EventDao()
     store_order_dao = StoreOrderDao()
     order_dao = OrderDao()
-    order_detail_dao = OrderDetailDao()
-    seller_dao = SellerDao()
-    create_product_dao = CreateProductDao()
 
-    # business Layer,   깔끔한 관리 방법을 생각하기
+    # admin2
+    order_detail_dao = OrderDetailDao()
+
+    seller_dao = SellerDao()
+    seller_info_dao = SellerInfoDao()
+    product_create_dao = ProductCreateDao()
+    product_manage_dao = ProductManageDao()
+
+    # business Layer
     services = Services
     services.sample_user_service = SampleUserService(sample_user_dao)
-    services.user_service = UserService(app.config)
-    services.destination_service = DestinationService(destination_dao)
-    services.cart_item_service = CartItemService(cart_item_dao)
-    services.store_order_service = StoreOrderService(store_order_dao)
-    services.product_list_service = ProductListService()
+
+    services.seller_info_service = SellerInfoService(seller_info_dao)
+    
+    # business Layer,   깔끔한 관리 방법을 생각하기
+    # service
+    services = Services
+    services.sample_user_service   = SampleUserService(sample_user_dao)
+    services.user_service          = UserService(app.config)
+    services.destination_service   = DestinationService(destination_dao)
+    services.cart_item_service     = CartItemService(cart_item_dao)
+    services.store_order_service   = StoreOrderService(store_order_dao)
+    services.product_list_service  = ProductListService()
     services.category_list_service = CategoryListService()
-    services.sender_service = SenderService(sender_dao)
+    services.sender_service        = SenderService(sender_dao)
+    
+    #admin1
     services.event_service = EventService(event_dao)
     services.order_service = OrderService(order_dao)
+
     services.order_detail_service = OrderService(order_detail_dao)
     services.seller_service = SellerService(seller_dao,app.config)
     services.create_product_service = CreateProductService(create_product_dao)
     
+    #admin2
+    services.seller_service         = SellerService(seller_dao, app.config)
+    services.seller_info_service    = SellerInfoService(seller_info_dao)
+    services.product_create_service = ProductCreateService(product_create_dao)
+    services.product_manage_service = ProductManageService(product_manage_dao)
+
     # presentation Layer
     create_endpoints(app, services, database)
-
+    
     return app

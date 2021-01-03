@@ -9,8 +9,8 @@ from flask_request_validator import (
     JSON
 )
 
-from google.oauth2 import id_token
-from google.auth.transport import requests
+# from google.oauth2 import id_token
+# from google.auth.transport import requests
 
 from utils.connection import get_connection
 from utils.custom_exceptions import InvalidToken, DatabaseCloseFail
