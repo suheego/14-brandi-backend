@@ -3,7 +3,7 @@ from flask.views import MethodView
 
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
-from utils.rules import DateTimeRule, NumberRule, PhoneRule, PageRule, DateRule
+from utils.rules import SecondDateTimeRule, NumberRule, PhoneRule, PageRule, DateRule
 from utils.decorator import signin_decorator
 
 from flask_request_validator import (
@@ -324,7 +324,7 @@ class OrderDetailView(MethodView):
     @signin_decorator
     @validate_params(
         Param('order_item_id', GET, str, rules=[NumberRule()]),
-        Param("updated_at_time", GET, str, rules=[DateTimeRule()]),
+        Param("updated_at_time", GET, str, rules=[SecondDateTimeRule()]),
         Param("sender_phone", GET, str, required=False, rules=[PhoneRule()]),
         Param("recipient_phone", GET, str, required=False, rules=[PhoneRule()]),
         Param("address1", GET, str, required=False),

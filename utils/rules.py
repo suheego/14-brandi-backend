@@ -224,7 +224,7 @@ class DateRule(AbstractRule):
         return value, errors
 
 
-class DateTimeRule(AbstractRule):
+class SecondDateTimeRule(AbstractRule):
     """ 날짜 시간 형식 벨리데이터 (YYYY-MM-DD HH:MM:SS)
 
         Author: 김민서
