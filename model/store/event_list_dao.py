@@ -21,7 +21,7 @@ class EventListDao:
 
             Args:
                 connection : 데이터베이스 연결 객체
-                data       : 서비스에서 넘겨 받은 dict (offset, limit, is_proceeding)
+                data       : 서비스에서 넘겨 받은 dict (offset, is_proceeding)
 
             Returns: 해당 기획전 배너 30개 반환
                 [
@@ -58,7 +58,7 @@ class EventListDao:
                 )
             ORDER BY 
                 `event`.id ASC  
-            LIMIT %(offset)s, %(limit)s; 
+            LIMIT %(offset)s, 30; 
         """
 
         try:

@@ -32,7 +32,6 @@ class EventBannerListView(MethodView):
 
     @validate_params(
         Param('offset', GET, int),
-        Param('limit', GET, int),
         Param('is_proceeding', GET, bool)
     )
     def get(self, *args):
@@ -40,7 +39,6 @@ class EventBannerListView(MethodView):
 
             Args:
                 offset = 0부터 시작
-                limit  = 30단위
                 is_proceeding = 0 or 1
 
             Author: 김민구
@@ -79,8 +77,7 @@ class EventBannerListView(MethodView):
         try:
             data = {
                 'offset': args[0],
-                'limit': args[1],
-                'is_proceeding': args[2]
+                'is_proceeding': args[1]
             }
             connection = get_connection(self.database)
             result = self.event_list_service.event_banner_list_logic(connection, data)
@@ -270,7 +267,6 @@ class EventDetailProductListView(MethodView):
 
             Args:
                 offset = 0부터 시작 (30 단위)
-                limit  = 30
                 event_id = 기획전 아이디
 
             Author: 김민구
