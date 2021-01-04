@@ -265,6 +265,17 @@ class ProductHistoryCreateDenied(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
+# S - 상품 등록 관련 Exception Class ===============================================================
+
+# class InvalidSellerId(CustomUserError):
+#     def __init__(self, error_message):
+#         status_code = 400
+#         message = 'seller_id_must_be_integer'
+#         error_message = error_message
+#         super().__init__(status_code, message, error_message)
+
+# E - 상품 등록 관련 Exception Class ===============================================================
+
 class ProductSalesVolumeCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
@@ -958,3 +969,4 @@ class ButtonProductDoesNotMatch(CustomUserError):
         message = 'although there are product and button objects, no buttons are matched'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+

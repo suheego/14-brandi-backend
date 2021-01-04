@@ -23,7 +23,7 @@ from .admin.order_view import OrderView, OrderDetailView
 from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
 
 # admin2
-from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView
+from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView, SellerSearchView
 from .admin.product_create_view import MainCategoriesListView, CreateProductView
 from .admin.product_manage_view import ProductManageSearchView, ProductManageDetailView
 
@@ -31,6 +31,7 @@ from utils.error_handler import error_handle
 
 
 def create_endpoints(app, services, database):
+
     """ 앤드 포인트 시작
 
             Args:
@@ -277,6 +278,12 @@ def create_endpoints(app, services, database):
     app.add_url_rule('/admin/signin',
                      view_func = SellerSigninView.as_view(
                          'seller_signin_view',
+                         seller_service,
+                         database
+                     ))
+    app.add_url_rule('/admin/search',
+                     view_func=SellerSearchView.as_view(
+                         'seller_search_view',
                          seller_service,
                          database
                      ))

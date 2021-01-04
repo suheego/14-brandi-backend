@@ -7,16 +7,14 @@ from flask_cors    import CORS
 from view import create_endpoints
 
 #admin
-from model   import OrderDao
-
-from model import OrderDao, OrderDetailDao
-from model import SellerDao
-from model import CreateProductDao
+from model   import OrderDao, OrderDetailDao
+from model   import SellerDao
+from model   import CreateProductDao
 
 from service import OrderService
 
 #admin2
-from model   import SellerInfoDao, SellerDao, ProductCreateDao, ProductManageDao
+from model   import SellerInfoDao, SellerDao, ProductCreateDao, ProductManageDao,
 from service import SellerService, SellerInfoService, ProductCreateService, ProductManageService
 
 #service
@@ -63,8 +61,6 @@ class CustomJSONEncoder(JSONEncoder):
 
 
 # for getting multiple service classes
-
-
 
 class Services:
     pass
@@ -123,9 +119,6 @@ def create_app(test_config=None):
     #admin1
     services.event_service = EventService(event_dao)
     services.order_service = OrderService(order_dao)
-
-    services.order_detail_service = OrderService(order_detail_dao)
-    services.seller_service = SellerService(seller_dao,app.config)
     services.create_product_service = CreateProductService(create_product_dao)
     
     #admin2
