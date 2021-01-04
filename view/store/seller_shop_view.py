@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify
 from flask.views import MethodView
 from flask_request_validator import (
     GET,
@@ -10,7 +10,6 @@ from flask_request_validator import (
 
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
-from utils.rules import NumberRule, DecimalRule
 from utils.decorator import signin_decorator
 
 
@@ -31,6 +30,7 @@ class SellerShopView(MethodView):
         self.service = service
         self.database = database
 
+    @signin_decorator(False)
     @validate_params(
         Param('seller_id', PATH, int)
     )
@@ -39,7 +39,7 @@ class SellerShopView(MethodView):
 
         account_id에 해당되는 셀러 정보를 테이블에서 조회 후 가져옴
 
-        Args: args = ('account_id')
+        Args: args = ('seller_id')
 
         Author: 고수희
 
@@ -103,11 +103,12 @@ class SellerShopSearchView(MethodView):
         self.service = service
         self.database = database
 
+    @signin_decorator(False)
     @validate_params(
         Param('seller_id', PATH, int),
         Param('keyword', GET, str),
         Param('offset', GET, int, required=False, default=0),
-        Param('limit', GET, int, required=False, default=30)
+        Param('limit', GET, int, required=False, default=100)
     )
     def get(self, *args):
         """ GET 메소드: 해당 셀러의 상품 검색 결과 출력
@@ -128,7 +129,6 @@ class SellerShopSearchView(MethodView):
             "origin_price": 10000.0,
             "product_id": 7,
             "product_name": "성보의하루7",
-            "product_sales_count": null,
             "seller_id": 4,
             "seller_name": "나는셀러4"
         },
@@ -143,6 +143,7 @@ class SellerShopSearchView(MethodView):
             "seller_id": 4,
             "seller_name": "나는셀러4"
             }]}
+
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
@@ -157,17 +158,187 @@ class SellerShopSearchView(MethodView):
 
         data = {
             "seller_id": args[0],
-            "keyword": "%"+args[1]+"%",
+            "keyword": args[1],
             "offset": args[2],
             "limit": args[3]
         }
+
         try:
             connection = get_connection(self.database)
             search_product_list = self.service.get_seller_product_search_service(connection, data)
             return jsonify({'message': 'success', 'result': search_product_list})
 
         except Exception as e:
-            traceback.print_exc()
+            raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+
+class SellerShopCategoryView(MethodView):
+    """ Presentation Layer
+
+    Attributes:
+        database: app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
+        service: SellerShopService 클래스
+
+    Author: 고수희
+
+    History:
+        2021-01-02(고수희): 초기 생성
+    """
+
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+
+    @signin_decorator(False)
+    @validate_params(
+        Param('seller_id', PATH, int)
+    )
+    def get(self, *args):
+        """ GET 메소드: 해당 셀러의 카테고리 출력
+
+        seller_id에 해당되는 셀러 정보를 테이블에서 조회 후 가져옴
+
+        Author: 고수희
+
+        Returns:
+                {
+                    "message": "success",
+                    "result": [
+                        {
+                            "main_category_id": 1,
+                            "name": "아우터"
+                        },
+                        {
+                            "main_category_id": 2,
+                            "name": "상의"
+                        }
+                    ]
+                }
+
+        Raises:
+            400, {'message': 'key error',
+            'errorMessage': 'key_error'} : 잘못 입력된 키값
+            400, {'message': 'seller category does not exist',
+            'errormessage': 'seller_category_not_exist'} : 셀러 카테고리 조회 실패
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
+
+        History:
+            2021-01-02(고수희): 초기 생성
+        """
+
+        data = {
+            "seller_id": args[0]
+        }
+
+        try:
+            connection = get_connection(self.database)
+            category_list = self.service.get_seller_category_service(connection, data)
+            return jsonify({'message': 'success', 'result': category_list})
+
+        except Exception as e:
+            raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+
+class SellerShopProductListView(MethodView):
+    """ Presentation Layer
+
+    Attributes:
+        database: app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
+        service: SellerShopService 클래스
+
+    Author: 고수희
+
+    History:
+        2021-01-03(고수희): 초기 생성
+    """
+
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+
+    @signin_decorator(False)
+    @validate_params(
+        Param('seller_id', PATH, int),
+        Param('category', GET, int, required=False, default=None),
+        Param('offset', GET, int, required=False, default=0),
+        Param('limit', GET, int, required=False, default=100),
+        Param('type', GET, str, required=False, default="latest")
+    )
+    def get(self, *args):
+        """ GET 메소드: 해당 셀러의 상품 검색 결과 출력
+
+        seller_id와 ,category, type에 해당되는 셀러 정보를 테이블에서 조회 후 가져옴
+
+        Args: args = ('seller_id', 'keyword', 'offset', 'limit', 'type')
+
+        Author: 고수희
+
+        Returns:
+        {
+            "message": "success",
+            "result": [
+                {
+                    "discount_rate": 0.1,
+                    "discounted_price": 9000.0,
+                    "image": "https://img.freepik.com/free-psd/simple-black-men-s-tee-mockup_53876-57893.jpg?size=338&ext=jpg&ga=GA1.2.1060993109.1605750477",
+                    "origin_price": 10000.0,
+                    "product_id": 7,
+                    "product_name": "성보의하루7",
+                    "seller_id": 4,
+                    "seller_name": "나는셀러4"
+                },
+                {
+                    "discount_rate": 0.1,
+                    "discounted_price": 9000.0,
+                    "image": "https://img.freepik.com/free-psd/simple-black-men-s-tee-mockup_53876-57893.jpg?size=338&ext=jpg&ga=GA1.2.1060993109.1605750477",
+                    "origin_price": 10000.0,
+                    "product_id": 5,
+                    "product_name": "성보의하루5",
+                    "seller_id": 4,
+                    "seller_name": "나는셀러4"
+                }
+            ]
+        }
+
+        Raises:
+            400, {'message': 'key error',
+            'errorMessage': 'key_error'} : 잘못 입력된 키값
+            500, {'message': 'server error',
+            'errorMessage': 'server_error'}': 서버 에러
+
+        History:
+            2021-01-03(고수희): 초기 생성
+        """
+
+        data = {
+            "seller_id": args[0],
+            "category": args[1],
+            "offset": args[2],
+            "limit": args[3],
+            "type": args[4]
+        }
+
+        try:
+            connection = get_connection(self.database)
+            product_list = self.service.get_seller_product_list_service(connection, data)
+            return jsonify({'message': 'success', 'result': product_list})
+
+        except Exception as e:
             raise e
 
         finally:
