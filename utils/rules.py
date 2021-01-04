@@ -46,13 +46,26 @@ class GenderRule(AbstractRule):
         return value, errors
 
 
-class RequiredFieldRule(AbstractRule):
-    def validate(self, *args):
+class SellerInfoRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^[0-9]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
         errors = []
-        if not all([str(value) for value in args]):
-            errors.append('required value')
-        
-        return args, errors
+        if not result:
+            errors.append('accept only number')
+        return value, errors
+
+
+class DefaultRule(AbstractRule):
+    def validate(self, value):
+        pattern = '^[a-zA-Z가-힝0-9+-_.]+$'
+        regex = re.compile(pattern)
+        result = regex.match(value)
+        errors = []
+        if not result:
+            errors.append('accept only number, text')
+        return value, errors
 
 
 
@@ -81,6 +94,7 @@ class PhoneRule(AbstractRule):
     """ 휴대폰 자리수 규칙
 
     10~11 자리 숫자를 허용한다.
+    
 
     Author: 김기용
 
@@ -199,12 +213,12 @@ class EventStatusRule(AbstractRule):
         return value, errors
 
 
-class EventExposureRule(AbstractRule):
+class BooleanRule(AbstractRule):
     def validate(self, value):
         exposure_set = (0, 1)
         errors = []
         if value not in exposure_set:
-            errors.append('event exposure value should be 0 or 1')
+            errors.append('boolean field value should be 0 or 1')
         return value, errors
 
 
@@ -230,10 +244,10 @@ class DateRule(AbstractRule):
         regex = re.compile(pattern)
         errors = []
         if not regex.match(value):
-            errors.append('accept only alphabetic characters')
+            errors.append('date format should be YYYY-MM-DD')
         return value, errors
 
-
+      
 class PositiveInteger(AbstractRule):
     """ 양의 정수 규칙
 
@@ -307,3 +321,77 @@ class SortTypeRule(AbstractRule):
             errors.append('1~3 값만 받습니다.')
         return value, errors
 
+
+class DateTimeRule(AbstractRule):
+    """ DateTime 형식 벨리데이터 (YYYY-MM-DD hh:mm)
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+    def validate(self, value):
+        from datetime import datetime
+        errors = []
+        try:
+            datetime.strptime(value, "%Y-%m-%d %H:%M")
+        except ValueError:
+            errors.append('datetime format should be YYYY-MM-DD hh:mm')
+        finally:
+            return value, errors
+
+          
+class SecondDateTimeRule(AbstractRule):
+    """ 날짜 시간 형식 벨리데이터 (YYYY-MM-DD HH:MM:SS)
+
+        Author: 김민서
+
+        History:
+            2020-12-29(김민서): 날짜 시간 형식 벨리데이터 역할 규칙 작성
+    """
+    def validate(self, value):
+        pattern = '^([0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}:[0-9]{2})$'
+        regex = re.compile(pattern)
+        errors = []
+        if not regex.match(value):
+            errors.append('datetime must be "YYYY-MM-DD HH:MM:SS"')
+        return value, errors
+
+
+class ProductMenuRule(AbstractRule):
+    """ 상품 분류 메뉴 규칙 (트렌드, 브랜드, 뷰티) id는 (4, 5, 6)
+
+        Author: 강두연
+
+        History:
+            2020-12-31(강두연): 작성
+    """
+    def validate(self, value):
+        menu_set = (4, 5, 6)
+        errors = []
+        if value not in menu_set:
+            errors.append('accept only id of trend, brand, beauty')
+        return value, errors
+
+
+class CategoryFilterRule(AbstractRule):
+    """ 카테고리 불러올 때 필터 규칙
+
+    """
+    def validate(self, value):
+        filter_set = ('menu', 'both', 'none')
+        errors = []
+        if value not in filter_set:
+            errors.append('accept only (menu, both, none) as a filter value')
+        return value, errors
+
+
+class PageRule(AbstractRule):
+    """ 페이지네이션 page는 1이상
+
+    """
+    def validate(self, value):
+        errors = []
+        if value <= 0:
+            errors.append('page cannot be less than 1')
+        return value, errors

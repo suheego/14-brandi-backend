@@ -1,16 +1,13 @@
 """사용자 제작 예외 처리
-
 앱 관련 사용자 제작 예외처리는 모두 이곳에 Exception 클래스를 상속받아 작성한다.
 작성한 사용제 제작 예외 처리는 error_handler.py 에서 사용된다.
-
 기본적인 사용 예시:
-  class IamException(Exception):
+class IamException(Exception):
         def __init__(self, error_message):
         self.status_code = 400
         self.message = 'your message goes here'
         self.error_message = error_message
         super().__init__(self.status_code, self.message, self.error_message)
-
 """
 
 # don't touch
@@ -92,6 +89,7 @@ class InvalidUser(CustomUserError):
         message = 'invalid_user'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class InvalidToken(CustomUserError):
     """ 토큰 검증 에러
@@ -190,6 +188,37 @@ class DestinationCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+        
+class SellerNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'seller not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class SellerUpdateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'user update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+class SellerNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'seller not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class SellerUpdateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'user update denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
 
 class RequiredFieldException(CustomUserError):
     def __init__(self, error_message):
@@ -198,12 +227,22 @@ class RequiredFieldException(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-class CorrelationCheckException(CustomUserError):
+
+class CompareQuantityCheck(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
-        message = 'correlation check fail'
+        message = 'compare quantity field check error'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class ComparePriceCheck(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'compare price field check error'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
 
 class ProductCreateDenied(CustomUserError):
     def __init__(self, error_message):
@@ -212,12 +251,14 @@ class ProductCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class ProductCodeUpdatedDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
         message = 'product code update denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class ProductImageCreateDenied(CustomUserError):
     def __init__(self, error_message):
@@ -226,12 +267,14 @@ class ProductImageCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
 class StockCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
         message = 'stock create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
 
 class ProductHistoryCreateDenied(CustomUserError):
     def __init__(self, error_message):
@@ -240,21 +283,94 @@ class ProductHistoryCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-class ColorNotExist(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 400
-        message = 'color not exist'
-        error_message = error_message
 
+class ProductSalesVolumeCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product sales volume create denied'
+        error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+class ProductOriginTypesNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'fail to get product origin types'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
 
 class SizeNotExist(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
-        message = 'size not exist'
+        status_code = 500
+        message = 'fail to get size list'
         error_message = error_message
-        
         super().__init__(status_code, message, error_message)
+
+
+class ColorNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'fail to get color list'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class MainCategoryNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'fail to get main category list'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class SubCategoryNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'fail to get sub category list'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class NotValidFileException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'invalid file'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class FileSizeException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 413
+        message = 'file size too large'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class FileScaleException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 413
+        message = 'file scale too small, 640 * 720 at least'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class FileExtensionException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'only allowed jpg type'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class FileUploadFailException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'image_file_upload_to_amazon_fail'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
 
 class NotUser(CustomUserError):
     """ 유저가 아님
@@ -404,7 +520,6 @@ class EventSearchTwoInput(CustomUserError):
         status_code = 400
         message = 'event search inputs must be only one'
         error_message = error_message
-
         super().__init__(status_code, message, error_message)
 
 
@@ -413,16 +528,14 @@ class DateMissingOne(CustomUserError):
         status_code = 400
         message = 'date inputs should be start_date and end_date'
         error_message = error_message
-
         super().__init__(status_code, message, error_message)
 
 
-class EventSearchTwoInput(CustomUserError):
+class SearchTwoInput(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
-        message = 'event search inputs must be only one'
+        message = 'search inputs must be only one'
         error_message = error_message
-
         super().__init__(status_code, message, error_message)
 
 
@@ -431,15 +544,21 @@ class EventDoesNotExist(CustomUserError):
         status_code = 404
         message = 'event not exist'
         error_message = error_message
-
         super().__init__(status_code, message, error_message)
 
+
 class OrderFilterNotExist(CustomUserError):
+    """ 필터 조건 없음
+
+        Author: 김민서
+
+        History:
+            2020-12-31(김민서): 초기생성
+    """
     def __init__(self, error_message):
         status_code = 400
-        message = 'must be date inputs or filter inputs'
+        message = 'must_be_date_inputs_or_filter_inputs'
         error_message = error_message
-
         super().__init__(status_code, message, error_message)
 
 
@@ -452,10 +571,17 @@ class OrderDoesNotExist(CustomUserError):
             2020-12-31(김민서): 초기생성
     """
     def __init__(self, error_message):
-        status_code = 404
+        status_code = 400
         message = 'order does not exist'
         error_message = error_message
+        super().__init__(status_code, message, error_message)
 
+
+class CategoryMenuDoesNotMatch(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'menu id does not match with category id'
+        error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
@@ -474,8 +600,8 @@ class CheckoutDenied(CustomUserError):
         super().__init__(status_code, message, error_message)
 
         
-class NoPermissionGetOrderList(CustomUserError):
-    """ 주문 리스트 조회 권한 없음
+class NoPermission(CustomUserError):
+    """ 권한 없음
 
         Author: 김민서
 
@@ -484,7 +610,37 @@ class NoPermissionGetOrderList(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 403
-        message = 'no permission to get order list'
+        message = 'no_permission'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class NotAllowedStatus(CustomUserError):
+    """ 주문 상태 변경 가능 상태가 아님
+
+        Author: 김민서
+
+        History:
+            2021-01-01(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'now_order_status_is_not_allowed_to_update_status'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class DoesNotOrderDetail(CustomUserError):
+    """ 주문 상세 정보 없음
+
+        Author: 김민서
+
+        History:
+            2021-01-01(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'does_not_exist_order_detail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -660,6 +816,236 @@ class SellerCategoryNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 404
         message = 'seller category not exist'
+        error_massage = error_massage
+        super().__init__(status_code, message, error_massage)
+
+        
+class CategoryDoesNotExist(CustomUserError):
+    def __init__(self, error_massage):
+        status_code = 400
+        message = 'category not exist'
+        error_massage = error_massage
+        super().__init__(status_code, message, error_massage)
+
+
+class FilterDoesNotMatch(CustomUserError):
+    def __init__(self, error_massage):
+        status_code = 400
+        message = 'filter does not match'
+        error_massage = error_massage
+        super().__init__(status_code, message, error_massage)
+
+
+class SearchFilterRequired(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'filter must be at least one'
+        super().__init__(status_code, message, error_massage)
+
+
+class DateInputDoesNotExist(CustomUserError):
+    """날짜 조건 없음
+
+        Author: 김민서
+
+        History:
+            2020-12-31(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'must_be_other_date_input'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class InputDoesNotExist(CustomUserError):
+    """ 수정 정보 존재하지 않음
+
+        Author: 김민서
+
+        History:
+            2021-01-02(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'input_does_not_exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class UnableUpdateAddress(CustomUserError):
+    """ 수정할 주소 정보 부족
+
+        Author: 김민서
+
+        History:
+            2021-01-02(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'one_of_address_inputs_does_not_exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class UnableToUpdate(CustomUserError):
+    """ 수정 불가
+
+        Author: 김민서
+
+        History:
+            2021-01-02(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable_to_update'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class DeniedUpdate(CustomUserError):
+    """ 수정 실패
+
+        Author: 김민서
+
+        History:
+            2021-01-02(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'denied_to_update'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class EventKindDoesNotMatch(CustomUserError):
+    """ 기획전 종류가 버튼형이 아닌데 버튼데이터를 받은경우
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'Event kind does not match'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ButtonsMinimumCount(CustomUserError):
+    """ 기획전 종류가 버튼형일때 버튼이 두개이상
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'at least two buttons should be created'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class StartAndEndDateContext(CustomUserError):
+    """ 시작날짜가 종료날짜보다 미래일 때
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'start date and end date context error'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ImageIsRequired(CustomUserError):
+    """ 이미지가 필요함
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'image files are required'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class CreateEventDenied(CustomUserError):
+    """ 이벤트 생성 실패
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable to create event'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class CreateButtunDenied(CustomUserError):
+    """ 이벤트 버튼 생성 실패
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable to create event button'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+        
+class DateCompareException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'start date is greater than end date'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ProductImageNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product image not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class StockNotNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'stock info not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class LookUpDateFieldRequiredCheck(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'both date field required'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class SellerAttributeTypeException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'invalid seller attribute type'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -711,3 +1097,66 @@ class CustomerInformationCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
+class ProductButtonNameRequired(CustomUserError):
+    """ 기획전 종류가 버튼인데 버튼이름 키,값이 상품데이터에 없을 때
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'button name is required in each product'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class InsertProductIntoButtonDenied(CustomUserError):
+    """ 버튼에 상품추가 실패
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable to insert product into button'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class InsertProductIntoEventDenied(CustomUserError):
+    """ 버튼에 상품추가 실패
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'unable to insert product into event'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ButtonProductDoesNotMatch(CustomUserError):
+    """ 기획전 종류가 버튼형이고 상품추가할 객체가 있지만 상품과 매치된 버튼이 단 하나도 없음
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'although there are product and button objects, no buttons are matched'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)

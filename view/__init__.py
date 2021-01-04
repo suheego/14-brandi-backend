@@ -7,15 +7,11 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
     app.add_url_rule('/test', view_func=TestUserView.as_view('test_user_view', test_user_service, database))
 
 """
-from .sample_user_view import SampleUserView
 
-from .admin.order_view import OrderView
-from .admin.event_view import EventView, EventDetailView
-from .admin.seller_view import SellerSignupView, SellerSigninView
-from .admin.create_product_view import CreateProductView
-
-from .store.user_view import SignUpView, SignInView, GoogleSocialSignInView
-from .store.product_list_view import ProductListView, ProductSearchView, ProductDetailView
+# service
+from .sample_user_view         import SampleUserView
+from .store.user_view          import SignUpView, SignInView, GoogleSocialSignInView
+from .store.product_list_view  import ProductListView, ProductSearchView, ProductDetailView
 from .store.category_list_view import CategoryListView
 from .store.destination_view import DestinationView, DestinationDetailView
 from .store.cart_item_view import CartItemView, CartItemAddView
@@ -24,8 +20,17 @@ from .store.store_order_view import StoreOrderView, StoreOrderAddView
 from .store.bookmark_view import BookmarkView
 from .store.event_list_view import EventBannerListView, EventDetailInformationView, EventDetailProductListView, EventDetailButtonListView
 from .store.product_enquiry_view import ProductEnquiryListView, MyPageEnquiryListView
-
 from .store.seller_shop_view import SellerShopView, SellerShopSearchView, SellerShopCategoryView, SellerShopProductListView
+
+# admin1
+from .admin.order_view import OrderView, OrderDetailView
+from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
+
+# admin2
+from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView
+from .admin.product_create_view import MainCategoriesListView, CreateProductView
+from .admin.product_manage_view import ProductManageSearchView, ProductManageDetailView
+
 
 from utils.error_handler import error_handle
 
@@ -38,31 +43,38 @@ def create_endpoints(app, services, database):
                 services: Services 클래스:Service 클래스들을 담고 있는 클래스이다.
                 database: 데이터베이스
 
-            Author: 홍길동
-        
+            Author: 김기용
+
             Returns: None
 
             Raises: None
-            
+
             History:
-                2020-20-20(홍길동): 초기 생성
-                2020-20-21(홍길동): 1차 수정
-                2020-20-22(홍길동): 2차 수정
+                2020-12-28(김기용): 초기 생성
+                2020-12-29(김기용): 1차 수정
+                2020-12-31(강두연): 2차 수정
+                2020-12-31(심원두): 3차 수정
     """
 
-    sample_user_service = services.sample_user_service
-    destination_service = services.destination_service
-    cart_item_service = services.cart_item_service
-    sender_service = services.sender_service
+    # service
+    sample_user_service  = services.sample_user_service
+    destination_service  = services.destination_service
+    cart_item_service    = services.cart_item_service
+    sender_service       = services.sender_service
     product_list_service = services.product_list_service
-    store_order_service = services.store_order_service
-
+    store_order_service  = services.store_order_service
     seller_shop_service = services.seller_shop_service
-
     seller_service = services.seller_service
     create_product_service = services.create_product_service
-    order_service = services.order_service
 
+    # admin1
+    order_service = services.order_service
+    order_detail_service = services.order_detail_service
+
+    # admin2
+    seller_service         = services.seller_service
+    product_create_service = services.product_create_service
+    product_manage_service = services.product_manage_service
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Service Section(write your code under your name)
@@ -293,10 +305,52 @@ def create_endpoints(app, services, database):
                          database
                      ))
 
+    app.add_url_rule('/event/products/category',
+                     view_func=EventProductsCategoryView.as_view(
+                         'event_product_category_view',
+                         services.event_service,
+                         database
+                     ))
+
+    app.add_url_rule('/event/products',
+                     view_func=EventProductsToAddView.as_view(
+                         'event_product_to_add_view',
+                         services.event_service,
+                         database
+                     ))
+
 # ----------------------------------------------------------------------------------------------------------------------
 # 김민서 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-    app.add_url_rule('/admin/orders',view_func=OrderView.as_view('order_view', order_service, database))
+
+    app.add_url_rule('/admin/orders',
+                     view_func=OrderView.as_view(
+                        'order_view',
+                         order_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/orders',
+                     view_func=OrderView.as_view(
+                         'order_update_status_view',
+                         order_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/orders/detail/<int:order_item_id>',
+                     view_func=OrderDetailView.as_view(
+                         'order_detail_view',
+                         order_detail_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/orders/detail',
+                     view_func=OrderDetailView.as_view(
+                         'order_detail_update_view',
+                         order_detail_service,
+                         database
+                     ))
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 이성보 ◟( ˘ ³˘)◞ ♡
@@ -305,13 +359,15 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # Admin 2 Section
 # ----------------------------------------------------------------------------------------------------------------------
-# 김영환
+# 김영환 ◟( ˘ ³˘)◞ ♡
+# ----------------------------------------------------------------------------------------------------------------------
     app.add_url_rule('/admin/signup',
                      view_func = SellerSignupView.as_view(
                          'seller_signup_view',
                          seller_service,
                          database
                      ))
+
     app.add_url_rule('/admin/signin',
                      view_func = SellerSigninView.as_view(
                          'seller_signin_view',
@@ -320,26 +376,56 @@ def create_endpoints(app, services, database):
                      ))
 
 # ----------------------------------------------------------------------------------------------------------------------
-# 심원두
-    app.add_url_rule('/product/productRegist',
-                     view_func=CreateProductView.as_view(
-                         'create_product_view',
-                         create_product_service,
+# 심원두 ◟( ˘ ³˘)◞ ♡
+# ----------------------------------------------------------------------------------------------------------------------
+    app.add_url_rule('/admin/product/productRegist/main_category',
+                     view_func=MainCategoriesListView.as_view(
+                         'main_category_view',
+                         product_create_service,
                          database
                      ))
-# ----------------------------------------------------------------------------------------------------------------------
-# 이성보 ◟( ˘ ³˘)◞ ♡
-# ----------------------------------------------------------------------------------------------------------------------
 
+    app.add_url_rule('/admin/product/productRegist',
+                     view_func=CreateProductView.as_view(
+                         'product_create_view',
+                         product_create_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/products',
+                     view_func=ProductManageSearchView.as_view(
+                         'product_manage_search_view',
+                         product_manage_service,
+                         database
+                     ))
+    
+    app.add_url_rule('/admin/products/<string:product_code>',
+                     view_func=ProductManageDetailView.as_view(
+                         'product_manage_detail_view',
+                         product_manage_service,
+                         database
+                     ))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 이영주 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
+    app.add_url_rule('/admin/<int:account_id>',
+                     view_func=SellerInfoView.as_view(
+                         'SellerInfoView',
+                         seller_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/<int:account_id>/history',
+                     view_func=SellerHistoryView.as_view(
+                         'SellerHistoryView',
+                         seller_service,
+                         database
+                     ))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 장재원 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-
 
 # ----------------------------------------------------------------------------------------------------------------------
     # don't touch this
