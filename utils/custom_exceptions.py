@@ -209,10 +209,18 @@ class RequiredFieldException(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-class CorrelationCheckException(CustomUserError):
+class CompareQuantityCheck(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
-        message = 'correlation check fail'
+        message = 'compare quantity field check error'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ComparePriceCheck(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'compare price field check error'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -321,10 +329,26 @@ class FileSizeException(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
+class FileScaleException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 413
+        message = 'file scale too small, 640 * 720 at least'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
 class FileExtensionException(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'only allowed jpg type'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class FileUploadFailException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'image_file_upload_to_amazon_fail'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -795,6 +819,7 @@ class ImageIsRequired(CustomUserError):
 
         super().__init__(status_code, message, error_message)
 
+
 class CreateEventDenied(CustomUserError):
     """ 이벤트 생성 실패
 
@@ -808,7 +833,7 @@ class CreateEventDenied(CustomUserError):
         status_code = 400
         message = 'unable to create event'
         error_message = error_message
-
+        
         super().__init__(status_code, message, error_message)
 
 
@@ -825,10 +850,49 @@ class CreateButtunDenied(CustomUserError):
         status_code = 400
         message = 'unable to create event button'
         error_message = error_message
+        super().__init__(status_code, message, error_message)
 
+        
+class DateCompareException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'start date is greater than end date'
+        error_message = error_message
         super().__init__(status_code, message, error_message)
 
 
+class ProductImageNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'product image not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class StockNotNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'stock info not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class LookUpDateFieldRequiredCheck(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'both date field required'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class SellerAttributeTypeException(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'invalid seller attribute type'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+        
 class ProductButtonNameRequired(CustomUserError):
     """ 기획전 종류가 버튼인데 버튼이름 키,값이 상품데이터에 없을 때
 
@@ -893,5 +957,4 @@ class ButtonProductDoesNotMatch(CustomUserError):
         status_code = 400
         message = 'although there are product and button objects, no buttons are matched'
         error_message = error_message
-
         super().__init__(status_code, message, error_message)
