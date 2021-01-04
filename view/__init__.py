@@ -24,7 +24,8 @@ from .admin.event_view import EventView, EventDetailView, EventProductsCategoryV
 
 # admin2
 
-from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView, SellerStatusView, SellerPasswordView
+from .admin.seller_view import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView, SellerStatusView, \
+    SellerPasswordView, SellerSearchView
 from .admin.product_create_view import MainCategoriesListView, CreateProductView
 from .admin.product_manage_view import ProductManageSearchView, ProductManageDetailView
 
@@ -57,7 +58,7 @@ def create_endpoints(app, services, database):
     sample_user_service  = services.sample_user_service
     destination_service  = services.destination_service
     cart_item_service    = services.cart_item_service
-#    sender_service       = services.SenderService
+    sender_service       = services.sender_service
     product_list_service = services.product_list_service
     store_order_service  = services.store_order_service
 
