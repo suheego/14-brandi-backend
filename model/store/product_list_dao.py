@@ -90,7 +90,7 @@ class ProductListDao:
 
         sql = """
             SELECT 
-                product_image.image_url AS image
+                product_image.image_url
                 , product.seller_id AS seller_id
                 , seller.`name` AS seller_name
                 , product.id AS product_id

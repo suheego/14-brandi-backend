@@ -27,6 +27,7 @@ def signin_decorator(required=True):
             2020-12-29(김민구): 초기 생성
             2020-12-31(김민구): 에러 문구 변경
             2020-01-02(김민구): necessary 추가
+            2020-01-04(김민구): 파라미터 이름 necessary -> required로 변경
 
         Notes:
             토큰 유효시간 : 5시간
