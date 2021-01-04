@@ -372,4 +372,4 @@ class DestinationDao:
         with connection.cursor() as cursor:
             affected_row = cursor.execute(sql, data)
             if affected_row == 0:
-                raise UpdateDenied('unable_to_update_destinations')
+                raise UpdateDenied('배송지를 수정할수 없습니다.')

@@ -29,9 +29,9 @@ class DestinationDetailView(MethodView):
         Returns: 201, {'message': 'success', 'reuslt':'배송지 상세 정보'}: 배송지 생성 성공
 
         Raises:
-            400, {'message': 'key_error', 'errorMessage': 'key_error'}                                    : 잘못 입력된 키값
-            400, {'message': 'destination_dose_not_exist', 'errorMessage': 'destination_dose_not_exist'}  : 배송지 조회 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                         : 서버 에러
+            400, {'message': 'key_error', 'errorMessage': 'key_error'}                            : 잘못 입력된 키값
+            400, {'message': 'destination_dose_not_exist', 'errorMessage': '존재하지 않는 배송지'}: 배송지 조회 실패
+            500, {'message': 'internal server error', 'errorMessage': format(e)})                 : 서버 에러
 
         History:
             2020-12-29(김기용): 초기 생성
@@ -129,13 +129,13 @@ class DestinationView(MethodView):
         Returns: 201, {'message': 'success'}: 배송지 생성 성공
 
         Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}                                      : 잘못 입력된 키값
-            400, {'message': 'destination_creatation_denied', 'errorMessage': 'destination_creation_denied'}: 배송지 생성 실패
-            400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                                    : 유저 불일치
-            400, {'message': 'data_limit_reached', 'errorMessage': 'max_destination_limit_reached'}         : 최대 생성 개수 초과
-            401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}             : 계정 정보 없음
-            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}        : 커넥션 종료 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                           : 서버 에러
+            400, {'message': 'key error', 'errorMessage': 'key_error'}                                       : 잘못 입력된 키값
+            400, {'message': 'destination_creatation_denied', 'errorMessage': '배송지를 생성하지 못했습니다'}: 배송지 생성 실패
+            400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                                     : 유저 불일치
+            400, {'message': 'data_limit_reached', 'errorMessage': 'max_destination_limit_reached'}          : 최대 생성 개수 초과
+            401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}              : 계정 정보 없음
+            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}         : 커넥션 종료 실패
+            500, {'message': 'internal server error', 'errorMessage': format(e)})                            : 서버 에러
 
         History:
             2020-12-28(김기용): 초기 생성
@@ -191,6 +191,7 @@ class DestinationView(MethodView):
 
             Raises: 
                 400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
+                400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                            : 유저 불일치
                 500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
                 500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
         """

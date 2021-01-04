@@ -22,9 +22,7 @@ class DestinationService:
             200, {'message': 'success', 'result': 상품정보들}   
         
         Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
-            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
+            400, {'message': 'not_a_user', 'errorMessage': '유저가 아닙다.'}    : 유저 불일치
         History:
 
                 2020-12-30(김기용): 초기 생성

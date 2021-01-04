@@ -1,5 +1,6 @@
 
 import json
+from flask import g
 from utils.decorator import signin_decorator
 from utils.rules import SortTypeRule, NumberRule
 
@@ -21,6 +22,7 @@ class ProductDetailView(MethodView):
         self.service  = service
         self.database = database
     
+    @signin_decorator(False)
     def get(self, product_id):
         """ GET 메소드: 상품 상세정보 검색
 
@@ -44,6 +46,7 @@ class ProductDetailView(MethodView):
         try:
             data=dict()
             data['product_id'] = product_id
+            data['account_id'] = g.account_id
             connection = get_connection(self.database)
             result = self.service.product_detail_service(connection, data)
             return jsonify({'message': 'success', 'result': result})

@@ -238,11 +238,12 @@ class ProductListDao:
                 2020-12-31(김기용): 초기 생성
                 2021-01-01(김기용): 1차 수정: 구현 완료
                 2021-01-02(김기용): 2차 수정: 북마크 개수 추가
+                2021-01-03(김기용): 3차 수정: 유저별 북마크 확인
         """
 
         sql = """
             SELECT
-	        product.id
+	         product.id
 	        , product.name
                 , product.seller_id AS seller_id
                 , seller.name AS seller_name
@@ -252,6 +253,16 @@ class ProductListDao:
                 , product.detail_infomation
                 , product_sales_volume.sales_count
                 , bookmark.bookmark_count
+                , EXISTS(
+                    SELECT
+                        id
+                    FROM
+                        bookmarks
+                    WHERE
+                        account_id = %(account_id)s
+                        AND product_id= %(product_id)s
+                        AND is_deleted =0
+                    ) AS is_bookmarked
             FROM
 	        products AS product
 	    INNER JOIN sellers AS seller
@@ -261,8 +272,9 @@ class ProductListDao:
             INNER JOIN bookmark_volumes AS bookmark
                 ON bookmark.product_id = product.id
             WHERE 
-	        product.id = %(product_id)s;
-
+	        product.id = %(product_id)s
+                AND product.is_deleted = 0
+                ;
         """
         try:
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:

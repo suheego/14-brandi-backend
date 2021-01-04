@@ -80,17 +80,39 @@ class ProductListService:
                         "seller_id": 4,
                         "seller_name": "나는셀러4"
                         }
-            Raises: ###
+            Raises: None
 
             History:
                 2020-12-31(김기용): 초기 생성
-                2021-01-01(김기용): 수정
 
         """
         return self.product_dao.get_search_products_dao(connection, data)
     
     def product_detail_service(self, connection, data):
-        """
+        """ 상품 검색 서비스
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                search    : 쿼리스트링이 담긴 변수
+
+            Author: 김기용
+
+            Returns: {
+                        "bookmark_count": 0,
+                        "discounted_price": 9000.0,
+                        "image": "https://img.freepik.com",
+                        "name": "성보의하루999",
+                        "origin_price": 10000.0,
+                        "product_id": 999,
+                        "sales_count": 32,
+                        "seller_id": 4,
+                        "seller_name": "나는셀러4"
+                        }
+            Raises: None
+
+            History:
+                2020-12-31(김기용): 초기 생성
+
         """
         return self.product_dao.get_product_detail_dao(connection, data)
         
