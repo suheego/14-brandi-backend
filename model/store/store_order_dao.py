@@ -11,7 +11,6 @@ from utils.custom_exceptions import (
     ServerError,
     OrderHistoryCreateDenied,
     ProductRemainUpdateDenied,
-    CustomerInformationCreateDenied,
 )
 
 
@@ -249,6 +248,7 @@ class StoreOrderDao:
         , %(total_price)s
         );
         """
+
         try:
             with connection.cursor() as cursor:
                 cursor.execute(sql, data)
@@ -284,6 +284,7 @@ class StoreOrderDao:
         History:
             2020-12-30(고수희): 초기 생성
         """
+
         sql = """
           INSERT INTO order_items (
               product_id
@@ -316,7 +317,6 @@ class StoreOrderDao:
                 result = cursor.lastrowid
                 if not result:
                     raise OrderItemCreateDenied('unable_to_create')
-                data['order_item_id'] = result
                 return result
 
         except OrderItemCreateDenied as e:
@@ -460,6 +460,7 @@ class StoreOrderDao:
 
     def patch_customer_information_dao(self, connection, data):
         """주문자 정보 추가 및 수정
+        주문자 정보 조회 시 주문자 정보가 있으면 수정, 없으면 추가함
 
         Args:
             connection: 데이터베이스 연결 객체

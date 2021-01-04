@@ -109,7 +109,7 @@ class StoreOrderService:
                 custom_memo = self.store_order_dao.post_delivery_type_dao(connection, data)
                 data['delivery_memo_type_id'] = custom_memo
 
-            #주문번호 생성을 위한 당일 주문량 파악
+            #주문번호 채번을 위한 당일 주문량 파악
             today = self.store_order_dao.get_today_order_number_dao(connection)
             data.update(today)
 
@@ -119,7 +119,8 @@ class StoreOrderService:
             data['order_item_status_type_id'] = 1
 
             #주문 상품 추가 (주문 상품에 대한 정보)
-            self.store_order_dao.post_store_order_item_dao(connection, data)
+            order_item = self.store_order_dao.post_store_order_item_dao(connection, data)
+            data['order_item_id'] = order_item
 
             #주문 상품 정보 이력 추가
             self.store_order_dao.post_store_order_item_history_dao(connection, data)
