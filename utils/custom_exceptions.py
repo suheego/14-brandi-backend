@@ -301,7 +301,7 @@ class CartItemNotExist(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-class CartItemCreateFail(CustomUserError):
+class CartItemCreateDenied(CustomUserError):
     """ 장바구니 상품 추가 실패
 
     Author: 고수희
@@ -311,7 +311,7 @@ class CartItemCreateFail(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'cart item create'
+        message = 'cart item create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -633,24 +633,13 @@ class NotExistBookmark(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-
-
-
-
-
-
-
-
-
-
-
 class OrderHistoryCreateDenied(CustomUserError):
     """ 상품 정보 이력 추가 실패
-
+    
         Author: 고수희
 
         History:
-            2020-01-02(고수희): 초기생성
+        2020-01-02(고수희): 초기생성
     """
 
     def __init__(self, error_message):
@@ -660,6 +649,21 @@ class OrderHistoryCreateDenied(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
+class SellerCategoryNotExist(CustomUserError):
+    """ 셀러 카테고리 조회 실패
+    
+        Author: 
+
+        History:
+        2021-01-03(고수희): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'seller category not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+        
 class ProductSalesRateCreateDenied(CustomUserError):
     """ 상품 판매량 추가 실패
 
@@ -675,6 +679,7 @@ class ProductSalesRateCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+        
 class ProductRemainUpdateDenied(CustomUserError):
     """ 상품 재고 업데이트 실패
 
@@ -705,3 +710,4 @@ class CustomerInformationCreateDenied(CustomUserError):
         message = 'customer information create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
