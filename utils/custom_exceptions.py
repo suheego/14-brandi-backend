@@ -301,7 +301,7 @@ class CartItemNotExist(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
-class CartItemCreateFail(CustomUserError):
+class CartItemCreateDenied(CustomUserError):
     """ 장바구니 상품 추가 실패
 
     Author: 고수희
@@ -311,7 +311,7 @@ class CartItemCreateFail(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'cart item create'
+        message = 'cart item create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 

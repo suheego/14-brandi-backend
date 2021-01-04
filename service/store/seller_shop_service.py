@@ -1,5 +1,6 @@
 import traceback
 
+
 class SellerShopService:
     """ Business Layer
 
