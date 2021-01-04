@@ -182,10 +182,8 @@ class StoreOrderDao:
             2020-12-30(고수희): 초기 생성
         """
 
+        # 같은 시점에 주문이 될 수 있음
         today_sql = """
-        SELECT count(*)+1 as today
-        FROM orders
-        WHERE date(created_at) = date(now())
         """
 
         try:
@@ -234,7 +232,11 @@ class StoreOrderDao:
         , total_price
         )
         VALUES (
-        CONCAT(DATE_FORMAT(now(), '%%Y%%m%%d'),(LPAD(%(today)s,6,0)),(LPAD(0,3,0)))
+        CONCAT(DATE_FORMAT(now(), '%%Y%%m%%d'),(LPAD(
+        SELECT count(*)+1 as today
+        FROM orders
+        WHERE date(created_at) = date(now())
+,6,0)),(LPAD(0,3,0)))
         , %(sender_name)s
         , %(sender_phone)s
         , %(sender_email)s
@@ -310,7 +312,7 @@ class StoreOrderDao:
               , %(sale)s
           );
           """
-
+        # insert로 꺼내서 넣
         try:
             with connection.cursor() as cursor:
                 cursor.execute(sql, data)
@@ -437,7 +439,7 @@ class StoreOrderDao:
         History:
             2020-12-31(고수희): 초기 생성
         """
-
+        # 주문이 복수 아이템일 경우 Update join을 사용해서 삭제 처리
         sql = """
         UPDATE cart_items
         SET is_deleted = 1

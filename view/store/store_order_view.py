@@ -45,6 +45,7 @@ class StoreOrderView(MethodView):
         Author: 고수희
 
         Returns:
+            #통화에 대한 정의와 정수로 변환
             {
                 "message": "success",
                 "result": {

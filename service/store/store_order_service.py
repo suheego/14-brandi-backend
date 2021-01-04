@@ -91,11 +91,11 @@ class StoreOrderService:
         """
 
         try:
-            #사용자 권한 체크
+            # 사용자 권한 체크
             if data['user_permission'] != 3:
                 raise CustomerPermissionDenied('customer_permission_denied')
 
-            #상품 구매 가능 여부 체크
+            # 상품 구매 가능 여부 체크
             if data['sold_out'] is True:
                 raise CheckoutDenied('unable_to_checkout')
 
