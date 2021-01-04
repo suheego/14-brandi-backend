@@ -13,7 +13,6 @@ from .admin.event_service          import EventService
 from .admin.seller_service         import SellerService
 from .admin.seller_info_service    import SellerInfoService
 
-
 from .admin.product_create_service import ProductCreateService
 from .admin.product_manage_service import ProductManageService
 

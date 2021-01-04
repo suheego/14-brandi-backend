@@ -154,7 +154,6 @@ class SellerInfoView(MethodView):
         History:
             2020-12-28(이영주): 초기 생성
     """
-
     def __init__(self, service, database):
         self.service = service
         self.database = database
@@ -164,6 +163,9 @@ class SellerInfoView(MethodView):
     )
     def get(self, *args):
         """ GET 메소드: 셀러 상세정보 조회
+
+            Args:
+                account_id
 
             Author:
                 이영주
@@ -383,7 +385,7 @@ class SellerHistoryView(MethodView):
         self.database = database
 
     @validate_params(
-        Param('account_id', PATH, str, required=False, rules=[NumberRule()])
+        Param('account_id', PATH, int, required=False)
     )
     def get(self, *args):
         """GET 메소드: 해당 셀러의 히스토리 정보를 조회.
@@ -419,6 +421,9 @@ class SellerHistoryView(MethodView):
         except Exception as e:
             raise e
 
+        except Exception as e:
+            raise e
+
         finally:
             try:
                 if connection:
@@ -426,6 +431,7 @@ class SellerHistoryView(MethodView):
             except Exception:
 
                 raise DatabaseCloseFail('database close fail')
+
 
 class SellerPasswordView(MethodView):
     """ Presentation Layer

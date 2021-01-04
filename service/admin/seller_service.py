@@ -8,8 +8,9 @@ import bcrypt, jwt
 from model          import SellerDao
 
 from flask                   import jsonify
-class SellerService:
 
+
+class SellerService:
 
     def __init__(self, config):
         self.seller_dao = SellerDao()
@@ -44,7 +45,6 @@ class SellerService:
         create_seller_history_result = self.seller_dao.create_seller_history_dao(connection, data)
         if not create_seller_history_result:
             raise UserCreateDenied('unable_to_create_seller_history')
-
 
     def seller_signin_service(self, connection, data):
 

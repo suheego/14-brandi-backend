@@ -57,7 +57,7 @@ def create_endpoints(app, services, database):
     sample_user_service  = services.sample_user_service
     destination_service  = services.destination_service
     cart_item_service    = services.cart_item_service
-    sender_service       = services.sender_service
+#    sender_service       = services.SenderService
     product_list_service = services.product_list_service
     store_order_service  = services.store_order_service
 
