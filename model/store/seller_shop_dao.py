@@ -116,7 +116,7 @@ class SellerShopDao:
         History:
             2021-01-02(고수희): 초기 생성
         """
-
+        # like로 할 경우 성능 저하가 생길 수 있기때문에 다른 선택지를 고려해야함
         sql = """
         SELECT 
         pi.image_url AS image
@@ -185,6 +185,7 @@ class SellerShopDao:
             'errorMessage': 'server_error'}': 서버 에러
         """
 
+        # 상품 갯수가 많을 경우 성능 저하가 생길 수 있음
         sql = """
         SELECT DISTINCT 
         pd.main_category_id
@@ -270,16 +271,17 @@ class SellerShopDao:
         LEFT JOIN product_sales_volumes AS psv ON psv.product_id = pd.id
         """
 
+
         try:
-            #특정 카테고리를 선택한 경우
-            if not data['category'] is None:
-                category_sql = """
-                WHERE pd.main_category_id = %(category)s
-                AND pd.seller_id = %(seller_id)s 
+            # 쿼리 줄 맞춤
+            #특정 카테고리를 선택한 경우 : sql에 포함
+            if data['category'] is not None:
+                sql += """
+        WHERE pd.main_category_id = %(category)s
+        AND pd.seller_id = %(seller_id)s 
                 """
 
-                sql += category_sql
-
+            # 하단 정리
             #특정 카테고리를 선택하지 않은 경우
             else:
                 all_sql = """
