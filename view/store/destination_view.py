@@ -21,6 +21,9 @@ class DestinationDetailView(MethodView):
     def get(self, destination_id):
         """GET 메소드: 배송지 상세정보 조회
 
+        pass converter 로 받은 destination_id 에 해당하는
+        배송지 상세정보를 조회, 반환해준다.
+
         Args:
             destination_id : url pass_parameter 로 입력받은 값
 
@@ -29,9 +32,9 @@ class DestinationDetailView(MethodView):
         Returns: 201, {'message': 'success', 'reuslt':'배송지 상세 정보'}: 배송지 생성 성공
 
         Raises:
-            400, {'message': 'key_error', 'errorMessage': 'key_error'}                                    : 잘못 입력된 키값
-            400, {'message': 'destination_dose_not_exist', 'errorMessage': 'destination_dose_not_exist'}  : 배송지 조회 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                         : 서버 에러
+            400, {'message': 'key_error', 'errorMessage': 'key_error'}                            : 잘못 입력된 키값
+            400, {'message': 'destination_dose_not_exist', 'errorMessage': '존재하지 않는 배송지'}: 배송지 조회 실패
+            500, {'message': 'internal server error', 'errorMessage': format(e)})                 : 서버 에러
 
         History:
             2020-12-29(김기용): 초기 생성
@@ -52,7 +55,7 @@ class DestinationDetailView(MethodView):
                 if connection:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database_close_failed')
+                raise DatabaseCloseFail('서버에서 알 수 없는 에러가 발생했습니다.')
 
 
 class DestinationView(MethodView):
@@ -61,9 +64,11 @@ class DestinationView(MethodView):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    @signin_decorator(True)
     def get(self):
         """GET 메소드:   해당 유저에 대한 배송지 정보 받아오기
+
+        유저에 관련된 모든 배송지 정보를 조회 및 반환한다.
 
         Args:
             g.account_id: 데코레이터에서 넘겨받은 유저 정보
@@ -82,11 +87,12 @@ class DestinationView(MethodView):
 
         History:
             2020-12-29(김기용): 초기 생성
+            2021-01-02(김기용): 데코레이터 수정
         """
 
-        # 로그인 데코레이터 달리면 그때 account_id 를 받아올예정
         data = dict()
         data['account_id'] = g.account_id
+        data['permission_type_id'] = g.permission_type_id
 
         try:
             connection = get_connection(self.database)
@@ -101,9 +107,9 @@ class DestinationView(MethodView):
                 if connection:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database_close_failed')
+                raise DatabaseCloseFail('서버에서 알 수 없는 에러가 발생했습니다.')
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
         Param('recipient', JSON, str),
         Param('phone', JSON, str, rules=[PhoneRule()]),
@@ -114,9 +120,11 @@ class DestinationView(MethodView):
     def post(self, *args):
         """POST 메소드:  배송지 추가
 
+        사용자가 입력한 배송지 정보를 받아 데이터베이스에 추가한다.
+        최대 배송지 생성 개수는 5개이다.
+
         Args:
-            args =('user_id',
-                   'recipient',
+            args =('recipient',
                    'phone',
                    'address1',
                    'address2',
@@ -129,28 +137,30 @@ class DestinationView(MethodView):
         Returns: 201, {'message': 'success'}: 배송지 생성 성공
 
         Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}                                      : 잘못 입력된 키값
-            400, {'message': 'destination_creatation_denied', 'errorMessage': 'destination_creation_denied'}: 배송지 생성 실패
-            400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                                    : 유저 불일치
-            400, {'message': 'data_limit_reached', 'errorMessage': 'max_destination_limit_reached'}         : 최대 생성 개수 초과
-            401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}             : 계정 정보 없음
-            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}        : 커넥션 종료 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                           : 서버 에러
+            400, {'message': 'key error', 'errorMessage': 'key_error'}                                       : 잘못 입력된 키값
+            400, {'message': 'destination_creatation_denied', 'errorMessage': '배송지를 생성하지 못했습니다'}: 배송지 생성 실패
+            400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                                     : 유저 불일치
+            400, {'message': 'data_limit_reached', 'errorMessage': 'max_destination_limit_reached'}          : 최대 생성 개수 초과
+            401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}              : 계정 정보 없음
+            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}         : 커넥션 종료 실패
+            500, {'message': 'internal server error', 'errorMessage': format(e)})                            : 서버 에러
 
         History:
             2020-12-28(김기용): 초기 생성
             2020-12-29(김기용): 데코레이터 추가
+            2020-12-30(김기용): 수정된 데코레이터반영: 데코레이터에서 user_type을 받음
+            2021-01-02(김기용): 수정된 데코레이터 반영: signin_decorator(True)
         """
 
         data = {
             'user_id': g.account_id,
+            'permission_type_id': g.permission_type_id,
             'recipient': args[0],
             'phone': args[1],
             'address1': args[2],
             'address2': args[3],
             'post_number': args[4],
         }
-
         try:
             connection = get_connection(self.database)
             self.service.create_destination_service(connection, data)
@@ -166,9 +176,9 @@ class DestinationView(MethodView):
                 if connection:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database close fail')
+                raise DatabaseCloseFail('서버에서 알 수 없는 에러가 발생했습니다.')
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
         Param('destination_id', JSON, str, rules=[NumberRule()]),
         Param('recipient', JSON, str),
@@ -180,6 +190,8 @@ class DestinationView(MethodView):
     )
     def patch(self, *args):
         """ PATCH 메소드: 배송지 정보 수정
+
+            사용자가 입력한 배송지 정보를 받아 수정한다.
             
             Args: destination_id
 
@@ -189,6 +201,7 @@ class DestinationView(MethodView):
 
             Raises: 
                 400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
+                400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                            : 유저 불일치
                 500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
                 500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
         """
@@ -201,6 +214,7 @@ class DestinationView(MethodView):
         data['post_number'] = args[5]
         data['default_location'] = args[6]
         data['account_id'] = g.account_id
+        data['permission_type_id'] = g.permission_type_id
 
         try:
             connection = get_connection(self.database)
@@ -217,9 +231,9 @@ class DestinationView(MethodView):
                 if connection:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database close fail')
+                raise DatabaseCloseFail('서버에서 알 수 없는 에러가 발생했습니다')
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
         Param('destination_id', JSON, str, rules=[NumberRule()])
     )
@@ -246,6 +260,7 @@ class DestinationView(MethodView):
         data = dict()
         data['destination_id'] = args[0]
         data['account_id'] = g.account_id
+        data['permission_type_id'] = g.permission_type_id
         
         try:
             connection = get_connection(self.database)
@@ -262,4 +277,4 @@ class DestinationView(MethodView):
                 if connection:
                     connection.close()
             except Exception:
-                raise DatabaseCloseFail('database close fail')
+                raise DatabaseCloseFail('서버에서 알 수 없는 에러가 발생했습니다')

@@ -1,5 +1,6 @@
-from flask                   import jsonify, request, json
-from flask.views             import MethodView
+from flask                          import jsonify, request, json
+from flask.views                    import MethodView
+from flask_request_validator.rules  import NotEmpty
 
 from utils.connection        import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
