@@ -306,6 +306,7 @@ class UserDao:
                 result = cursor.execute(sql, data)
                 if not result:
                     raise DataManipulationFail('소셜 로그인을 실패하였습니다.')
+                return cursor.lastrowid
 
         except DataManipulationFail as e:
             raise e

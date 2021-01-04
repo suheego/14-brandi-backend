@@ -7,11 +7,11 @@ import jwt
 from utils.custom_exceptions import UnauthorizedUser, InvalidToken
 
 
-def signin_decorator(necessary=True):
+def signin_decorator(required=True):
     """ 로그인 데코레이터
 
         Args:
-            necessary       : True or False / 로그인이 필수인지 아닌지 체크하는 파라미터
+            required       : True or False / 로그인이 필수인지 아닌지 체크하는 파라미터
             *args, **kwargs : 타겟 함수가 사용할 파라미터
 
         Author: 김민구
@@ -38,10 +38,10 @@ def signin_decorator(necessary=True):
             try:
                 access_token = request.headers.get('Authorization')
 
-                if necessary and not access_token:
+                if required and not access_token:
                     raise UnauthorizedUser('로그인이 필요합니다.')
 
-                if not necessary and not access_token:
+                if not required and not access_token:
                     return func(*args, **kwargs)
 
                 payload = jwt.decode(

@@ -247,3 +247,43 @@ class PositiveInteger(AbstractRule):
         if value <= 0:
             errors.append('must_be_bigger_than_0')
         return value, errors
+
+
+class EnquiryAnswerTypeRule(AbstractRule):
+    """ Q&A answer type 규칙
+
+        답변 유무를 전달하는 type 쿼리스트링 값을 검사
+        wait, complete, all만 허용한다.
+
+        Author: 김민구
+
+        History:
+            2021-01-03(김민구)
+    """
+
+    def validate(self, value):
+        status_set = ['wait', 'complete', 'all']
+        errors = []
+        if value not in status_set:
+            errors.append('type_is_incorrect')
+        return value, errors
+
+
+class EnquiryUserTypeRule(AbstractRule):
+    """ Q&A user type 규칙
+
+        모든 질문을 조회할지 자신의 질문만 조회할지를 따지는 규칙
+        all, self만 허용한다.
+
+        Author: 김민구
+
+        History:
+            2021-01-03(김민구)
+    """
+
+    def validate(self, value):
+        status_set = ['self', 'all']
+        errors = []
+        if value not in status_set:
+            errors.append('type_is_incorrect')
+        return value, errors

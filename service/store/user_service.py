@@ -168,6 +168,6 @@ class UserService:
         user = self.user_dao.get_user_infomation(connection, data)
         if not user:
             raise InvalidUser('구글 소셜 로그인에 실패했습니다.')
-
-        token = self.token_generator(user['id'], user['username'])
+        print(user)
+        token = self.token_generator(user)
         return token

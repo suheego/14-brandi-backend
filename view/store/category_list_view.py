@@ -33,26 +33,26 @@ class CategoryListView(MethodView):
                         'result': {
                             'menus': [
                                 {
-                                'id' : 1,
-                                'name' : '브랜드'
-                                }
-                            ],
-                            'main_categories': [
-                                {
                                     'id' : 1,
-                                    'name' : '상의',
-                                    'menu_id' : 6
-                                }
-                            ],
-                            'sub_categories': [
-                                {
-                                    'id' : 1,
-                                    'name' : '반팔티셔츠',
-                                    'main_categories' : 1
+                                    'name' : '브랜드'
+                                    'main_categories': [
+                                        {
+                                            'id' : 1,
+                                            'name' : '상의',
+                                            'menu_id' : 6
+                                            'sub_categories': [
+                                                {
+                                                    'id' : 1,
+                                                    'name' : '반팔티셔츠',
+                                                    'main_categories' : 1
+                                                }
+                                            ]
+                                        }
+                                    ]
                                 }
                             ]
                         }
-                    }
+                }
 
             Raises:
                 400, {'message': 'key_error', 'errorMessage': format(e)}                            : 잘못 입력된 키값

@@ -149,12 +149,15 @@ class SignInView(MethodView):
 
         connection = None
         try:
+            print('asdfasdfasdfsadf')
+            print(args)
             data = {
                 'username': args[0],
                 'password': args[1]
             }
             connection = get_connection(self.database)
             token = self.user_service.sign_in_logic(data, connection)
+            print(token)
             return jsonify({'message': 'success', 'token': token}), 200
 
         except Exception as e:
@@ -220,6 +223,7 @@ class GoogleSocialSignInView(MethodView):
 
         connection = None
         try:
+            print('asdfasdfasdfasdf')
             google_token = request.headers.get('Authorization')
             connection = get_connection(self.database)
             user_info = id_token.verify_oauth2_token(google_token, requests.Request())
