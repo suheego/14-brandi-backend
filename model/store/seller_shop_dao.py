@@ -116,7 +116,7 @@ class SellerShopDao:
         History:
             2021-01-02(고수희): 초기 생성
         """
-        # like로 할 경우 성능 저하가 생길 수 있기때문에 다른 선택지를 고려해야함
+        # TODO like로 할 경우 성능 저하가 생길 수 있기때문에 다른 선택지를 고려해야함
         sql = """
         SELECT 
         pi.image_url AS image
@@ -185,7 +185,7 @@ class SellerShopDao:
             'errorMessage': 'server_error'}': 서버 에러
         """
 
-        # 상품 갯수가 많을 경우 성능 저하가 생길 수 있음
+        # TODO 상품 갯수가 많을 경우 성능 저하가 생길 수 있음
         sql = """
         SELECT DISTINCT 
         pd.main_category_id
@@ -201,7 +201,7 @@ class SellerShopDao:
                 cursor.execute(sql, data)
                 result = cursor.fetchall()
 
-                #셀러 카테고리가 없을 경우
+                # 셀러 카테고리가 없을 경우
                 if not result:
                     raise SellerCategoryNotExist('seller_category_not_exist')
                 return result
@@ -273,46 +273,40 @@ class SellerShopDao:
 
 
         try:
-            # 쿼리 줄 맞춤
-            #특정 카테고리를 선택한 경우 : sql에 포함
+            # TODO 쿼리 줄 맞춤
+            # 특정 카테고리를 선택한 경우 : sql에 포함
             if data['category'] is not None:
                 sql += """
         WHERE pd.main_category_id = %(category)s
         AND pd.seller_id = %(seller_id)s 
                 """
 
-            # 하단 정리
-            #특정 카테고리를 선택하지 않은 경우
+            # TODO 하단 정리
+            # 특정 카테고리를 선택하지 않은 경우
             else:
-                all_sql = """
-                WHERE pd.seller_id = %(seller_id)s
+                sql +=  """
+        WHERE pd.seller_id = %(seller_id)s
                 """
-
-                sql += all_sql
 
             # 최신순 정렬일 경우
             if data['type'] == "latest":
-                latest_sql = """
-                AND pd.is_deleted = 0
-                ORDER BY pd.id DESC
-                LIMIT %(limit)s
-                OFFSET %(offset)s
-                ;
+                sql += """
+        AND pd.is_deleted = 0
+        ORDER BY pd.id DESC
+        LIMIT %(limit)s
+        OFFSET %(offset)s
+        ;
                 """
 
-                sql += latest_sql
-
-            #인기순 정렬일 경우
+            # 인기순 정렬일 경우
             else:
-                popular_sql = """
-                AND pd.is_deleted = 0
-                ORDER BY product_sales_count DESC
-                LIMIT %(limit)s
-                OFFSET %(offset)s 
-                ;
+                sql += """
+        AND pd.is_deleted = 0
+        ORDER BY product_sales_count DESC
+        LIMIT %(limit)s
+        OFFSET %(offset)s
+        ;
                 """
-
-                sql += popular_sql
 
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
                 cursor.execute(sql, data)

@@ -39,7 +39,7 @@ class SellerShopService:
             2021-01-01(고수희): 초기 생성
         """
         try:
-            #셀러정보 정보 조회
+            # 셀러 정보 조회
             return self.seller_shop_dao.get_seller_info_dao(connection, data)
 
         except KeyError:
@@ -68,7 +68,7 @@ class SellerShopService:
             2021-01-02(고수희): 초기 생성
         """
         try:
-            #셀러 상품 검색
+            # 셀러 상품 검색
             return self.seller_shop_dao.get_seller_product_search_dao(connection, data)
 
         except KeyError:
@@ -104,7 +104,7 @@ class SellerShopService:
             2021-01-02(고수희): 초기 생성
         """
         try:
-            #셀러 카테고리 조회
+            # 셀러 카테고리 조회
             return self.seller_shop_dao.get_seller_category_dao(connection, data)
 
         except KeyError:
@@ -133,7 +133,7 @@ class SellerShopService:
             2021-01-02(고수희): 초기 생성
         """
         try:
-            #셀러 상품 조회
+            # 셀러 상품 조회
             return self.seller_shop_dao.get_seller_product_list_dao(connection, data)
 
         except KeyError:
