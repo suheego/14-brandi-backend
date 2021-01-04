@@ -118,7 +118,7 @@ def create_app(test_config=None):
     services.order_service = OrderService(order_dao)
     
     #admin2
-    services.seller_service         = SellerService(seller_dao, app.config)
+    services.seller_service         = SellerService(app.config)
     services.seller_info_service    = SellerInfoService(seller_info_dao)
     services.product_create_service = ProductCreateService(product_create_dao)
     services.product_manage_service = ProductManageService(product_manage_dao)

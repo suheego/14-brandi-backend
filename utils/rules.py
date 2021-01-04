@@ -17,7 +17,7 @@ from flask_request_validator import AbstractRule
 
 class NumberRule(AbstractRule):
     def validate(self, value):
-        pattern = '^[1-9]+$'
+        pattern = '^[0-9]+$'
         regex = re.compile(pattern)
         result = regex.match(value)
         errors = []

@@ -23,7 +23,8 @@ from .admin.order_view import OrderView
 from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
 
 # admin2
-from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView
+from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView, SellerStatusView, SellerPasswordView
+
 from .admin.product_create_view import MainCategoriesListView, CreateProductView
 from .admin.product_manage_view import SearchProductView
 
@@ -64,6 +65,7 @@ def create_endpoints(app, services, database):
 
     # admin2
     seller_service         = services.seller_service
+    seller_info_service    = services.seller_info_service
     product_create_service = services.product_create_service
     product_manage_service = services.product_manage_service
 
@@ -282,14 +284,28 @@ def create_endpoints(app, services, database):
     app.add_url_rule('/admin/<int:account_id>',
                      view_func=SellerInfoView.as_view(
                          'SellerInfoView',
-                         seller_service,
+                         seller_info_service,
                          database
                      ))
 
     app.add_url_rule('/admin/<int:account_id>/history',
                      view_func=SellerHistoryView.as_view(
                          'SellerHistoryView',
-                         seller_service,
+                         seller_info_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/status',
+                     view_func=SellerStatusView.as_view(
+                         'SellerStatusView',
+                         seller_info_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/<int:account_id>/change_password',
+                     view_func=SellerPasswordView.as_view(
+                         'SellerPasswordView',
+                         seller_info_service,
                          database
                      ))
 
