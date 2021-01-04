@@ -184,12 +184,12 @@ class CreateProductView(MethodView):
         Param('main_category_id',       FORM, str,  required=True,  rules=[NumberRule()]),
         Param('sub_category_id',        FORM, str,  required=True,  rules=[NumberRule()]),
         Param('is_product_notice',      FORM, int,  required=True,  rules=[Enum(0, 1)]),
-        Param('manufacturer',           FORM, str,  required=False, rules=[NotEmpty(), MaxLength(30)]),
-        Param('manufacturing_date',     FORM, str,  required=False, rules=[DateRule()]),
-        Param('product_origin_type_id', FORM, str,  required=False, rules=[NumberRule()]),
+        Param('manufacturer',           FORM, str,  required=False, rules=[MaxLength(30)]),
+        Param('manufacturing_date',     FORM, str,  required=False),
+        Param('product_origin_type_id', FORM, str,  required=False),
         Param('product_name',           FORM, str,  required=True,  rules=[NotEmpty(), MaxLength(100)]),
-        Param('description',            FORM, str,  required=True,  rules=[NotEmpty(), MaxLength(200)]),
-        Param('detail_information',     FORM, str,  required=True,  rules=[NotEmpty()]),
+        Param('description',            FORM, str,  required=False, rules=[MaxLength(200)]),
+        Param('detail_information',     FORM, str,  required=True, rules=[NotEmpty()]),
         Param('options',                FORM, list, required=True),
         Param('minimum_quantity',       FORM, str,  required=False, rules=[NumberRule()]),
         Param('maximum_quantity',       FORM, str,  required=False, rules=[NumberRule()]),
@@ -297,13 +297,12 @@ class CreateProductView(MethodView):
                 'discount_rate'         : request.form.get('discount_rate'),
                 'discounted_price'      : request.form.get('discounted_price'),
                 'discount_start_date'   : request.form.get('discount_start_date', None),
-                'discount_end_date'     : request.form.get('discount_end_date', None),
+                'discount_end_date'     : request.form.get('discount_end_date', None)
             }
             
             product_images = request.files.getlist("image_files")
             stocks         = json.loads(request.form.get('options'))
-            
-            connection = get_connection(self.database)
+            connection     = get_connection(self.database)
             
             product_id = self.service.create_product_service(
                 connection,

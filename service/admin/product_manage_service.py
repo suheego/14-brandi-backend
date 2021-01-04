@@ -108,9 +108,9 @@ class ProductManageService:
                         'product_id'            : product['product_id'],
                         'seller_attribute_type' : product['seller_attribute_type'],
                         'seller_name'           : product['seller_name'],
-                        'origin_price'          : product['origin_price'],
-                        'discounted_price'      : product['discounted_price'],
-                        'discount_rate'         : product['discount_rate'],
+                        'origin_price'          : '{:,}'.format(int(product['origin_price'])),
+                        'discounted_price'      : '{:,}'.format(int(product['discounted_price'])),
+                        'discount_rate'         : int(product['discount_rate']) * 100,
                         'is_sale'               : product['is_sale'],
                         'is_display'            : product['is_display'],
                     } for product in product_list

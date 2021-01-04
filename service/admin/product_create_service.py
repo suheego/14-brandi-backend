@@ -84,41 +84,59 @@ class ProductCreateService:
                 2020-01-03(심원두): 예외처리 추가/수정
         """
         try:
-            # 상품 고시 - 직접입력의 경우 하위 필드 필수 체크
-            if int(data['is_product_notice']) == 1:
-                if not data['manufacturer'] or \
-                    not data['manufacturing_date'] or \
-                    not data['product_origin_type_id']:
-                    raise RequiredFieldException('required_manufacture_information')
-
-            # 최소 판매 수량, 최대 판매 수량 비교 체크
-            if int(data['minimum_quantity']) > int(data['maximum_quantity']):
-                raise CompareQuantityCheck('minimum_quantity_cannot_greater_than_maximum_quantity')
+            if int(data['minimum_quantity']) != 0 and int(data['maximum_quantity']) != 0:
+                if int(data['minimum_quantity']) > int(data['maximum_quantity']):
+                    raise CompareQuantityCheck('minimum_quantity_cannot_greater_than_maximum_quantity')
             
-            # 할인율 0이 아닌 경우
-            if int(data['discount_rate']) != 0:
+            if int(data['minimum_quantity']) == 0:
+                data['minimum_quantity'] = 1
+            
+            if int(data['maximum_quantity']) == 0:
+                data['minimum_quantity'] = 20
+            
+            # 상품 고시 정보 0 일 경우, 하위 필드 값 None 치환
+            if int(data['is_product_notice']) == 0:
+                data['manufacturer'] = None
+                data['manufacturing_date'] = None
+                data['product_origin_type_id'] = None
                 
-                # 할인가가 판매가 보다 클 경우
+            else:
+                # 상품 고시 정보 1일 경우 하위 필드 값 필수 필드 체크
+                if not data['manufacturer'] or not data['manufacturing_date'] or not data['product_origin_type_id']:
+                    raise RequiredFieldException('required_manufacture_information')
+            
+            # 할인율 0 일 경우, 할인가 = 판매가 처리
+            if int(data['discount_rate']) == 0:
+                data['discounted_price'] = data['origin_price']
+                data['discount_start_date'] = None
+                data['discount_end_date'] = None
+                
+            else:
+                
+                # 할인율 0 이 아닐 경우
                 if float(data['discounted_price']) > float(data['origin_price']):
                     raise ComparePriceCheck('discounted_price_cannot_greater_than_origin_price')
-
+                
                 # [판매가 - 할인가격 != 할인가] 의 경우
-                if (float(data['origin_price']) * (1 - float(data['discount_rate']))) != \
+                if (float(data['origin_price']) * (1 - float(data['discount_rate']) / 100)) != \
                     float(data['discounted_price']):
                     raise ComparePriceCheck('wrong_discounted_price')
                 
                 # 할인율이 0이 아닌 경우, [할인 시작 일자, 할이 종료 일자] 필수 체크
-                if not data['discount_start_date'] or not data['discount_end_date']:
+                if data['discount_start_date'] and not data['discount_end_date']:
                     raise RequiredFieldException('required_discount_start_or_end_date')
                 
-                # [할인 시작 일자 > 할인 종료 일자] 의 경우
-                if data['discount_start_date'] > data['discount_end_date']:
-                    raise DateCompareException('start_date_cannot_greater_than_end_date')
-            else:
+                if not data['discount_start_date'] and data['discount_end_date']:
+                    raise RequiredFieldException('required_discount_start_or_end_date')
                 
-                # 할인율이 0 인 경우, [판매가 != 할인가]
-                if data['discounted_price'] != data['origin_price']:
-                    raise ComparePriceCheck('discounted_price_have_to_same_with_origin_price')
+                if data['discount_start_date'] and data['discount_end_date']:
+                    
+                    if data['discount_start_date'] > data['discount_end_date']:
+                        
+                        raise DateCompareException('start_date_cannot_greater_than_end_date')
+                else:
+                    data['discount_start_date'] = None
+                    data['discount_end_date'] = None
             
             data['discount_rate'] = float(data['discount_rate']) / 100
             
@@ -312,9 +330,13 @@ class ProductCreateService:
                 data['color_id']            = stock['color']
                 data['size_id']             = stock['size']
                 data['remain']              = stock['remain']
-                data['is_stock_manage']     = stock['isStockManage']
                 
-                if not data['is_stock_manage']:
+                if not stock['isStockManage']:
+                    stock['isStockManage'] = 0
+
+                data['is_stock_manage'] = stock['isStockManage']
+                
+                if not stock['remain']:
                     data['remain'] = 0
                 
                 self.create_product_dao.insert_stock(connection, data)
