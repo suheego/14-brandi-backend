@@ -8,17 +8,22 @@ create_endpoints 함수가 정의되어 있는 곳. 함수 안에 사용할 url 
 
 """
 from .sample_user_view import SampleUserView
-from .admin.create_product_view import CreateProductView
-from .sample_user_view import SampleUserView
 
-from .admin.seller_view import SellerSignupView, SellerSigninView
+from .admin.create_product_view import CreateProductView
+from .admin.seller_view import (
+                                SellerSignupView,
+                                SellerSigninView,
+                                SellerSearchView
+                                )
+
 from utils.error_handler import error_handle
 
 
 def create_endpoints(app, services, database):
-    sample_user_service = services.sample_user_service
-    seller_service = services.seller_service
-    create_product_service = services.create_product_service
+
+    sample_user_service     = services.sample_user_service
+    seller_service          = services.seller_service
+    create_product_service  = services.create_product_service
 
     """ 앤드 포인트 시작
             Args:
@@ -75,8 +80,14 @@ def create_endpoints(app, services, database):
                          seller_service,
                          database
                      ))
+    app.add_url_rule('/admin/search',
+                     view_func=SellerSearchView.as_view(
+                         'seller_search_view',
+                         seller_service,
+                         database
+                     ))
 
-# ----------------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------------
 # 심원두
     app.add_url_rule('/product/productRegist',
                      view_func=CreateProductView.as_view(
