@@ -11,7 +11,7 @@ from model   import OrderDao
 
 from model import OrderDao, OrderDetailDao
 from model import SellerDao
-from model import CreateProductDao
+from model import ProductCreateDao
 
 from service import OrderService
 
@@ -123,10 +123,7 @@ def create_app(test_config=None):
     #admin1
     services.event_service = EventService(event_dao)
     services.order_service = OrderService(order_dao)
-
     services.order_detail_service = OrderService(order_detail_dao)
-    services.seller_service = SellerService(seller_dao,app.config)
-    services.create_product_service = CreateProductService(create_product_dao)
     
     #admin2
     services.seller_service         = SellerService(seller_dao, app.config)

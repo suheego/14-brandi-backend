@@ -25,7 +25,7 @@ from .admin.event_view import EventView, EventDetailView, EventProductsCategoryV
 # admin2
 from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView
 from .admin.product_create_view import MainCategoriesListView, CreateProductView
-from .admin.product_manage_view import SearchProductView
+from .admin.product_manage_view import ProductManageSearchView, ProductManageDetailView
 
 from utils.error_handler import error_handle
 
@@ -299,8 +299,15 @@ def create_endpoints(app, services, database):
                      ))
 
     app.add_url_rule('/admin/products',
-                     view_func=SearchProductView.as_view(
-                         'search_product_view',
+                     view_func=ProductManageSearchView.as_view(
+                         'product_manage_search_view',
+                         product_manage_service,
+                         database
+                     ))
+    
+    app.add_url_rule('/admin/products/<string:product_code>',
+                     view_func=ProductManageDetailView.as_view(
+                         'product_manage_detail_view',
                          product_manage_service,
                          database
                      ))
