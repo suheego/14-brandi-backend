@@ -507,8 +507,8 @@ class EventSearchTwoInput(CustomUserError):
 
 class DateMissingOne(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
-        message = 'date inputs should be start_date and end_date'
+        status_code = 404
+        message = 'event not exist'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
@@ -526,7 +526,7 @@ class SearchTwoInput(CustomUserError):
 class EventDoesNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 404
-        message = 'event not exist'
+        message = 'q&a not exist'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
@@ -972,5 +972,32 @@ class EventDeleteDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'event is not deleted'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class EnquiryDoesNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'q&a not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class EnquiryFilterNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'must be date inputs or filter inputs'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class AnswerCreateFail(CustomUserError):
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'answer create'
         error_message = error_message
         super().__init__(status_code, message, error_message)

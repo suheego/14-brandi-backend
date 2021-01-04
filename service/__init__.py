@@ -9,6 +9,7 @@ from .sample_user_service          import SampleUserService
 
 from .admin.order_service          import OrderService
 from .admin.event_service          import EventService
+from .admin.enquiry_service        import EnquiryService
 
 from .admin.seller_service         import SellerService, SellerInfoService
 from .admin.product_create_service import ProductCreateService
