@@ -13,7 +13,7 @@ from flask_request_validator import AbstractRule
 
 class NumberRule(AbstractRule):
     def validate(self, value):
-        pattern = '^[1-9]+$'
+        pattern = '^[0-9]+$'
         regex = re.compile(pattern)
         result = regex.match(value)
         errors = []
@@ -41,7 +41,7 @@ class GenderRule(AbstractRule):
             errors.append('accept only male and female value')
         return value, errors
 
-      
+
 class SellerInfoRule(AbstractRule):
     def validate(self, value):
         pattern = '^[0-9]+$'
@@ -55,28 +55,12 @@ class SellerInfoRule(AbstractRule):
 
 class DefaultRule(AbstractRule):
     def validate(self, value):
-        pattern = '^[0-9A-Za-z가-힣\s.\-_]+$'
+        pattern = '^[a-zA-Z가-힝0-9+-_.]+$'
         regex = re.compile(pattern)
         result = regex.match(value)
         errors = []
         if not result:
             errors.append('accept only number, text')
-        return value, errors
-
-
-class RequiredFieldRule(AbstractRule):
-    def validate(self, *args):
-        errors = []
-        if not all([value for value in args]):
-            errors.append('required field')
-        return args, errors
-
-
-class RequiredFieldNumberRule(AbstractRule):
-    def validate(self, value):
-        errors = []
-        if not value:
-            errors.append('required value')
         return value, errors
 
 
@@ -214,22 +198,13 @@ class EventStatusRule(AbstractRule):
         return value, errors
 
 
-class EventExposureRule(AbstractRule):
+class BooleanRule(AbstractRule):
     def validate(self, value):
         exposure_set = (0, 1)
         errors = []
         if value not in exposure_set:
-            errors.append('event exposure value should be 0 or 1')
+            errors.append('boolean field value should be 0 or 1')
         return value, errors
-
-class OrderStatusRule(AbstractRule):
-    def validate(self, value):
-        status_set = [1, 2, 3, 8]
-        errors = []
-        if value not in status_set:
-            errors.append('order status must be one of 1, 2, 3, 8')
-        return value, errors
-
 
 class OrderStatusRule(AbstractRule):
     def validate(self, value):
@@ -242,7 +217,9 @@ class OrderStatusRule(AbstractRule):
 
 class DateRule(AbstractRule):
     """ 날짜 형식 벨리데이터 (YYYY-MM-DD)
+
         Author: 강두연
+
         History:
             2020-12-29(강두연): 날짜 형식 벨리데이터 역할 규칙 작성
     """
@@ -251,7 +228,43 @@ class DateRule(AbstractRule):
         regex = re.compile(pattern)
         errors = []
         if not regex.match(value):
-            errors.append('accept only alphabetic characters')
+            errors.append('date format should be YYYY-MM-DD')
+        return value, errors
+
+
+
+class DateTimeRule(AbstractRule):
+    """ DateTime 형식 벨리데이터 (YYYY-MM-DD hh:mm)
+
+        Author: 강두연
+        History:
+            2021-01-02(강두연): 작성
+    """
+    def validate(self, value):
+        from datetime import datetime
+        errors = []
+        try:
+            datetime.strptime(value, "%Y-%m-%d %H:%M")
+        except ValueError:
+            errors.append('datetime format should be YYYY-MM-DD hh:mm')
+        finally:
+            return value, errors
+
+          
+class SecondDateTimeRule(AbstractRule):
+    """ 날짜 시간 형식 벨리데이터 (YYYY-MM-DD HH:MM:SS)
+
+        Author: 김민서
+
+        History:
+            2020-12-29(김민서): 날짜 시간 형식 벨리데이터 역할 규칙 작성
+    """
+    def validate(self, value):
+        pattern = '^([0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}:[0-9]{2})$'
+        regex = re.compile(pattern)
+        errors = []
+        if not regex.match(value):
+            errors.append('datetime must be "YYYY-MM-DD HH:MM:SS"')
         return value, errors
 
 
@@ -292,3 +305,5 @@ class PageRule(AbstractRule):
         if value <= 0:
             errors.append('page cannot be less than 1')
         return value, errors
+
+

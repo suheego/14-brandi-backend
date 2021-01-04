@@ -1,5 +1,7 @@
 import boto3
+
 from flask import current_app
+
 
 class S3FileManager:
     """ Amazon S3 파일 업로드 클래스
@@ -21,7 +23,7 @@ class S3FileManager:
     def file_upload(self, file, file_name):
         """ Amazon S3 파일 업로드 클래스
             Args:
-                filefunc  : View 에서 받은 이미지 파일
+                file       : View 에서 받은 이미지 파일
                 file_name : 해당 파일명
 
             Author: 심원두
@@ -48,6 +50,7 @@ class GenerateFilePath:
                 2: 셀러 배경 이미지 저장 경로 생성 명시
                 3: 상품 이미지 저장 경로 명시
                 4: 기획전 베너 이미지 저장 경로 명시
+                5: 기획전 상세 이미지 저장 경로 명시
 
             **kwargs : 저장 경로 생성에 이용될 seller_id 혹은 product_id
 
@@ -57,21 +60,25 @@ class GenerateFilePath:
 
         History:
             2020-12-31(심원두): 초기 생성
+            2021-01-02(강두연): 이벤트 관련 경로 추가
+            2021-01-03(심원두): 상품 이미지 경로 수정
     """
     def generate_file_path(self, path_type, **kwargs):
-        # TODO
-        event_path = ""
-
-        seller_path = 'sellers/' + str(kwargs['seller_id'])
-
+        event_path   = 'events/'
+        seller_path  = 'sellers/'
+        product_path = 'productImages/'
+        
         if path_type is 1:
-            return seller_path + '/profile/'
+            return seller_path + + str(kwargs['seller_id']) + '/profile/'
 
         if path_type is 2:
             return seller_path + '/background/'
-
+        
         if path_type is 3:
-            return seller_path + '/products/' + str(kwargs['product_id']) + '/images/'
+            return product_path + str(kwargs['seller_id']) + '/' + str(kwargs['product_id']) + '/' + 'images'
 
         if path_type is 4:
-            pass
+            return event_path + str(kwargs['today']) + '/banners/'
+
+        if path_type is 5:
+            return event_path + str(kwargs['today']) + '/details/'

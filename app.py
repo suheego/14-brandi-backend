@@ -7,7 +7,12 @@ from flask_cors    import CORS
 from view import create_endpoints
 
 #admin
-from model   import OrderDao, EnquiryDao
+from model   import OrderDao
+
+from model import OrderDao, OrderDetailDao, EnquiryDao
+from model import SellerDao
+from model import ProductCreateDao
+
 from service import OrderService, EnquiryService
 
 #admin2
@@ -58,6 +63,9 @@ class CustomJSONEncoder(JSONEncoder):
 
 
 # for getting multiple service classes
+
+
+
 class Services:
     pass
 
@@ -78,20 +86,28 @@ def create_app(test_config=None):
     database = app.config['DB']
 
     # persistence Layer
-    sample_user_dao    = SampleUserDao()
-    destination_dao    = DestinationDao()
-    cart_item_dao      = CartItemDao()
-    sender_dao         = SenderDao()
-    event_dao          = EventDao()
-    store_order_dao    = StoreOrderDao()
-    order_dao          = OrderDao()
-    enquiry_dao        = EnquiryDao()
-    
+    sample_user_dao = SampleUserDao()
+    destination_dao = DestinationDao()
+    cart_item_dao = CartItemDao()
+    sender_dao = SenderDao()
+    event_dao = EventDao()
+    store_order_dao = StoreOrderDao()
+    order_dao = OrderDao()
+    enquiry_dao = EnquiryDao()
+
     # admin2
-    seller_dao         = SellerDao()
-    seller_info_dao    = SellerInfoDao()
+    order_detail_dao = OrderDetailDao()
+
+    seller_dao = SellerDao()
+    seller_info_dao = SellerInfoDao()
     product_create_dao = ProductCreateDao()
     product_manage_dao = ProductManageDao()
+
+    # business Layer
+    services = Services
+    services.sample_user_service = SampleUserService(sample_user_dao)
+
+    services.seller_info_service = SellerInfoService(seller_info_dao)
     
     # business Layer,   깔끔한 관리 방법을 생각하기
     # service
@@ -108,7 +124,9 @@ def create_app(test_config=None):
     #admin1
     services.event_service = EventService(event_dao)
     services.order_service = OrderService(order_dao)
+    services.order_detail_service = OrderService(order_detail_dao)
     services.enquiry_service = EnquiryService(enquiry_dao)
+
     
     #admin2
     services.seller_service         = SellerService(seller_dao, app.config)

@@ -5,7 +5,7 @@ from flask.views import MethodView
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail, DateMissingOne, EventSearchTwoInput
 
-from utils.rules import NumberRule, EventStatusRule, EventExposureRule, DateRule, PageRule
+from utils.rules import NumberRule, EventStatusRule, DateRule, PageRule
 from flask_request_validator import (
     Param,
     PATH,
