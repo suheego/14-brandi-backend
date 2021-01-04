@@ -291,3 +291,31 @@ class EnquiryDao:
                 raise AnswerCreateFail("answer does not exist")
             result = cursor.execute(sql, data)
             return result
+
+    def delete_enquiry(self, connection, data):
+        validate_sql = """
+                        SELECT 
+                            EXISTS(
+                                SELECT id 
+                                FROM enquiries 
+                                WHERE id = %(enquiry_id)s
+                                AND is_deleted = 0
+                            ) AS validate
+                        """
+
+        sql = """
+                            UPDATE
+                                enquiries
+                            SET
+                                is_deleted = 1
+                            WHERE
+                                id = %(enquiry_id)s
+                        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(validate_sql, data)
+            validate = cursor.fetchone()
+            if not validate['validate']:
+                raise AnswerCreateFail("enquiry does not exist")
+            result = cursor.execute(sql, data)
+            return result

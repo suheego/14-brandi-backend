@@ -115,3 +115,10 @@ class EnquiryService:
 
         except Exception as e:
             raise e
+
+    def delete_enquiry_service(self, connection, data):
+        try:
+            return self.enquiry_dao.delete_enquiry(connection, data)
+
+        except Exception as e:
+            raise e

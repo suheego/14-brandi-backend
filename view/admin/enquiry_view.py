@@ -64,6 +64,30 @@ class EnquiryView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database close fail')
 
+    @validate_params(
+        Param('enquiry_id', JSON, int, required=True)
+    )
+    def delete(self, *args):
+        data = {
+            'enquiry_id': args[0]
+        }
+
+        try:
+            connection = get_connection(self.database)
+            self.service.delete_enquiry_service(connection, data)
+            connection.commit()
+            return {'message': 'success'}
+
+        except Exception as e:
+            raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
 
 class AnswerView(MethodView):
 
