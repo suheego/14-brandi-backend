@@ -796,3 +796,78 @@ class EventDao:
             if not result:
                 raise InsertProductIntoEventDenied('unable to insert product into event')
             return result
+
+    def delete_buttons_by_event(self, connection, data):
+        """ 이벤트 아이디로 버튼 삭제
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                None
+
+            History:
+                2020-01-04(강두연): 작성
+        """
+        sql = """
+            UPDATE 
+                event_buttons
+            SET 
+                is_deleted = 1
+            WHERE
+                event_id = %(event_id)s;
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+
+    def delete_event_products_by_event(self, connection, data):
+        """ 이벤트 아이디로 기획전 상품 삭제
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                None
+
+            History:
+                2020-01-04(강두연): 작성
+        """
+        sql = """
+            UPDATE
+                events_products
+            SET
+                is_deleted = 1
+            WHERE
+                event_id = %(event_id)s
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+
+    def delete_event(self, connection, data):
+        """ 기획전 아이디로 기획전 삭제
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                None
+
+            History:
+                2020-01-04(강두연): 작성
+        """
+        sql = """
+            UPDATE 
+                `events`
+            SET
+               is_deleted = 1
+            WHERE
+                id = %(event_id)s 
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)

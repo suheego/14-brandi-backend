@@ -14,7 +14,8 @@ from utils.custom_exceptions import (
     ButtonsMinimumCount,
     StartAndEndDateContext,
     ImageIsRequired,
-    ProductButtonNameRequired
+    ProductButtonNameRequired,
+    EventDeleteDenied
 )
 
 from utils.rules import (
@@ -84,6 +85,7 @@ class EventView(MethodView):
 
             Returns:
                 {
+                    "message": success,
                     "events": [
                         {
                             "created_at": "2020-12-28 16:40:41",
@@ -181,8 +183,10 @@ class EventView(MethodView):
                 banner_image: 배너이미지 파일
                 detail_image: 상세이미지 파일
 
-            Returns:
-                생성된 기획전 아이디
+            Returns: {
+                'message': 'success',
+                'event_id': 생성된 기획전 아이디
+            }
 
             Raises:
                 400, {'message': 'at least two buttons should be created',
@@ -292,6 +296,7 @@ class EventDetailView(MethodView):
 
         History:
             2020-12-31(강두연): 초기 생성, 기획전 상세정보 조회 기능 작성
+            2020-01-04(강두연): 기획전 논리 삭제 작성
     """
     def __init__(self, service, database):
         self.service = service
@@ -464,6 +469,50 @@ class EventDetailView(MethodView):
             return jsonify({"message": "success", "result": result})
 
         except Exception as e:
+            raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+    @validate_params(
+        Param('event_id', PATH, int, required=True)
+    )
+    def delete(self, *args):
+        """ 기획전 논리삭제
+
+            Args:
+               args[0](event_id) : 이벤트 아이디
+
+            Returns:
+                {
+                    'message': 'success',
+                    'deleted_event_id': 삭제된 이벤트 아이디
+                }
+
+            Raises:
+                400, {'message': 'event is not deleted',
+                      'errorMessage': 'failed to delete event'} : 이벤트 삭제 실패했을 때
+
+            History:
+                    2020-01-04(강두연): 작성
+        """
+        data = {
+            'event_id': args[0]
+        }
+
+        try:
+            connection = get_connection(self.database)
+            if not self.service.event_delete_service(connection, data):
+                raise EventDeleteDenied('failed to delete event')
+            connection.commit()
+            return jsonify({'message': 'success', 'deleted_event_id': data['event_id']})
+
+        except Exception as e:
+            connection.rollback()
             raise e
 
         finally:
