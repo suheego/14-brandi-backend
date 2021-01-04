@@ -107,7 +107,7 @@ class StoreOrderDao:
                 if not result:
                     raise ProductNotExist('product_does_not_exist')
 
-                #상품 재고가 0인지 확인하여, 상품이 품절되었는지 체크
+                # 상품 재고가 0인지 확인하여, 상품이 품절되었는지 체크
                 if result['remain'] <= 0:
                     return {'sold_out': True}
                 return {'sold_out': False}
@@ -182,7 +182,7 @@ class StoreOrderDao:
             2020-12-30(고수희): 초기 생성
         """
 
-        # 같은 시점에 주문이 될 수 있음
+        # TODO 다른 주문이 같은 시점에 주문이 될 수 있음
         today_sql = """
         """
 
@@ -275,7 +275,7 @@ class StoreOrderDao:
 
         Author: 고수희
 
-        Returns: 생성된 cart의 id 반환
+        Returns: 생성된 order_item의 id 반환
 
         Raises:
             400, {'message': 'order item create denied',
@@ -312,7 +312,7 @@ class StoreOrderDao:
               , %(sale)s
           );
           """
-        # insert로 꺼내서 넣
+        # TODO insert로 꺼내서 넣기
         try:
             with connection.cursor() as cursor:
                 cursor.execute(sql, data)
@@ -439,7 +439,7 @@ class StoreOrderDao:
         History:
             2020-12-31(고수희): 초기 생성
         """
-        # 주문이 복수 아이템일 경우 Update join을 사용해서 삭제 처리
+        # TODO 주문이 복수 아이템일 경우 Update join을 사용해서 삭제 처리
         sql = """
         UPDATE cart_items
         SET is_deleted = 1
