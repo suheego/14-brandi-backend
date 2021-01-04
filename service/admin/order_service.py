@@ -46,12 +46,19 @@ class OrderService:
             if data['product_name']:
                 data['product_name'] = '%' + data['product_name'] + '%'
 
+            # 상품준비 관리
             if data['status'] == 1:
                 return self.admin_order_dao.get_product_prepare_dao(connection, data)
+
+            # 배송중 관리
             if data['status'] == 2:
                 return self.admin_order_dao.get_shipping_dao(connection, data)
+
+            # 배송완료 관리
             if data['status'] == 3:
                 return self.admin_order_dao.get_complete_delivery_dao(connection, data)
+
+            # 구매확정 관리
             if data['status'] == 8:
                 return self.admin_order_dao.get_confirmed_purchase_dao(connection, data)
 
@@ -61,13 +68,18 @@ class OrderService:
 
     def update_order_status_service(self, connection, data):
         try:
+            # 권한 조회 및 에러 처리
             if not (data['permission'] == 1 or data['permission'] == 2):
                 raise NoPermission('no permission')
 
+            # 현재 주문 상태가 상품 준비 혹은 배송중이 아닌 경우 상태 업데이트 불가
             if not (data['status'] == 1 or data['status'] == 2):
                 raise NotAllowedStatus('now order status is not allowed to update status')
 
+            # 새로운 주문 상태 id 생성
             data['new_status'] = data['status'] + 1
+
+            #
             update_data = [[id, data['new_status'], data['account']] for id in data['ids']]
 
             self.admin_order_dao.update_order_status_dao(connection, data)
@@ -79,15 +91,27 @@ class OrderService:
 
     def get_order_detail_service(self, connection, data):
         try:
+            # 권한 조회 및 에러 처리
             if not (data['permission'] == 1 or data['permission'] == 2):
                 raise NoPermission('no permission')
             order_item_id = data["order_item_id"]
 
+            # 주문 정보 조회
             order_info           = self.admin_order_dao.get_order_info_dao(connection, order_item_id)
+
+            # 주문 상세 정보 조회
             order_detail_info    = self.admin_order_dao.get_order_detail_info_dao(connection, order_item_id)
+
+            # 상품 정보 조회
             product_info         = self.admin_order_dao.get_product_info_dao(connection, order_item_id)
+
+            # 수취자 정보 조회
             recipient_info       = self.admin_order_dao.get_recipient_info_dao(connection, order_item_id)
+
+            # 주문 상태 변경 히스토리 조회
             order_status_history = self.admin_order_dao.get_order_status_history_info_dao(connection, order_item_id)
+
+            # 최근 업데이트 시각 조회
             updated_at_time      = self.admin_order_dao.get_updated_time_dao(connection, order_item_id)[0]
 
             return {
@@ -105,6 +129,7 @@ class OrderService:
 
     def update_order_detail_service(self, connection, data):
         try:
+            # 권한 조회 및 에러 처리
             if not (data['permission'] == 1 or data['permission'] == 2):
                 raise NoPermission('no permission')
 
@@ -115,24 +140,31 @@ class OrderService:
             address1 = data['address1']
             address2 = data['address2']
 
+            # 수정 정보가 없는 경우 에러 처리
             if not (sender_phone or recipient_phone or address1 or address2):
                 raise InputDoesNotExist('input does not exist')
 
+            # 주소 정보와 상세 주소 정보 둘 중 하나가 없는 경우 에러 처리
             if (not address1 and address2) or (not address2 and address1):
                 raise UnableUpdateAddress('one of address inputs does not exist')
 
+            # 최근 업데이트 시각 정보 조회
             time = self.admin_order_dao.get_updated_time_dao(connection, order_item_id)
             time = time[0].strftime("%Y-%m-%d %H:%M:%S")
 
+            # 최근 업데이트 시각과 다를 때 에러 처리
             if time != updated_at_time:
                 raise UnableToUpdate('unable to update')
 
+            # 주소와 상세주소 정보 수정
             if address1 and address2:
                 self.admin_order_dao.update_address_dao(connection, data)
 
+            # 주문자 번호 정보 수정
             if sender_phone:
                 self.admin_order_dao.update_sender_phone_dao(connection, data)
 
+            # 수취자 번호 정보 수정
             if recipient_phone:
                 self.admin_order_dao.update_recipient_phone_dao(connection, data)
 
