@@ -19,19 +19,20 @@ from .store.sender_view        import SenderView
 from .store.store_order_view   import StoreOrderView, StoreOrderAddView
 
 # admin1
-from .admin.order_view import OrderView
+from .admin.order_view import OrderView, OrderDetailView
 from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
 
 # admin2
-from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView, SellerStatusView, SellerPasswordView
 
+from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView, SellerStatusView, SellerPasswordView
 from .admin.product_create_view import MainCategoriesListView, CreateProductView
-from .admin.product_manage_view import SearchProductView
+from .admin.product_manage_view import ProductManageSearchView, ProductManageDetailView
 
 from utils.error_handler import error_handle
 
 
 def create_endpoints(app, services, database):
+
     """ 앤드 포인트 시작
 
             Args:
@@ -61,7 +62,8 @@ def create_endpoints(app, services, database):
     store_order_service  = services.store_order_service
 
     # admin1
-    order_service          = services.order_service
+    order_service = services.order_service
+    order_detail_service = services.order_detail_service
 
     # admin2
     seller_service         = services.seller_service
@@ -229,7 +231,35 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 # 김민서 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
-    app.add_url_rule('/admin/orders',view_func=OrderView.as_view('order_view', order_service, database))
+
+    app.add_url_rule('/admin/orders',
+                     view_func=OrderView.as_view(
+                        'order_view',
+                         order_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/orders',
+                     view_func=OrderView.as_view(
+                         'order_update_status_view',
+                         order_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/orders/detail/<int:order_item_id>',
+                     view_func=OrderDetailView.as_view(
+                         'order_detail_view',
+                         order_detail_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/orders/detail',
+                     view_func=OrderDetailView.as_view(
+                         'order_detail_update_view',
+                         order_detail_service,
+                         database
+                     ))
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 이성보 ◟( ˘ ³˘)◞ ♡
@@ -253,6 +283,12 @@ def create_endpoints(app, services, database):
                          seller_service,
                          database
                      ))
+    app.add_url_rule('/admin/search',
+                     view_func=SellerSearchView.as_view(
+                         'seller_search_view',
+                         seller_service,
+                         database
+                     ))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 심원두 ◟( ˘ ³˘)◞ ♡
@@ -272,8 +308,15 @@ def create_endpoints(app, services, database):
                      ))
 
     app.add_url_rule('/admin/products',
-                     view_func=SearchProductView.as_view(
-                         'search_product_view',
+                     view_func=ProductManageSearchView.as_view(
+                         'product_manage_search_view',
+                         product_manage_service,
+                         database
+                     ))
+    
+    app.add_url_rule('/admin/products/<string:product_code>',
+                     view_func=ProductManageDetailView.as_view(
+                         'product_manage_detail_view',
                          product_manage_service,
                          database
                      ))

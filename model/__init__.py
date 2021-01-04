@@ -10,7 +10,7 @@ from .sample_user_dao import SampleUserDao
 from .sample_user_dao         import SampleUserDao
 
 from .admin.event_dao         import EventDao
-from .admin.order_dao         import OrderDao
+from .admin.order_dao         import OrderDao, OrderDetailDao
 
 from .admin.seller_dao         import SellerDao
 from .admin.seller_info_dao    import SellerInfoDao
@@ -24,5 +24,3 @@ from .store.destination_dao    import DestinationDao
 from .store.cart_item_dao      import CartItemDao
 from .store.sender_dao         import SenderDao
 from .store.store_order_dao    import StoreOrderDao
-
-
