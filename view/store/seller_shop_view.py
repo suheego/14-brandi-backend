@@ -129,7 +129,6 @@ class SellerShopSearchView(MethodView):
             "origin_price": 10000.0,
             "product_id": 7,
             "product_name": "성보의하루7",
-            "product_sales_count": null,
             "seller_id": 4,
             "seller_name": "나는셀러4"
         },
@@ -300,7 +299,6 @@ class SellerShopProductListView(MethodView):
                     "origin_price": 10000.0,
                     "product_id": 7,
                     "product_name": "성보의하루7",
-                    "product_sales_count": 0,
                     "seller_id": 4,
                     "seller_name": "나는셀러4"
                 },
@@ -311,7 +309,6 @@ class SellerShopProductListView(MethodView):
                     "origin_price": 10000.0,
                     "product_id": 5,
                     "product_name": "성보의하루5",
-                    "product_sales_count": 0,
                     "seller_id": 4,
                     "seller_name": "나는셀러4"
                 }

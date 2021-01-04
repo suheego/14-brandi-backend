@@ -94,7 +94,6 @@ class SellerShopDao:
             "origin_price": 10000.0,
             "product_id": 7,
             "product_name": "성보의하루7",
-            "product_sales_count": null,
             "seller_id": 4,
             "seller_name": "나는셀러4"
             },
@@ -105,7 +104,6 @@ class SellerShopDao:
             "origin_price": 10000.0,
             "product_id": 5,
             "product_name": "성보의하루5",
-            "product_sales_count": null,
             "seller_id": 4,
             "seller_name": "나는셀러4"
             }
@@ -129,7 +127,6 @@ class SellerShopDao:
         , pd.origin_price AS origin_price
         , pd.discount_rate AS discount_rate
         , pd.discounted_price AS discounted_price
-        , psv.sales_count AS product_sales_count
         FROM products AS pd
         INNER JOIN product_images AS pi ON pi.product_id = pd.id AND pi.order_index = 1
         INNER JOIN sellers AS se ON se.account_id = pd.seller_id
@@ -152,12 +149,6 @@ class SellerShopDao:
                 # 상품 검색 결과가 없을 경우
                 if not results:
                     return "등록된 상품이 없습니다."
-
-                # 상품 판매량이 없을 경우
-                for result in results:
-                    if result['product_sales_count'] is None:
-                        result['product_sales_count'] = 0
-
                 return results
 
         except Exception:
@@ -240,7 +231,6 @@ class SellerShopDao:
                         "origin_price": 10000.0,
                         "product_id": 7,
                         "product_name": "성보의하루7",
-                        "product_sales_count": 0,
                         "seller_id": 4,
                         "seller_name": "나는셀러4"
                     },
@@ -251,7 +241,6 @@ class SellerShopDao:
                         "origin_price": 10000.0,
                         "product_id": 5,
                         "product_name": "성보의하루5",
-                        "product_sales_count": 0,
                         "seller_id": 4,
                         "seller_name": "나는셀러4"
                     }
@@ -330,12 +319,6 @@ class SellerShopDao:
                 # 상품 검색 결과가 없을 경우
                 if not results:
                     return "등록된 상품이 없습니다."
-
-                # 상품 판매량이 없을 경우
-                for result in results:
-                    if result['product_sales_count'] is None:
-                        result['product_sales_count'] = 0
-
                 return results
 
         except Exception:
