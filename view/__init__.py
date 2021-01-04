@@ -24,7 +24,12 @@ from .store.store_order_view import StoreOrderView, StoreOrderAddView
 from .store.bookmark_view import BookmarkView
 from .store.event_list_view import EventBannerListView, EventDetailInformationView, EventDetailProductListView, EventDetailButtonListView
 
-from .store.seller_shop_view import SellerShopView, SellerShopSearchView
+
+
+
+
+
+from .store.seller_shop_view import SellerShopView, SellerShopSearchView, SellerShopCategoryView, SellerShopProductListView
 
 from utils.error_handler import error_handle
 
@@ -241,6 +246,21 @@ def create_endpoints(app, services, database):
                         database
                     ))
 
+    # 셀러샵 카테고리 조회 엔드포인트
+    app.add_url_rule('/shops/<int:seller_id>/category',
+                     view_func=SellerShopCategoryView.as_view(
+                         'seller_shop_category_view',
+                         seller_shop_service,
+                         database
+                     ))
+
+    # 셀러샵 상품 조회 엔드포인트
+    app.add_url_rule('/shops/<int:seller_id>/products',
+                     view_func=SellerShopProductListView.as_view(
+                         'seller_shop_product_list_view',
+                         seller_shop_service,
+                         database
+                     ))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Admin 1 Section

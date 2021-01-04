@@ -631,3 +631,29 @@ class NotExistBookmark(CustomUserError):
         message = 'not_exist_bookmark'
         error_message = error_message
         super().__init__(status_code, message, error_message)
+
+
+
+
+
+
+
+
+
+
+
+
+
+class SellerCategoryNotExist(CustomUserError):
+    """ 셀러 카테고리 조회 실패
+
+        Author: 고수희
+
+        History:
+            2021-01-03(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'seller category not exist'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)

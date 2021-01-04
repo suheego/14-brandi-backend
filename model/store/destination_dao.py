@@ -5,7 +5,45 @@ from utils.custom_exceptions import DeleteDenied, DestinationNotExist, Destinati
 
 class DestinationDao:
 
-    def make_default_location_false(self, connection, data):
+    def update_default_location_true(self, connection, data):
+        """기본 배송지가 없다면 기본배송지를 자동 설정해준다.
+
+        Args:
+            connection: 데이터베이스 연결 객체
+            account_id: 계정 아이디
+
+        Author: 김기용
+
+        Returns: True/False
+
+        Raises: None
+
+        History:
+            2020-12-30(김기용): 초기 생성
+            2020-12-31(김기용): 수정실패시 예외처리 추가
+            2020-01-02(김기용): 데코레이터 수정으로 인한 로직변경
+        """
+
+        sql = """
+            UPDATE
+                destinations
+            SET
+                default_location = 1
+            WHERE
+                user_id = %(account_id)s
+                AND default_location = 0
+                AND is_deleted = 0
+                AND id <> %(destination_id)s
+            LIMIT 1;
+        """
+
+        with connection.cursor() as cursor:
+            affected_row = cursor.execute(sql, data)
+            if affected_row == 0:
+                raise UpdateDenied('알수없는 이유로 데이터 수정에 실패하였습니다.')
+
+
+    def update_default_location_false(self, connection, data):
         """ 기본 배송지의 정보를 False 로 만든다.
 
         Args:
@@ -17,10 +55,12 @@ class DestinationDao:
         Returns: None
 
         Raises: 
-            400, {'message': 'unable_to_update', 'errorMessage': 'unable_to_update_destination'}: 배송지 수정 실패
+            400, {'message': 'unable_to_update', 'errorMessage': '알수없는 이유로 배송지 수정에 실패하였습니다.'}: 배송지 수정 실패
 
         History:
             2020-12-30(김기용): 초기 생성
+            2020-12-31(김기용): 리턴값 통일 
+            2020-01-02(김기용): 데코레이터 수정으로 인한 로직
         """
 
         sql = """
@@ -37,10 +77,7 @@ class DestinationDao:
             cursor.execute(sql, data)
             affected_row = cursor.fetchone()
             if affected_row == 0:
-                raise UpdateDenied('unable_to_delete_destinations')
-            #리턴값 통일.
-            # return 할 필요가 없다.. 예외처리를 일관성 있게 처리하는 방법을 생각해보자.
-            return affected_row
+                raise UpdateDenied('알수없는 이유로 데이터 수정에 실패하였습니다.')
 
     def get_user_destination(self, connection, data):
         """ 해당 유저 배송지 조회
@@ -56,10 +93,11 @@ class DestinationDao:
         Returns: 해당 유저 배송지 정보들
 
         Raises: 
-            400, {'message': 'destination_dose_not_exist', 'errorMessage': 'destination_dose_not_exist'}: 배송지 조회 실패
+            400, {'message': 'destination_dose_not_exist', 'errorMessage': '배송지 정보가 존재하지 않습니다.'}: 배송지 조회 실패
 
         History:
             2020-12-29(김기용): 초기 생성
+            2020-01-02(김기용): is_deleted가 추가되지 않아 논리삭제된 배송지정보도 조회가 가능했던 문제 수정
         """
         sql = """
             SELECT
@@ -74,14 +112,16 @@ class DestinationDao:
             FROM
                 destinations
             WHERE
-                user_id=%s;
+                user_id=%s
+                AND is_deleted=0
+                ;
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, data)
             result = cursor.fetchall()
             if not result:
-                raise DestinationNotExist('destination_does_not_exist')
+                raise DestinationNotExist('배송지 정보가 존재하지 않습니다.')
             return result
 
     def get_detail_destination(self, connection, data):
@@ -98,7 +138,7 @@ class DestinationDao:
         Returns: 배송지 상세 정보
 
         Raises: 
-            400, {'message': 'destination_dose_not_exist', 'errorMessage': 'destination_dose_not_exist'}: 배송지 조회 실패
+            400, {'message': 'destination_dose_not_exist', 'errorMessage': '배송지 정보가 존재하지 않습니다.'}: 배송지 조회 실패
 
         History:
             2020-12-29(김기용): 초기 생성
@@ -123,7 +163,7 @@ class DestinationDao:
             cursor.execute(sql, data['destination_id'])
             result = cursor.fetchall()
             if not result:
-                raise DestinationNotExist('destination_does_not_exist')
+                raise DestinationNotExist('배송지 정보가 존재하지 않습니다.')
             return result
 
     def create_destination_dao(self, connection, data):
@@ -138,7 +178,7 @@ class DestinationDao:
         Returns: None
 
         Raises:
-            400, {'message': 'unable_to_create', 'errorMessage': 'unable_to_create'}: 계정 생성 실패
+            400, {'message': 'unable_to_create', 'errorMessage': '알수없는 이유로 계정 생성에 실패하였습니다.'}: 계정 생성 실패
 
         History:
             2020-12-28(김기용): 초기 생성
@@ -166,79 +206,8 @@ class DestinationDao:
         with connection.cursor() as cursor:
             affected_row = cursor.execute(sql, data)
             if affected_row == 0:
-                raise DestinationCreateDenied('unable_to_create')
+                raise DestinationCreateDenied('알수없는 이유로 배송지를 생성하지 못했습니다.')
 
-    def check_account_type(self, connection, account_id): #유저에 대한 내용이기때문에 user 에서처리
-        """ 계정 종류 확인 함수
-            서비스가 여러개의 DAO를 가지는게 어렵지 않지만,
-
-        account_id 값으로 계정 종류를 확인한다.
-        master(1), seller(2), user(3)
-
-        Args:
-            connection: 데이터베이스 연결 객체
-            account_id: 계정 아이디
-
-        Author: 김기용
-
-        Returns: 3: user
-
-        Raises:
-            400, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}: 계정 정보 없음
-
-        History:
-            2020-12-28(김기용): 초기 생성
-        """
-        sql ="""
-        SELECT
-            permission_type_id
-        FROM
-            accounts
-        WHERE
-            id=%s;
-        """
-        with connection.cursor() as cursor:
-            cursor.execute(sql, account_id)
-            permission_type_id = cursor.fetchall()
-            if not permission_type_id:
-                raise AccountNotExist('account_does_not_exist')
-            return permission_type_id[0][0]
-
-    def update_default_location(self, connection, data):
-        """기본 배송지가 삭제 되었다면 기본배송지를 자동 설정해준다.
-
-        Args:
-            connection: 데이터베이스 연결 객체
-            account_id: 계정 아이디
-
-        Author: 김기용
-
-        Returns: True/False
-
-        Raises: None
-
-        History:
-            2020-12-30(김기용): 초기 생성
-        """
-
-        sql = """
-            UPDATE
-                destinations
-            SET
-                default_location = 1
-            WHERE
-                is_deleted = 0
-            AND 넣자...
-            ORDER BY
-            
-            
-            LIMIT 1;
-        """
-
-        with connection.cursor() as cursor:
-            return cursor.execute(sql, data)
-            ### result = cursor.fetchall()
-            ###return result
 
     def check_default_location(self, connection, data):
         """ 배송지 아이디로 기본 배송지인지 조회
@@ -257,6 +226,7 @@ class DestinationDao:
 
         History:
             2020-12-28(김기용): 초기 생성
+            2020-12-30(김기용): 한개만 조회하기때문에 fetchone을 적용
         """
         sql = """
         SELECT COUNT(*) 
@@ -270,10 +240,8 @@ class DestinationDao:
 
         with connection.cursor() as cursor:
             cursor.execute(sql, data)
-            # fetchone() 1개일 경우는 ,,
-            default_location = cursor.fetchall()
-
-            return default_location[0][0]
+            default_location = cursor.fetchone()
+            return default_location[0]
 
     def check_default_location_by_user(self, connection, account_id):
         """ 유저 아이디로 배송지를 가지고 있는지 조사
@@ -295,6 +263,7 @@ class DestinationDao:
 
         History:
             2020-12-28(김기용): 초기 생성
+            2021-01-02(김기용): 논리삭제 여부 조건 추가.
         """
         sql = """
         SELECT
@@ -304,6 +273,7 @@ class DestinationDao:
         WHERE
             user_id=%s
         AND default_location = 1
+        AND is_deleted = 0
         """
 
         with connection.cursor() as cursor:
@@ -379,7 +349,7 @@ class DestinationDao:
         with connection.cursor() as cursor:
             affected_row = cursor.execute(sql, data)
             if affected_row == 0:
-                raise DeleteDenied('unable_to_delete_destinations')
+                raise DeleteDenied('알수 없는 이유로 삭제할 수 없었습니다.')
 
     def update_destination_info_dao(self, connection, data):
         """ 유저의 배송지 정보 수정
@@ -402,4 +372,4 @@ class DestinationDao:
         with connection.cursor() as cursor:
             affected_row = cursor.execute(sql, data)
             if affected_row == 0:
-                raise UpdateDenied('unable_to_update_destinations')
+                raise UpdateDenied('배송지를 수정할수 없습니다.')

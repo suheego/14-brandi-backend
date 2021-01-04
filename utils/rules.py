@@ -55,6 +55,7 @@ class RequiredFieldRule(AbstractRule):
         return args, errors
 
 
+
 class UsernameRule(AbstractRule):
     """ 비밀번호 규칙
 
@@ -188,6 +189,7 @@ class IsDeleteRule(AbstractRule):
             errors.append('0 과 1 값만 받는다.')
         return value, errors
 
+
 class EventStatusRule(AbstractRule):
     def validate(self, value):
         status_set = ('progress', 'wait', 'end')
@@ -204,6 +206,7 @@ class EventExposureRule(AbstractRule):
         if value not in exposure_set:
             errors.append('event exposure value should be 0 or 1')
         return value, errors
+
 
 class OrderStatusRule(AbstractRule):
     def validate(self, value):
@@ -246,4 +249,19 @@ class PositiveInteger(AbstractRule):
         errors = []
         if value <= 0:
             errors.append('must_be_bigger_than_0')
+        return value, errors
+
+class SortTypeRule(AbstractRule):
+    """ 정해진 sort_type 만 허용한다.
+        
+        Author: 김기용
+
+        History:
+            2021-01-01(김기용)
+    """
+    def validate(self, value):
+        sort_set = ['1', '2', '3']
+        errors = []
+        if value not in sort_set:
+            errors.append('1~3 값만 받습니다.')
         return value, errors
