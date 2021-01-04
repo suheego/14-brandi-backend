@@ -19,6 +19,10 @@ class ProductListDao:
 
     def get_search_products_dao(self, connection, data):
         """ 상품 검색 및 정렬
+
+            검색키워드로 상품이름과 셀러이름을 검색하고
+            검색 결과를 추천순, 판매순, 최신순으로 정렬한다.
+
             Args:
                 connection : 데이터베이스 연결 객체
                 data       : 서비스에서 넘겨 받은 data
@@ -77,6 +81,7 @@ class ProductListDao:
         LIMIT %(limit)s;
 
         """
+        # 내부적으로 CASE가 동작이 어떻게 되는지 알아보기 CASE
         try:
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
                 data['search'] = '%%' + data['search'] + '%%' 
@@ -220,7 +225,7 @@ class ProductListDao:
             Returns: 
                 {
                 "bookmark_count": 0,
-                "detail_infomation": "html====================",
+                "detail_information": "html====================",
                 "discount_rate": 0.1,
                 "discounted_price": 9000.0,
                 "id": 1,
@@ -243,14 +248,13 @@ class ProductListDao:
 
         sql = """
             SELECT
-	         product.id
-	        , product.name
+                product.id
+                , product.name
                 , product.seller_id AS seller_id
                 , seller.name AS seller_name
-	        , product.origin_price
-	        , product.discount_rate
+                , product.origin_price
+                , product.discount_rate
                 , product.discounted_price
-                , product.detail_infomation
                 , product_sales_volume.sales_count
                 , bookmark.bookmark_count
                 , EXISTS(
@@ -264,15 +268,15 @@ class ProductListDao:
                         AND is_deleted =0
                     ) AS is_bookmarked
             FROM
-	        products AS product
-	    INNER JOIN sellers AS seller
-		ON product.seller_id = seller.account_id
-	    INNER JOIN product_sales_volumes AS product_sales_volume
-		ON product_sales_volume.product_id = product.id
+                products AS product
+            INNER JOIN sellers AS seller
+                ON product.seller_id = seller.account_id
+            INNER JOIN product_sales_volumes AS product_sales_volume
+                ON product_sales_volume.product_id = product.id
             INNER JOIN bookmark_volumes AS bookmark
                 ON bookmark.product_id = product.id
             WHERE 
-	        product.id = %(product_id)s
+                product.id = %(product_id)s
                 AND product.is_deleted = 0
                 ;
         """

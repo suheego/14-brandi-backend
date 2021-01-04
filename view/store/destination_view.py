@@ -21,6 +21,9 @@ class DestinationDetailView(MethodView):
     def get(self, destination_id):
         """GET 메소드: 배송지 상세정보 조회
 
+        pass converter 로 받은 destination_id 에 해당하는
+        배송지 상세정보를 조회, 반환해준다.
+
         Args:
             destination_id : url pass_parameter 로 입력받은 값
 
@@ -64,6 +67,8 @@ class DestinationView(MethodView):
     @signin_decorator(True)
     def get(self):
         """GET 메소드:   해당 유저에 대한 배송지 정보 받아오기
+
+        유저에 관련된 모든 배송지 정보를 조회 및 반환한다.
 
         Args:
             g.account_id: 데코레이터에서 넘겨받은 유저 정보
@@ -114,6 +119,9 @@ class DestinationView(MethodView):
     )
     def post(self, *args):
         """POST 메소드:  배송지 추가
+
+        사용자가 입력한 배송지 정보를 받아 데이터베이스에 추가한다.
+        최대 배송지 생성 개수는 5개이다.
 
         Args:
             args =('recipient',
@@ -182,6 +190,8 @@ class DestinationView(MethodView):
     )
     def patch(self, *args):
         """ PATCH 메소드: 배송지 정보 수정
+
+            사용자가 입력한 배송지 정보를 받아 수정한다.
             
             Args: destination_id
 

@@ -24,7 +24,10 @@ class ProductDetailView(MethodView):
     
     @signin_decorator(False)
     def get(self, product_id):
-        """ GET 메소드: 상품 상세정보 검색
+        """ GET 메소드: 상품 상세정보 조회
+
+         pass converter 로 받은 product_id 해당하는
+         상품상세 정보를 조회 반환해준다.
 
         Args:
 
@@ -69,6 +72,9 @@ class ProductSearchView(MethodView):
             )
     def get(self, *args):
         """ GET 메소드: 상품 검색 
+
+        사용자가 입력한 검색 키워드로 해당하는 상품이름,
+        셀러이름을 조회해서반환해준다.
 
         Args:
             search   : 검색키워드
