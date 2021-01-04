@@ -20,7 +20,7 @@ class OrderView(MethodView):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    #@signin_decorator
     @validate_params(
         Param('status', GET, int),
         Param('number', GET, str, required=False),
@@ -38,8 +38,10 @@ class OrderView(MethodView):
     )
     def get(self, *args):
         data = {
-            'permission': g.permission_type_id,
-            'account': g.acount_id,
+            #'permission': g.permission_type_id,
+            #'account': g.acount_id,
+            'permission': 1,
+            'account': 1,
             'status': args[0],
             'number': args[1],
             'detail_number': args[2],
