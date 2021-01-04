@@ -63,3 +63,102 @@ class EnquiryView(MethodView):
                     connection.close()
             except Exception:
                 raise DatabaseCloseFail('database close fail')
+
+
+class AnswerView(MethodView):
+
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+
+    @validate_params(
+        Param('enquiry_id', PATH, int, required=True)
+    )
+    def get(self, *args):
+        data = {
+            'enquiry_id': args[0]
+        }
+
+        try:
+            connection = get_connection(self.database)
+            result = self.service.get_answer_service(connection, data)
+            return jsonify({'message': 'success', 'result': result})
+
+        except Exception as e:
+            raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+    @validate_params(
+        Param('enquiry_id', PATH, int),
+        Param('answer', JSON, str)
+    )
+    def post(self, *args):
+        data = {
+            'enquiry_id': args[0],
+            'answer': args[1]
+        }
+        try:
+            connection = get_connection(self.database)
+            self.service.post_answer_service(connection, data)
+            connection.commit()
+            return {'message': 'success'}
+        except Exception as e:
+            raise e
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+    @validate_params(
+        Param('enquiry_id', PATH, int),
+        Param('answer', JSON, str)
+    )
+    def put(self, *args):
+        data = {
+            'enquiry_id': args[0],
+            'answer': args[1]
+        }
+
+        try:
+            connection = get_connection(self.database)
+            self.service.put_answer_service(connection, data)
+            connection.commit()
+            return {'message': 'success'}
+        except Exception as e:
+            raise e
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+    @validate_params(
+        Param('enquiry_id', PATH, int),
+    )
+    def delete(self, *args):
+        data = {
+            'enquiry_id': args[0]
+        }
+
+        try:
+            connection = get_connection(self.database)
+            self.service.delete_answer_service(connection, data)
+            connection.commit()
+            return {'message': 'success'}
+        except Exception as e:
+            raise e
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')

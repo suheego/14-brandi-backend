@@ -1,5 +1,5 @@
 import pymysql
-from utils.custom_exceptions import EnquiryDoesNotExist
+from utils.custom_exceptions import EnquiryDoesNotExist, AnswerCreateFail
 
 
 class EnquiryDao:
@@ -104,7 +104,7 @@ class EnquiryDao:
                     ON product.seller_id = seller.account_id
                 LEFT JOIN enquiry_replies AS enquiry_reply 
                     ON enquiry.id = enquiry_reply.enquiry_id
-                INNER JOIN accounts AS account 
+                LEFT JOIN accounts AS account 
                     ON enquiry_reply.account_id = account.id
                 WHERE enquiry.is_deleted = 0
         """
@@ -151,3 +151,143 @@ class EnquiryDao:
             cursor.execute(total_count_sql, data)
             count = cursor.fetchone()
             return {'enquiries': enquiries, 'total_count': count['total_count']}
+
+    def get_answer_detail(self, connection, data):
+
+        sql = """
+            SELECT 
+                enquiry.id,
+                enquiry_type.`name` AS enquiry_type,
+                account.username AS username,
+                customer_information.name AS name,
+                customer_information.phone AS phone,
+                product.`name` AS product_name,
+                product_image.image_url AS product_image,
+                enquiry.content AS question,
+                enquiry.created_at AS registration_date,
+                CASE WHEN enquiry.is_secret = 0 THEN '비공개' ELSE '공개' END AS is_secret
+            FROM 
+                enquiries AS enquiry
+                INNER JOIN enquiry_types AS enquiry_type 
+                    ON enquiry.enquiry_type_id = enquiry_type.id
+                INNER JOIN `users` AS `user` 
+                    ON enquiry.user_id = `user`.account_id
+                LEFT JOIN customer_information AS customer_information
+                    ON `user`.account_id = customer_information.account_id
+                INNER JOIN products AS product 
+                    ON enquiry.product_id = product.id
+                INNER JOIN product_images AS product_image
+                    ON product.id = product_image.product_id
+                INNER JOIN sellers AS seller
+                    ON product.seller_id = seller.account_id
+                LEFT JOIN enquiry_replies AS enquiry_reply 
+                    ON enquiry.id = enquiry_reply.enquiry_id
+                LEFT JOIN accounts AS account 
+                    ON enquiry_reply.account_id = account.id
+                WHERE 
+                    enquiry.is_deleted = 0
+                    AND enquiry.id = %(enquiry_id)s;                    
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+            answer = cursor.fetchone()
+            if not answer:
+                raise EnquiryDoesNotExist('answer does not exist')
+            return answer
+
+    def post_answer(self, connection, data):
+
+        validate_sql = """
+        SELECT 
+            EXISTS(
+                SELECT id 
+                FROM enquiry_replies 
+                WHERE enquiry_id = %(enquiry_id)s
+                AND is_deleted = 0
+            ) AS validate
+        """
+
+        sql = """
+            INSERT INTO
+                enquiry_replies (
+                content
+                , enquiry_id
+                , account_id
+                )
+            VALUES (
+                %(answer)s
+                , %(enquiry_id)s
+                , 1
+                )
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(validate_sql, data)
+            validate = cursor.fetchone()
+            if validate['validate']:
+                raise AnswerCreateFail("answer already exists")
+            cursor.execute(sql, data)
+            result = cursor.lastrowid
+            print(result)
+            if not result:
+                raise AnswerCreateFail('unable_to_create')
+            return result
+
+    def put_answer(self, connection, data):
+
+        validate_sql = """
+                SELECT 
+                    EXISTS(
+                        SELECT id 
+                        FROM enquiry_replies 
+                        WHERE enquiry_id = %(enquiry_id)s
+                        AND is_deleted = 0
+                    ) AS validate
+                """
+
+        sql = """
+                    UPDATE
+                        enquiry_replies
+                    SET
+                        content = %(answer)s
+                    WHERE
+                        enquiry_id = %(enquiry_id)s
+                """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(validate_sql, data)
+            validate = cursor.fetchone()
+            if not validate['validate']:
+                raise AnswerCreateFail("answer does not exist")
+            result = cursor.execute(sql, data)
+            return result
+
+    def delete_answer(self, connection, data):
+
+        validate_sql = """
+                SELECT 
+                    EXISTS(
+                        SELECT id 
+                        FROM enquiry_replies 
+                        WHERE enquiry_id = %(enquiry_id)s
+                        AND is_deleted = 0
+                    ) AS validate
+                """
+
+        sql = """
+                    UPDATE
+                        enquiry_replies
+                    SET
+                        is_deleted = 1
+                    WHERE
+                        enquiry_id = %(enquiry_id)s
+                """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(validate_sql, data)
+            validate = cursor.fetchone()
+            if not validate['validate']:
+                raise AnswerCreateFail("answer does not exist")
+            result = cursor.execute(sql, data)
+            return result

@@ -87,3 +87,31 @@ class EnquiryService:
 
         except Exception as e:
             raise e
+
+    def get_answer_service(self, connection, data):
+        try:
+            return self.enquiry_dao.get_answer_detail(connection, data)
+
+        except Exception as e:
+            raise e
+
+    def post_answer_service(self, connection, data):
+        try:
+            return self.enquiry_dao.post_answer(connection, data)
+
+        except Exception as e:
+            raise e
+
+    def put_answer_service(self, connection, data):
+        try:
+            return self.enquiry_dao.put_answer(connection, data)
+
+        except Exception as e:
+            raise e
+
+    def delete_answer_service(self, connection, data):
+        try:
+            return self.enquiry_dao.delete_answer(connection, data)
+
+        except Exception as e:
+            raise e

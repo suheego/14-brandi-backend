@@ -626,3 +626,12 @@ class EnquiryFilterNotExist(CustomUserError):
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
+
+
+class AnswerCreateFail(CustomUserError):
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'answer create'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
