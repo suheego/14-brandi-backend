@@ -40,24 +40,19 @@ class OrderService:
 
             data['length'] = int(data['length'])
             data['page'] = (data['page'] - 1) * data['length']
-            status = data['status']
 
             if data['sender_phone']:
                 data['sender_phone'] = data['sender_phone'].replace("-", "")
             if data['product_name']:
                 data['product_name'] = '%' + data['product_name'] + '%'
 
-
-            if status == 1:
+            if data['status'] == 1:
                 return self.admin_order_dao.get_product_prepare_dao(connection, data)
-            if status == 2:
-                print('dd')
-                result = self.admin_order_dao.get_shipping_dao(connection, data)
-                print('s')
-                return result
-            if status == 3:
+            if data['status'] == 2:
+                return self.admin_order_dao.get_shipping_dao(connection, data)
+            if data['status'] == 3:
                 return self.admin_order_dao.get_complete_delivery_dao(connection, data)
-            if status == 8:
+            if data['status'] == 8:
                 return self.admin_order_dao.get_confirmed_purchase_dao(connection, data)
 
         except KeyError:

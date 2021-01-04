@@ -38,6 +38,7 @@ class OrderDao:
                 `order`.sender_phone AS customer_phone,
                 order_item_status.`name` AS `status`
         """
+
         master_sql = """
             , seller.`name` AS seller_name,
             stock.extra_cost AS option_extra_cost,
@@ -65,10 +66,9 @@ class OrderDao:
                 AND order_item_status.id = %(status)s
         """
 
+        # 권한 조건 확인
         if data['permission'] == 1:
-            total_count_sql += master_sql
             sql += master_sql
-
         if data["permission"] == 2:
             extra_sql += "AND seller.account_id = %(account)s"
 
@@ -168,7 +168,7 @@ class OrderDao:
                 AND order_item_status.id = %(status)s
         """
 
-        # 검색 권한 조건
+        # 권한 조건 확인
         if data['permission'] == 1:
             sql += master_sql
         if data["permission"] == 2:
@@ -272,7 +272,7 @@ class OrderDao:
                 AND order_item_status.id = %(status)s
         """
 
-        # 검색 권한 조건
+        # 권한 조건 확인
         if data['permission'] == 1:
             sql += master_sql
         if data["permission"] == 2:
@@ -376,7 +376,7 @@ class OrderDao:
                 AND order_item_status.id = %(status)s
         """
 
-        # 검색 권한 조건
+        # 권한 조건 확인
         if data['permission'] == 1:
             sql += master_sql
         if data["permission"] == 2:
