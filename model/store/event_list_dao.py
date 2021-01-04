@@ -21,7 +21,7 @@ class EventListDao:
 
             Args:
                 connection : 데이터베이스 연결 객체
-                data       : 서비스에서 넘겨 받은 dict (offset, limit, is_proceeding)
+                data       : 서비스에서 넘겨 받은 dict (offset, is_proceeding)
 
             Returns: 해당 기획전 배너 30개 반환
                 [
@@ -34,7 +34,7 @@ class EventListDao:
                 ]
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2021-01-01(김민구): 초기 생성
@@ -58,7 +58,7 @@ class EventListDao:
                 )
             ORDER BY 
                 `event`.id ASC  
-            LIMIT %(offset)s, %(limit)s; 
+            LIMIT %(offset)s, 30; 
         """
 
         try:
@@ -90,7 +90,7 @@ class EventListDao:
                 }
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2021-01-01(김민구): 초기 생성
@@ -154,7 +154,7 @@ class EventListDao:
                 ]
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2021-01-01(김민구): 초기 생성
@@ -198,7 +198,7 @@ class EventListDao:
                 1 : 버튼이 있음
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2021-01-01(김민구): 초기 생성
@@ -256,7 +256,7 @@ class EventListDao:
                 ]
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2021-01-01(김민구): 초기 생성
@@ -292,7 +292,7 @@ class EventListDao:
                 AND product.is_display = 1
             ORDER BY
                 product.id DESC
-            LIMIT %(offset)s, %(limit)s;
+            LIMIT %(offset)s, 30;
         """
 
         try:
@@ -310,7 +310,7 @@ class EventListDao:
 
             Args:
                 connection : 데이터베이스 연결 객체
-                data       : 서비스에서 넘겨 받은 dict ( offset, limit, event_id )
+                data       : 서비스에서 넘겨 받은 dict ( offset, event_id )
 
             Returns: 30개의 상품을 반환
                 [
@@ -327,7 +327,7 @@ class EventListDao:
                 ]
 
             Raises:
-                500, {'message': 'database_error', 'errorMessage': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
 
             History:
                 2021-01-01(김민구): 초기 생성
@@ -362,7 +362,7 @@ class EventListDao:
                 AND product.is_display = 1
             ORDER BY
                 product.id DESC
-            LIMIT %(offset)s, %(limit)s;
+            LIMIT %(offset)s, 30;
         """
 
         try:

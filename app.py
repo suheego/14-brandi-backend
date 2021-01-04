@@ -41,6 +41,7 @@ from service import (
     SellerShopService,
     BookmarkService,
     EventListService,
+    ProductEnquiryService
 )
 
 
@@ -112,6 +113,7 @@ def create_app(test_config=None):
     services.seller_service = SellerService(seller_dao, app.config)
     services.create_product_service = CreateProductService(create_product_dao)
     services.bookmark_service = BookmarkService()
+    services.product_enquiry_list_service = ProductEnquiryService()
 
     services.seller_shop_service = SellerShopService(seller_shop_dao)
     

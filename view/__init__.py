@@ -23,11 +23,7 @@ from .store.sender_view import SenderView
 from .store.store_order_view import StoreOrderView, StoreOrderAddView
 from .store.bookmark_view import BookmarkView
 from .store.event_list_view import EventBannerListView, EventDetailInformationView, EventDetailProductListView, EventDetailButtonListView
-
-
-
-
-
+from .store.product_enquiry_view import ProductEnquiryListView, MyPageEnquiryListView
 
 from .store.seller_shop_view import SellerShopView, SellerShopSearchView, SellerShopCategoryView, SellerShopProductListView
 
@@ -185,6 +181,20 @@ def create_endpoints(app, services, database):
                         'event_detail_button_list_view',
                         services,
                         database
+                     ))
+
+    app.add_url_rule('/products/<int:product_id>/enquiries',
+                     view_func=ProductEnquiryListView.as_view(
+                         'product_enquiry_view',
+                         services,
+                         database
+                     ))
+
+    app.add_url_rule('/users/my-page/enquiries',
+                     view_func=MyPageEnquiryListView.as_view(
+                         'my_page_enquiry_view',
+                         services,
+                         database
                      ))
 
 # ----------------------------------------------------------------------------------------------------------------------

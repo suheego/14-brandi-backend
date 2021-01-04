@@ -21,3 +21,4 @@ from .store.store_order_dao import StoreOrderDao
 from .store.bookmark_dao import BookmarkDao
 from .store.event_list_dao import EventListDao
 from .store.seller_shop_dao import SellerShopDao
+from .store.product_enquiry_dao import ProductEnquiryDao

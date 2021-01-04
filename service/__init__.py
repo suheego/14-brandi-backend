@@ -21,3 +21,4 @@ from .store.store_order_service import StoreOrderService
 from .store.bookmark_service import BookmarkService
 from .store.event_list_service import EventListService
 from .store.seller_shop_service import SellerShopService
+from .store.product_enquiry_service import ProductEnquiryService
