@@ -213,6 +213,133 @@ class ProductListDao:
             traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
+    def get_product_image_dao(self, connection, data):
+        """ 상품 이미지들을 조회한다.
+
+            Args:
+                connection : 데이터베이스 연결 객체
+                offset     : 서비스에서 넘겨 받은 int
+
+            Author: 김기용
+
+            Returns:
+                {
+                    image_id: 1,
+                    images_url: www.example.com
+                }
+
+            Raises:
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+
+            History:
+                2020-01-00(김기용): 초기 생성
+        """
+
+        sql="""
+        SELECT DISTINCT
+            product_iamge.id
+            , product_image.image_url
+        FROM
+            product_images AS product_image
+        WHERE
+            product_id = %(product_id)s
+
+        """
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data)
+                images = cursor.fetchall()
+                return images 
+
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
+
+    def get_product_color_dao(self, connection, data):
+        """ 상품 컬러들을 조회한다.
+
+            Args:
+                connection : 데이터베이스 연결 객체
+                offset     : 서비스에서 넘겨 받은 int
+
+            Author: 김기용
+
+            Returns:
+                {
+                    color_id: 1,
+                    color_name: black
+                }
+
+            Raises:
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+
+            History:
+                2020-01-00(김기용): 초기 생성
+        """
+        sql = """
+            SELECT DISTINCT
+                color.name AS color_name
+                , color.id AS color_id
+            FROM
+                stocks
+            INNER JOIN colors as color
+                ON stocks.color_id = color.id
+            WHERE product_id = %(product_id)s
+            ;
+        """
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data)
+                color = cursor.fetchall()
+                return color
+
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
+
+    def get_product_size_dao(self, connection, data):
+        """ 상품 사이즈를 조회한다.
+
+            Args:
+                connection : 데이터베이스 연결 객체
+                offset     : 서비스에서 넘겨 받은 int
+
+            Author: 김기용
+
+            Returns:
+                {
+                    size_id: 1,
+                    size_name: black
+                }
+
+            Raises:
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+
+            History:
+                2020-01-00(김기용): 초기 생성
+        """
+        
+        sql = """
+            SELECT DISTINCT
+                size.id AS size_id
+                ,size.name AS size_name
+            FROM
+                stocks
+            INNER JOIN sizes as size
+                ON stocks.size_id = size.id
+            WHERE product_id = %(product_id)s
+            ;
+        """
+
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data)
+                sizes = cursor.fetchall()
+                return sizes
+
+        except Exception:
+            traceback.print_exc()
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_product_detail_dao(self, connection, data):
         """ 상품 검색 및 정렬
@@ -250,6 +377,7 @@ class ProductListDao:
             SELECT
                 product.id
                 , product.name
+                , product.detail_infomation
                 , product.seller_id AS seller_id
                 , seller.name AS seller_name
                 , product.origin_price
@@ -269,6 +397,8 @@ class ProductListDao:
                     ) AS is_bookmarked
             FROM
                 products AS product
+            INNER JOIN stocks AS stock
+                ON stock.product_id = product.id
             INNER JOIN sellers AS seller
                 ON product.seller_id = seller.account_id
             INNER JOIN product_sales_volumes AS product_sales_volume
