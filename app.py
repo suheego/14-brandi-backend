@@ -1,5 +1,3 @@
-import decimal
-
 from flask.json    import JSONEncoder
 from flask         import Flask
 from flask_cors    import CORS
@@ -7,18 +5,10 @@ from flask_cors    import CORS
 from view import create_endpoints
 
 #admin
-<<<<<<< HEAD
 from model import OrderDao, OrderDetailDao, EnquiryDao
-from model import SellerDao
-from model import ProductCreateDao
-
 from service import OrderService, EnquiryService
-=======
-from model import OrderDao, OrderDetailDao
-from service import OrderService
->>>>>>> 28e4185748f39951ec0fbfc549c2c18248b36830
 
-from model   import SellerInfoDao, SellerDao, ProductCreateDao, ProductManageDao
+from model   import SellerInfoDao, SellerDao
 from service import SellerService, SellerInfoService, ProductCreateService, ProductManageService
 
 
@@ -107,9 +97,6 @@ def create_app(test_config=None):
 
     seller_dao = SellerDao()
     seller_info_dao = SellerInfoDao()
-    # product_create_dao = ProductCreateDao()
-    # product_manage_dao = ProductManageDao()
-    
 
     # business Layer,   깔끔한 관리 방법을 생각하기
     
@@ -123,28 +110,27 @@ def create_app(test_config=None):
     services.product_list_service  = ProductListService()
     services.category_list_service = CategoryListService()
 
-    services.event_list_service = EventListService()
-    services.sender_service = SenderService(sender_dao)
-    services.event_service = EventService(event_dao)
-    services.seller_service = SellerService(app.config)
-    # services.create_product_service = ProductCreateService(product_create_dao)
-    services.bookmark_service = BookmarkService()
+    services.event_list_service           = EventListService()
+    services.sender_service               = SenderService(sender_dao)
+    services.event_service                = EventService(event_dao)
+    services.seller_service               = SellerService(app.config)
+    services.bookmark_service             = BookmarkService()
     services.product_enquiry_list_service = ProductEnquiryService()
-    services.seller_shop_service = SellerShopService(seller_shop_dao)
-    services.seller_info_service = SellerInfoService(seller_info_dao)
+    services.seller_shop_service          = SellerShopService(seller_shop_dao)
+    services.seller_info_service          = SellerInfoService(seller_info_dao)
 
     #admin1
-    services.event_service = EventService(event_dao)
-    services.order_service = OrderService(order_dao)
+    services.event_service        = EventService(event_dao)
+    services.order_service        = OrderService(order_dao)
     services.order_detail_service = OrderService(order_detail_dao)
-    services.enquiry_service = EnquiryService(enquiry_dao)
+    services.enquiry_service      = EnquiryService(enquiry_dao)
 
     #admin2
-    services.seller_service         = SellerService(app.config)
-    services.seller_info_service    = SellerInfoService(seller_info_dao)
-    services.product_create_service = ProductCreateService()
-    services.product_manage_service = ProductManageService()
-
+    services.seller_service          = SellerService(app.config)
+    services.seller_info_service     = SellerInfoService(seller_info_dao)
+    services.product_create_service  = ProductCreateService()
+    services.product_manage_service  = ProductManageService()
+    
     # presentation Layer
     create_endpoints(app, services, database)
 
