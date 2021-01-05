@@ -540,8 +540,8 @@ class EventSearchTwoInput(CustomUserError):
 
 class DateMissingOne(CustomUserError):
     def __init__(self, error_message):
-        status_code = 400
-        message = 'date inputs should be start_date and end_date'
+        status_code = 404
+        message = 'event not exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -557,7 +557,7 @@ class SearchTwoInput(CustomUserError):
 class EventDoesNotExist(CustomUserError):
     def __init__(self, error_message):
         status_code = 404
-        message = 'event not exist'
+        message = 'q&a not exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -577,6 +577,22 @@ class OrderFilterNotExist(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
+class EndDateIsInvalid(CustomUserError):
+    """ 날짜 조건이 올바르지 않음
+
+        Author: 김민서
+
+        History:
+            2021-01-05(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'end_date_is_invalid'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
 class OrderDoesNotExist(CustomUserError):
     """ 주문 리스트 없음
 
@@ -587,7 +603,7 @@ class OrderDoesNotExist(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'order does not exist'
+        message = 'order_does_not_exist'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
@@ -1173,5 +1189,48 @@ class ButtonProductDoesNotMatch(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         message = 'although there are product and button objects, no buttons are matched'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class EventDeleteDenied(CustomUserError):
+    """ 기획전 삭제 실패
+
+        Author: 강두연
+
+        History:
+            2021-01-04(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'event is not deleted'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class EnquiryDoesNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 404
+        message = 'q&a not exist'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class EnquiryFilterNotExist(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'must be date inputs or filter inputs'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
+class AnswerCreateFail(CustomUserError):
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'answer create'
         error_message = error_message
         super().__init__(status_code, message, error_message)

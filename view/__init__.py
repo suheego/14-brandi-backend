@@ -25,11 +25,12 @@ from .store.seller_shop_view import SellerShopView, SellerShopSearchView, Seller
 # admin1
 from .admin.order_view import OrderView, OrderDetailView
 from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
+from .admin.enquiry_view import EnquiryView, AnswerView
 
 # admin2
 
 from .admin.seller_view import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView, SellerStatusView, \
-    SellerPasswordView, SellerSearchView
+    SellerPasswordView, SellerSearchView, SellerListView
 from .admin.product_create_view import MainCategoriesListView, CreateProductView
 from .admin.product_manage_view import ProductManageSearchView, ProductManageDetailView
 
@@ -360,6 +361,22 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
+# 이성보 ◟( ˘ ³˘)◞ ♡
+# ----------------------------------------------------------------------------------------------------------------------
+    app.add_url_rule('/enquiries',
+                     view_func=EnquiryView.as_view(
+                         'enquiry_view',
+                         services.enquiry_service,
+                         database
+                     ))
+
+    app.add_url_rule('/answer/<int:enquiry_id>',
+                     view_func=AnswerView.as_view(
+                         'answer_view',
+                         services.enquiry_service,
+                         database
+                     ))
+# ----------------------------------------------------------------------------------------------------------------------
 # Admin 2 Section
 # ----------------------------------------------------------------------------------------------------------------------
 # 김영환 ◟( ˘ ³˘)◞ ♡
@@ -380,6 +397,12 @@ def create_endpoints(app, services, database):
     app.add_url_rule('/admin/search',
                      view_func=SellerSearchView.as_view(
                          'seller_search_view',
+                         seller_service,
+                         database
+                     ))
+    app.add_url_rule('/admin/sellers',
+                     view_func=SellerListView.as_view(
+                         'seller_list_view',
                          seller_service,
                          database
                      ))
