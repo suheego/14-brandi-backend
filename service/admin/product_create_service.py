@@ -52,7 +52,7 @@ class ProductCreateService:
             Raises:
                 400, {'message': 'key error',
                       'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키값
-
+                
                 400, {'message': 'required field is blank',
                       'errorMessage': 'required_manufacture_information'}: 제조 정보 필드 없음
                 
@@ -97,7 +97,6 @@ class ProductCreateService:
             if int(data['maximum_quantity']) == 0:
                 data['minimum_quantity'] = 20
             
-            # 상품 고시 정보 0 일 경우, 하위 필드 값 None 치환
             if int(data['is_product_notice']) == 0:
                 data['manufacturer'] = None
                 data['manufacturing_date'] = None
@@ -135,7 +134,6 @@ class ProductCreateService:
                 if data['discount_start_date'] and data['discount_end_date']:
                     
                     if data['discount_start_date'] > data['discount_end_date']:
-                        
                         raise DateCompareException('start_date_cannot_greater_than_end_date')
                 else:
                     data['discount_start_date'] = None
@@ -145,28 +143,10 @@ class ProductCreateService:
             
             return self.create_product_dao.insert_product(connection, data)
         
-        except CompareQuantityCheck as e:
-            traceback.print_exc()
-            raise e
-        
-        except RequiredFieldException as e:
-            traceback.print_exc()
-            raise e
-        
-        except RequiredFieldException as e:
-            traceback.print_exc()
-            raise e
-        
-        except DateCompareException as e:
-            traceback.print_exc()
-            raise e
-        
         except KeyError as e:
-            traceback.print_exc()
             raise e
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def update_product_code_service(self, connection, product_id):
@@ -204,11 +184,9 @@ class ProductCreateService:
             return data['product_code']
             
         except KeyError as e:
-            traceback.print_exc()
             raise e
         
         except Exception as e:
-            traceback.print_exc()
             raise e
 
     def create_product_images_service(self, connection, seller_id, product_id, product_code, product_images):
@@ -247,14 +225,13 @@ class ProductCreateService:
             
             History:
                 2020-12-29(심원두): 초기 생성
-                2020-01-03(심원두): 이미지 업로드 예외 처리 수정, 파일 손상 이슈 수정
+                2021-01-03(심원두): 이미지 업로드 예외 처리 수정, 파일 손상 이슈 수정
+                2021-01-05(심원두): S3 에 이미지 업로드 처리를, 예외처리 처리 후에 하도록 수정.
         """
         
         try:
             image_buffer   = []
-            file_name_list = []
             
-            # 이미지 유효성 검사
             for product_image in product_images:
                 if not product_image or not product_image.filename:
                     raise NotValidFileException('invalid_file')
@@ -265,7 +242,7 @@ class ProductCreateService:
                 image.save(buffer, image.format)
                 
                 product_image.seek(0, 2)
-                if product_image.tell() > 4194304:
+                if product_image.tell() > (1024 * 1024 * 4):
                     FileSizeException('file_size_too_large')
                 
                 buffer.seek(0)
@@ -279,7 +256,6 @@ class ProductCreateService:
                 
                 image_buffer.append(buffer)
             
-            # 이미지 업로드 to S3
             for index, buffer in enumerate(image_buffer):
                 file_path = GenerateFilePath().generate_file_path(
                     3,
@@ -297,8 +273,6 @@ class ProductCreateService:
                 if not url:
                     S3FileManager().file_delete(file_name)
                     raise FileUploadFailException('image file upload to amazon fail')
-
-                file_name_list.append(file_name)
                 
                 data = {
                     'image_url'  : url,
@@ -307,27 +281,8 @@ class ProductCreateService:
                 }
                 
                 self.create_product_dao.insert_product_image(connection, data)
-            
-            return file_name_list
-        
-        except NotValidFileException as e:
-            traceback.print_exc()
-            raise e
-        
-        except FileScaleException as e:
-            traceback.print_exc()
-            raise e
-        
-        except FileSizeException as e:
-            traceback.print_exc()
-            raise e
-        
-        except FileUploadFailException as e:
-            traceback.print_exc()
-            raise e
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def create_stock_service(self, connection, product_id, stocks):
@@ -347,7 +302,7 @@ class ProductCreateService:
             Raises:
                 400, {'message': 'key error',
                       'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키값
-
+            
                 500, {'message': 'stock create denied',
                       'errorMessage': 'unable_to_create_stocks'}: 상품 옵션 정보 등록 실패
             
@@ -374,7 +329,7 @@ class ProductCreateService:
                 
                 if not stock['isStockManage']:
                     stock['isStockManage'] = 0
-
+                
                 data['is_stock_manage'] = stock['isStockManage']
                 
                 if not stock['remain']:
@@ -383,11 +338,9 @@ class ProductCreateService:
                 self.create_product_dao.insert_stock(connection, data)
         
         except KeyError as e:
-            traceback.print_exc()
             raise e
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def create_product_history_service(self, connection, product_id, data):
@@ -430,11 +383,9 @@ class ProductCreateService:
             self.create_product_dao.insert_product_history(connection, data)
         
         except KeyError as e:
-            traceback.print_exc()
             raise e
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def create_product_sales_volumes_service(self, connection, product_id):
@@ -462,7 +413,6 @@ class ProductCreateService:
             self.create_product_dao.insert_product_sales_volumes(connection, product_id)
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def create_bookmark_volumes_service(self, connection, product_id):
@@ -490,7 +440,6 @@ class ProductCreateService:
             self.create_product_dao.insert_bookmark_volumes(connection, product_id)
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def main_category_list_service(self, connection):
@@ -580,11 +529,9 @@ class ProductCreateService:
             return result
         
         except KeyError as e:
-            traceback.print_exc()
             raise e
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def get_size_list_service(self, connection):
@@ -628,11 +575,9 @@ class ProductCreateService:
             return result
         
         except KeyError as e:
-            traceback.print_exc()
             raise e
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def get_product_origin_types_service(self, connection):
@@ -663,6 +608,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             product_origin_types = self.create_product_dao.get_product_origin_types(connection)
             
@@ -676,11 +622,9 @@ class ProductCreateService:
             return result
         
         except KeyError as e:
-            traceback.print_exc()
             raise e
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def search_seller_list_service(self, connection, data):
@@ -712,6 +656,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             if data['seller_name']:
                 data['seller_name'] = '%' + data['seller_name'] + '%'
@@ -733,11 +678,9 @@ class ProductCreateService:
             return result
         
         except KeyError as e:
-            traceback.print_exc()
             raise e
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def get_sub_category_list_service(self, connection, data):
@@ -769,6 +712,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             sub_category_list = \
                 self.create_product_dao.get_sub_category_list(
@@ -786,9 +730,7 @@ class ProductCreateService:
             return result
         
         except KeyError as e:
-            traceback.print_exc()
             raise e
         
         except Exception as e:
-            traceback.print_exc()
             raise e

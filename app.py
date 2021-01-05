@@ -45,7 +45,8 @@ from service import (
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
-        import datetime, decimal
+        import decimal
+        import datetime
         try:
             if isinstance(obj, datetime.date):
                 return obj.isoformat(sep=' ')

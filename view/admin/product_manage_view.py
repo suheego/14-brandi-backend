@@ -6,8 +6,8 @@ from flask_request_validator.rules  import NotEmpty
 
 from utils.connection        import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
+from utils.decorator         import signin_decorator
 from utils.rules             import NumberRule, PageRule, DateRule, DefaultRule
-from flask_request_validator.rules  import NotEmpty
 from flask_request_validator import (
     Param,
     GET,
@@ -34,6 +34,7 @@ class ProductManageSearchView(MethodView):
         self.service = service
         self.database = database
     
+    @signin_decorator()
     @validate_params(
         Param('lookup_start_date', GET, str,  required=False, rules=[DateRule(), NotEmpty()]),
         Param('lookup_end_date',   GET, str,  required=False, rules=[DateRule(), NotEmpty()]),
@@ -104,32 +105,34 @@ class ProductManageSearchView(MethodView):
                 'page_number'               : request.args.get('page_number'),
                 'limit'                     : request.args.get('limit')
             }
-            print(search_condition)
+            
+            search_condition_back_to_front = {
+                'lookup_start_date'     : search_condition['lookup_start_date'],
+                'lookup_end_date'       : search_condition['lookup_end_date'],
+                'seller_name'           : search_condition['seller_name'],
+                'product_name'          : search_condition['product_name'],
+                'product_id'            : search_condition['product_id'],
+                'product_code'          : search_condition['product_code'],
+                'seller_attribute_type' : search_condition['seller_attribute_type_ids'],
+                'is_sale'               : 0 if search_condition['is_sale'] is None
+                                          else int(search_condition['is_sale']),
+                'is_display'            : 0 if search_condition['is_display'] is None
+                                          else int(search_condition['is_display']),
+                'is_discount'           : 0 if search_condition['is_discount'] is None
+                                          else int(search_condition['is_discount']),
+                'page_number'           : int(search_condition['page_number']),
+                'limit'                 : int(search_condition['limit'])
+            }
             
             connection = get_connection(self.database)
             result     = self.service.search_product_service(connection, search_condition)
-            
-            # print(search_condition['is_sale'])
-            
-            search_condition_back_to_front = {
-                'lookup_start_date'         : search_condition['lookup_start_date'],
-                'lookup_end_date'           : search_condition['lookup_end_date'],
-                'seller_name'               : search_condition['seller_name'],
-                'product_name'              : search_condition['product_name'],
-                'product_id'                : search_condition['product_id'],
-                'product_code'              : search_condition['product_code'],
-                'seller_attribute_type_ids' : search_condition['seller_attribute_type_ids'],
-                'is_sale'                   : 0 if search_condition['is_sale'] is None
-                                              else int(search_condition['is_sale']),
-                'is_display'                : 0 if search_condition['is_display'] is None
-                                              else int(search_condition['is_display']),
-                'is_discount'               : 0 if search_condition['is_discount'] is None
-                                              else int(search_condition['is_discount']),
-            }
-            
             result['search_condition'] = search_condition_back_to_front
             
             return jsonify({'message': 'success', 'result': result})
+        
+        except KeyError as e:
+            traceback.print_exc()
+            raise e
         
         except Exception as e:
             traceback.print_exc()
@@ -159,6 +162,7 @@ class ProductManageDetailView(MethodView):
         self.service = service
         self.database = database
     
+    # @signin_decorator()
     @validate_params(
         Param('product_code', PATH, str, required=True, rules=[NotEmpty(), MaxLength(20)]),
     )
@@ -167,7 +171,7 @@ class ProductManageDetailView(MethodView):
 
             Args:
                 'product_code' : 상품 코드
-
+    
             Author: 심원두
 
             Returns:

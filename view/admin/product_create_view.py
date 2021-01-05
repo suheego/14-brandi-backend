@@ -6,13 +6,9 @@ from flask_request_validator.rules  import NotEmpty
 
 from utils.connection               import get_connection
 from utils.decorator                import signin_decorator
-from utils.custom_exceptions import (
-    DatabaseCloseFail, MainCategoryNotExist
-)
+from utils.custom_exceptions        import DatabaseCloseFail
+from utils.rules                    import NumberRule
 
-from utils.rules                    import (
-    NumberRule
-)
 from flask_request_validator import (
     Param,
     FORM,
@@ -39,7 +35,7 @@ class MainCategoriesListView(MethodView):
         self.service = service
         self.database = database
     
-    # @signin_decorator
+    @signin_decorator()
     def get(self, *args):
         """GET 메소드: 상품 정보 등록에 필요한 메인 카테고리 리스트 취득
 
@@ -79,42 +75,82 @@ class MainCategoriesListView(MethodView):
                 raise DatabaseCloseFail('database close fail')
 
 
+class SellerListView(MethodView):
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+    
+    @signin_decorator()
+    @validate_params(
+        Param('seller_name', GET, str, required=False, rules=[MaxLength(20)]),
+    )
+    def get(self, *args):
+        try:
+            connection = get_connection(self.database)
+            sellers    = {}
+            
+            if request.args.get('seller_name'):
+                data = {
+                    'seller_name': request.args.get('seller_name'),
+                }
+                
+                sellers = self.service.search_seller_list_service(
+                    connection,
+                    data
+                )
+                
+                return jsonify({'message': 'success', 'result': sellers})
+            
+            return jsonify({'message': 'success', 'result': sellers})
+        
+        except Exception as e:
+            traceback.print_exc()
+            raise e
+        
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+
 class CreateProductView(MethodView):
     """ Presentation Layer
-
+        
         Attributes:
             service  : CreateProductService 클래스
             database : app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
-
+        
         Author: 심원두
-
+        
         History:
             2020-12-29(심원두): 초기 생성. products insert, product_code updated, product_histories 생성 기능 작성
             2020-12-30(심원두): 각 Param rules 추가, stock insert 기능 작성.
             2020-01-03(심원두): 상품 등록 Param rules 추가
     """
-
+    
     def __init__(self, service, database):
         self.service = service
         self.database = database
-
-    # @signin_decorator
+    
+    # @signin_decorator()
     @validate_params(
         Param('seller_name',      GET, str, required=False, rules=[MaxLength(20)]),
         Param('main_category_id', GET, str, required=False, rules=[NumberRule()])
     )
     def get(self, *args):
         """POST 메소드: 상품 정보 등록 초기 화면
-
+            
             Args:
                 'seller_name'      : 사용자가 입력한 셀러명
                 'main_category_id' : 사용자가 선택한 메인 카테고리 아이디
-
+            
             Author: 심원두
-
+            
             Returns:
                 return {"message": "success", "result": [{}]}
-
+            
             Raises:
                 400, {'message': 'key error',
                       'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키값
@@ -139,8 +175,8 @@ class CreateProductView(MethodView):
             result = dict()
             
             data = {
-                'seller_name'     : request.args.get('seller_name', None),
-                'main_category_id': request.args.get('main_category_id', None)
+                'seller_name'      : request.args.get('seller_name', None),
+                'main_category_id' : request.args.get('main_category_id', None)
             }
             
             connection = get_connection(self.database)
@@ -150,7 +186,7 @@ class CreateProductView(MethodView):
                     connection,
                     data
                 )
-
+            
                 return jsonify({'message': 'success', 'result': sellers})
             
             if data['main_category_id']:
@@ -177,10 +213,15 @@ class CreateProductView(MethodView):
                 )
             
             return jsonify({'message': 'success', 'result': result})
-
-        except Exception as e:
+        
+        except KeyError as e:
+            traceback.print_exc()
             raise e
-
+        
+        except Exception as e:
+            traceback.print_exc()
+            raise e
+        
         finally:
             try:
                 if connection:
@@ -188,6 +229,7 @@ class CreateProductView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database close fail')
     
+    # @signin_decorator()
     @validate_params(
         Param('seller_id',              FORM, str,  required=True,  rules=[NumberRule()]),
         Param('account_id',             FORM, str,  required=True,  rules=[NumberRule()]),
@@ -240,7 +282,7 @@ class CreateProductView(MethodView):
                 'discount_start_date',
                 'discount_end_date',
             )
-
+            
             Author: 심원두
 
             Returns:
@@ -285,10 +327,15 @@ class CreateProductView(MethodView):
 
                 500, {'message': 'internal_server_error',
                       'errorMessage': format(e)})                                : 서버 에러
+            
             History:
                 2020-12-29(심원두): 초기 생성
-                2020-01-03(심원두): 발리데이터 추가
+                2021-01-03(심원두): 파라미터 유효성 검사 추가 Enum(), NotEmpty()
+                2021-01-05(심원두): -이미지 저장 처리 순서를 3번째에서 가장 마지막으로 내림. 테이블 인서트 처리에 문제가 있을 경우,
+                                    S3에 올라간 이미지는 롤백을 할 수 없는 이슈 반영.
+                                   -북마크 테이블 초기 등록 처리 추가.
         """
+        
         try:
             data = {
                 'seller_id'             : request.form.get('seller_id'),
@@ -313,9 +360,9 @@ class CreateProductView(MethodView):
                 'discount_end_date'     : request.form.get('discount_end_date', None)
             }
             
+            connection     = get_connection(self.database)
             product_images = request.files.getlist("image_files")
             stocks         = json.loads(request.form.get('options'))
-            connection     = get_connection(self.database)
             
             product_id = self.service.create_product_service(
                 connection,
@@ -327,26 +374,18 @@ class CreateProductView(MethodView):
                 product_id
             )
             
-            file_name_list = self.service.create_product_images_service(
-                connection,
-                data['seller_id'],
-                product_id,
-                product_code,
-                product_images
-            )
-            
             self.service.create_stock_service(
                 connection,
                 product_id,
                 stocks
             )
-
+            
             self.service.create_product_history_service(
                 connection,
                 product_id,
                 data
             )
-
+            
             self.service.create_product_sales_volumes_service(
                 connection,
                 product_id
@@ -357,15 +396,26 @@ class CreateProductView(MethodView):
                 product_id
             )
             
+            self.service.create_product_images_service(
+                connection,
+                data['seller_id'],
+                product_id,
+                product_code,
+                product_images
+            )
+            
             connection.commit()
             
             return jsonify({'message': 'success'}), 200
             
+        except KeyError as e:
+            traceback.print_exc()
+            connection.rollback()
+            raise e
+            
         except Exception as e:
             traceback.print_exc()
             connection.rollback()
-            # self.service.delete_image_service(connection, file_name_list)
-            
             raise e
         
         finally:

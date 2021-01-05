@@ -204,6 +204,8 @@ class ProductManageService:
             
             result = {
                 'product_detail' : {
+                    'seller_id'                : product_detail['seller_id'],
+                    'seller_name'              : product_detail['seller_name'],
                     'product_code'             : product_detail['product_code'],
                     'is_sale'                  : product_detail['is_sale'],
                     'is_display'               : product_detail['is_display'],

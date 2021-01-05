@@ -1,4 +1,3 @@
-import traceback
 import pymysql
 
 from utils.custom_exceptions import (
@@ -94,6 +93,7 @@ class ProductCreateDao:
             ,%(account_id)s
         );
         """
+        
         try:
             with connection.cursor() as cursor:
                 cursor.execute(sql, data)
@@ -104,12 +104,7 @@ class ProductCreateDao:
                 
                 return product_id
         
-        except ProductCreateDenied as e:
-            traceback.print_exc()
-            raise e
-        
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def update_product_code(self, connection, data):
@@ -133,6 +128,7 @@ class ProductCreateDao:
                 500, {'message': 'product code update denied',
                       'errorMessage': 'unable_to_update_product_code'} : 상품 코드 갱신 실패
         """
+        
         sql = """
             UPDATE
                 products
@@ -143,20 +139,15 @@ class ProductCreateDao:
             AND
                 is_deleted = 0;
         """
+        
         try:
             with connection.cursor() as cursor:
                 result = cursor.execute(sql, data)
                 
                 if not result:
-                    traceback.print_exc()
                     raise ProductCodeUpdatedDenied('unable_to_update_product_code')
-
-        except ProductCodeUpdatedDenied as e:
-            traceback.print_exc()
-            raise e
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def insert_product_image(self, connection, data):
@@ -180,6 +171,7 @@ class ProductCreateDao:
                 500, {'message': 'product image create denied',
                       'errorMessage': 'unable_to_create_product_image'} : 상품 이미지 정보 등록 실패
         """
+        
         sql = """
         INSERT INTO product_images(
             `image_url`
@@ -191,23 +183,18 @@ class ProductCreateDao:
             ,%(order_index)s
         );
         """
+        
         try:
             with connection.cursor() as cursor:
                 cursor.execute(sql, data)
                 result = cursor.lastrowid
                 
                 if not result:
-                    traceback.print_exc()
                     raise ProductImageCreateDenied('unable_to_create_product_image')
                 
                 return result
         
-        except ProductImageCreateDenied as e:
-            traceback.print_exc()
-            raise e
-        
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def insert_stock(self, connection, data):
@@ -231,6 +218,7 @@ class ProductCreateDao:
                 500, {'message': 'stock create denied', 'errorMessage': 'unable_to_create_stocks'}
                 : 상품 이미지 정보 등록 실패
         """
+        
         sql = """
             INSERT INTO stocks(
                  `product_option_code`
@@ -248,22 +236,17 @@ class ProductCreateDao:
                 ,%(product_id)s
             );
         """
+        
         try:
             with connection.cursor() as cursor:
                 result = cursor.execute(sql, data)
                 
                 if not result:
-                    traceback.print_exc()
                     raise StockCreateDenied('unable_to_create_stocks')
                 
                 return result
-        
-        except StockCreateDenied as e:
-            traceback.print_exc()
-            raise e
-        
+            
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def insert_product_history(self, connection, data):
@@ -287,6 +270,7 @@ class ProductCreateDao:
                 500, {'message': 'product history create denied',
                       'errorMessage': 'unable_to_create_product_history'} : 상품 이미지 정보 등록 실패
         """
+        
         sql = """
             INSERT INTO product_histories (
                 `product_id`
@@ -316,6 +300,7 @@ class ProductCreateDao:
                 ,%(account_id)s
             );
         """
+        
         try:
             with connection.cursor() as cursor:
                 result = cursor.execute(sql, data)
@@ -325,12 +310,7 @@ class ProductCreateDao:
                 
                 return result
         
-        except ProductHistoryCreateDenied as e:
-            traceback.print_exc()
-            raise e
-        
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def insert_product_sales_volumes(self, connection, product_id):
@@ -354,6 +334,7 @@ class ProductCreateDao:
                 500, {'message': 'product sales volume create denied',
                       'errorMessage': 'unable_to_create_product_sales_volumes'} : 상품 판매량 정보 생성 실패
         """
+        
         sql = """
             INSERT INTO product_sales_volumes (
                 `product_id`
@@ -371,12 +352,7 @@ class ProductCreateDao:
                 
                 return result
         
-        except ProductSalesVolumeCreateDenied as e:
-            traceback.print_exc()
-            raise e
-        
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def insert_bookmark_volumes(self, connection, product_id):
@@ -397,12 +373,7 @@ class ProductCreateDao:
                 
                 return result
         
-        except ProductSalesVolumeCreateDenied as e:
-            traceback.print_exc()
-            raise e
-    
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def get_product_origin_types(self, connection):
@@ -446,12 +417,7 @@ class ProductCreateDao:
                 
                 return result
         
-        except ProductOriginTypesNotExist as e:
-            traceback.print_exc()
-            raise e
-        
         except Exception as e:
-            traceback.print_exc()
             raise e
 
     def get_size_list(self, connection):
@@ -473,6 +439,7 @@ class ProductCreateDao:
                 500, {'message': 'fail to get size list',
                       'errorMessage': 'fail_to_get_size_list'} : 사이즈 정보 취득 실패
         """
+        
         sql = """
             SELECT
                 id
@@ -495,12 +462,7 @@ class ProductCreateDao:
     
                 return result
         
-        except SizeNotExist as e:
-            traceback.print_exc()
-            raise e
-        
         except Exception as e:
-            traceback.print_exc()
             raise e
 
     def get_color_list(self, connection):
@@ -522,6 +484,7 @@ class ProductCreateDao:
                 500, {'message': 'fail to get color list',
                       'errorMessage': 'fail_to_get_color_list'}: 색상 정보 취득 실패
         """
+        
         sql = """
             SELECT
                 id
@@ -533,6 +496,7 @@ class ProductCreateDao:
             ORDER BY
                 id;
         """
+        
         try:
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
                 cursor.execute(sql)
@@ -543,12 +507,7 @@ class ProductCreateDao:
     
                 return result
         
-        except ColorNotExist as e:
-            traceback.print_exc()
-            raise e
-        
         except Exception as e:
-            traceback.print_exc()
             raise e
 
     def search_seller_list(self, connection, data):
@@ -568,6 +527,7 @@ class ProductCreateDao:
                 2020-12-31(심원두): 메세지 수정
             
         """
+        
         sql = """
             SELECT
                 account_id AS 'seller_id'
@@ -578,7 +538,8 @@ class ProductCreateDao:
             WHERE
                 is_deleted = 0
                 AND `name` LIKE %(seller_name)s
-            ORDER BY name
+            ORDER BY
+                `name`
         """
         
         try:
@@ -588,7 +549,6 @@ class ProductCreateDao:
                 return result
         
         except Exception as e:
-            traceback.print_exc()
             raise e
     
     def get_main_category_list(self, connection):
@@ -610,6 +570,7 @@ class ProductCreateDao:
                 500, {'message': 'fail to get main category list',
                       'errorMessage': 'fail_to_get_main_category_list'}: 메인 카테고리 정보 취득 실패
         """
+        
         sql = """
             SELECT
                 id
@@ -628,15 +589,12 @@ class ProductCreateDao:
                 result = cursor.fetchall()
                 if not result:
                     raise MainCategoryNotExist('fail_to_get_main_category_list')
-    
-                return result
         
-        except MainCategoryNotExist as e:
-            raise e
+                return result
         
         except Exception as e:
             raise e
-    
+        
     def get_sub_category_list(self, connection, data):
         """ 메인 카테고리에 따른 서브 카테고리 정보 취득
         
@@ -657,6 +615,7 @@ class ProductCreateDao:
                 500, {'message': 'fail to get sub category list',
                       'errorMessage': 'fail_to_get_sub_category_list'}: 색상 정보 취득 실패
         """
+        
         sql = """
             SELECT
                 sub_category.id AS 'sub_category_id'
@@ -680,10 +639,5 @@ class ProductCreateDao:
     
                 return result
         
-        except SubCategoryNotExist as e:
-            traceback.print_exc()
-            raise e
-        
         except Exception as e:
-            traceback.print_exc()
             raise e

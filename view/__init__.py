@@ -30,7 +30,7 @@ from .admin.event_view import EventView, EventDetailView, EventProductsCategoryV
 
 from .admin.seller_view import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView, SellerStatusView, \
     SellerPasswordView, SellerSearchView
-from .admin.product_create_view import MainCategoriesListView, CreateProductView
+from .admin.product_create_view import MainCategoriesListView, CreateProductView, SellerListView
 from .admin.product_manage_view import ProductManageSearchView, ProductManageDetailView
 
 
@@ -390,11 +390,18 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
     app.add_url_rule('/admin/product/productRegist/main_category',
                      view_func=MainCategoriesListView.as_view(
-                         'main_category_view',
+                         'main_category_list_view',
                          product_create_service,
                          database
                      ))
-
+    
+    app.add_url_rule('/admin/product/productRegist/seller_list',
+                     view_func=SellerListView.as_view(
+                         'seller_search_view_for_product_create',
+                         product_create_service,
+                         database
+                     ))
+    
     app.add_url_rule('/admin/product/productRegist',
                      view_func=CreateProductView.as_view(
                          'product_create_view',
