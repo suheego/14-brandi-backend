@@ -548,6 +548,22 @@ class OrderFilterNotExist(CustomUserError):
         super().__init__(status_code, message, error_message)
 
 
+class EndDateIsInvalid(CustomUserError):
+    """ 날짜 조건이 올바르지 않음
+
+        Author: 김민서
+
+        History:
+            2021-01-05(김민서): 초기생성
+    """
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'end_date_is_invalid'
+        error_message = error_message
+
+        super().__init__(status_code, message, error_message)
+
+
 class OrderDoesNotExist(CustomUserError):
     """ 주문 리스트 없음
 
@@ -558,7 +574,7 @@ class OrderDoesNotExist(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'order does not exist'
+        message = 'order_does_not_exist'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)
