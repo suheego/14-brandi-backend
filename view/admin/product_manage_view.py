@@ -1,6 +1,6 @@
 import traceback
 
-from flask                          import jsonify, request, json
+from flask                          import jsonify, request, json, g
 from flask.views                    import MethodView
 from flask_request_validator.rules  import NotEmpty
 
@@ -90,6 +90,7 @@ class ProductManageSearchView(MethodView):
         
         try:
             search_condition = {
+                'seller_id'                 : g.account_id if g.permission_type_id == 2 else None,
                 'lookup_start_date'         : request.args.get('lookup_start_date', None),
                 'lookup_end_date'           : request.args.get('lookup_end_date', None),
                 'seller_name'               : request.args.get('seller_name', None),
@@ -162,7 +163,7 @@ class ProductManageDetailView(MethodView):
         self.service = service
         self.database = database
     
-    # @signin_decorator()
+    @signin_decorator()
     @validate_params(
         Param('product_code', PATH, str, required=True, rules=[NotEmpty(), MaxLength(20)]),
     )

@@ -1,11 +1,10 @@
 import io
 import uuid
-import traceback
 
 from PIL                     import Image
-from werkzeug.utils          import secure_filename
 
 from config                  import S3_BUCKET_URL
+from model                   import ProductCreateDao
 from utils.amazon_s3         import S3FileManager, GenerateFilePath
 from utils.custom_exceptions import (
     RequiredFieldException,
@@ -34,8 +33,8 @@ class ProductCreateService:
             2020-01-03(심원두): 이미지 등록 예외 처리 수정, 업로드 시 파일 손상 이슈 수정
     """
     
-    def __init__(self, create_product_dao):
-        self.create_product_dao = create_product_dao
+    def __init__(self):
+        self.create_product_dao = ProductCreateDao()
     
     def create_product_service(self, connection, data):
         """ product 생성
@@ -78,8 +77,8 @@ class ProductCreateService:
                       'errorMessage': 'discounted_price_have_to_same_with_origin_price'}: 할인가, 판매가 불일치(할인율 0)
                 
                 500, {'message': 'product create denied',
-                      'errorMessage': 'unable_to_create_product'}               : 상품 정보 등록 실패
-            
+                      'errorMessage': 'unable_to_create_product'}: 상품 정보 등록 실패
+                
             History:
                 2020-12-29(심원두): 초기 생성
                 2020-12-30(심원두): 예외처리 구현
@@ -103,11 +102,10 @@ class ProductCreateService:
                 data['product_origin_type_id'] = None
                 
             else:
-                # 상품 고시 정보 1일 경우 하위 필드 값 필수 필드 체크
+                
                 if not data['manufacturer'] or not data['manufacturing_date'] or not data['product_origin_type_id']:
                     raise RequiredFieldException('required_manufacture_information')
             
-            # 할인율 0 일 경우, 할인가 = 판매가 처리
             if int(data['discount_rate']) == 0:
                 data['discounted_price'] = data['origin_price']
                 data['discount_start_date'] = None
@@ -115,16 +113,13 @@ class ProductCreateService:
                 
             else:
                 
-                # 할인율 0 이 아닐 경우
                 if float(data['discounted_price']) > float(data['origin_price']):
                     raise ComparePriceCheck('discounted_price_cannot_greater_than_origin_price')
                 
-                # [판매가 - 할인가격 != 할인가] 의 경우
                 if (float(data['origin_price']) * (1 - float(data['discount_rate']) / 100)) != \
                     float(data['discounted_price']):
                     raise ComparePriceCheck('wrong_discounted_price')
                 
-                # 할인율이 0이 아닌 경우, [할인 시작 일자, 할이 종료 일자] 필수 체크
                 if data['discount_start_date'] and not data['discount_end_date']:
                     raise RequiredFieldException('required_discount_start_or_end_date')
                 
@@ -135,10 +130,11 @@ class ProductCreateService:
                     
                     if data['discount_start_date'] > data['discount_end_date']:
                         raise DateCompareException('start_date_cannot_greater_than_end_date')
+                
                 else:
                     data['discount_start_date'] = None
                     data['discount_end_date'] = None
-            
+                    
             data['discount_rate'] = float(data['discount_rate']) / 100
             
             return self.create_product_dao.insert_product(connection, data)
@@ -315,7 +311,6 @@ class ProductCreateService:
             data = {}
             
             for stock in stocks:
-                # 상품 옵션 코드 생성
                 product_option_code = \
                     str(product_id) + \
                     str(stock['color']).zfill(3) + \
@@ -367,6 +362,7 @@ class ProductCreateService:
             History:
                 2020-12-29(심원두): 초기 생성
         """
+        
         try:
             data['product_id']    = product_id
             data['discount_rate'] = float(data['discount_rate'])/100
@@ -408,6 +404,7 @@ class ProductCreateService:
             History:
                 2020-12-29(심원두): 초기 생성
         """
+        
         try:
             
             self.create_product_dao.insert_product_sales_volumes(connection, product_id)
@@ -435,6 +432,7 @@ class ProductCreateService:
             History:
                 2021-01-05(심원두): 초기 생성
         """
+        
         try:
             
             self.create_product_dao.insert_bookmark_volumes(connection, product_id)
@@ -470,6 +468,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             main_category_list = self.create_product_dao.get_main_category_list(connection)
             
@@ -516,6 +515,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             color_list = self.create_product_dao.get_color_list(connection)
             
@@ -562,6 +562,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             size_list = self.create_product_dao.get_size_list(connection)
             

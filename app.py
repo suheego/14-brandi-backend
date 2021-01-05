@@ -98,9 +98,9 @@ def create_app(test_config=None):
 
     seller_dao = SellerDao()
     seller_info_dao = SellerInfoDao()
-    product_create_dao = ProductCreateDao()
-    product_manage_dao = ProductManageDao()
-
+    # product_create_dao = ProductCreateDao()
+    # product_manage_dao = ProductManageDao()
+    
 
     # business Layer,   깔끔한 관리 방법을 생각하기
     
@@ -118,7 +118,7 @@ def create_app(test_config=None):
     services.sender_service = SenderService(sender_dao)
     services.event_service = EventService(event_dao)
     services.seller_service = SellerService(app.config)
-    services.create_product_service = ProductCreateService(product_create_dao)
+    # services.create_product_service = ProductCreateService(product_create_dao)
     services.bookmark_service = BookmarkService()
     services.product_enquiry_list_service = ProductEnquiryService()
     services.seller_shop_service = SellerShopService(seller_shop_dao)
@@ -132,8 +132,8 @@ def create_app(test_config=None):
     #admin2
     services.seller_service         = SellerService(app.config)
     services.seller_info_service    = SellerInfoService(seller_info_dao)
-    services.product_create_service = ProductCreateService(product_create_dao)
-    services.product_manage_service = ProductManageService(product_manage_dao)
+    services.product_create_service = ProductCreateService()
+    services.product_manage_service = ProductManageService()
 
     # presentation Layer
     create_endpoints(app, services, database)

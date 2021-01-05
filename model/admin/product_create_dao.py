@@ -48,6 +48,7 @@ class ProductCreateDao:
             500, {'message': 'product create denied',
                   'errorMessage': 'unable_to_create_product'} : 상품 정보 등록 실패
         """
+        
         sql = """
         INSERT INTO products (
             `is_display`
@@ -215,8 +216,8 @@ class ProductCreateDao:
                 2020-12-31(심원두): Docstring 수정
 
             Raises:
-                500, {'message': 'stock create denied', 'errorMessage': 'unable_to_create_stocks'}
-                : 상품 이미지 정보 등록 실패
+                500, {'message': 'stock create denied',
+                      'errorMessage': 'unable_to_create_stocks'}: 상품 이미지 정보 등록 실패
         """
         
         sql = """
