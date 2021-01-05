@@ -73,8 +73,8 @@ class Services:
 def create_app(test_config=None):
     app = Flask(__name__)
     app.debug = True
-
     app.json_encoder = CustomJSONEncoder
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
     # By default, submission of cookies across domains is disabled due to the security implications.
     CORS(app, resources={r'*': {'origins': '*'}})
 

@@ -206,7 +206,10 @@ class ProductManageDao:
         """
         sql = """
         SELECT
-            product.`product_code` AS 'product_code'
+            product.`id` AS 'product_id'
+            ,product.`product_code` AS 'product_code'
+            ,product.seller_id AS 'seller_id'
+            ,seller.`name` AS 'seller_name'
             ,product.`is_sale` AS 'is_sale'
             ,product.`is_display` AS 'is_display'
             ,product.main_category_id AS 'main_category_id'
@@ -229,14 +232,15 @@ class ProductManageDao:
             ,product.`minimum_quantity` AS 'minimum_quantity'
             ,product.`maximum_quantity` AS 'maximum_quantity'
             ,product.`updated_at` AS 'updated_at'
-            ,product.`id` AS 'product_id'
         FROM
             products AS product
+        INNER JOIN sellers AS seller
+            ON product.seller_id = seller.account_id
         INNER JOIN main_categories AS main_category
             ON product.main_category_id = main_category.id
         INNER JOIN sub_categories AS sub_category
             ON product.sub_category_id = sub_category.id
-        INNER JOIN product_origin_types AS product_origin_type
+        LEFT JOIN product_origin_types AS product_origin_type
             ON product.product_origin_type_id = product_origin_type.id
         WHERE
             product.is_deleted = 0

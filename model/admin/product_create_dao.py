@@ -98,12 +98,16 @@ class ProductCreateDao:
                 product_id = cursor.lastrowid
                 
                 if not product_id:
-                    traceback.print_exc()
                     raise ProductCreateDenied('unable_to_create_product')
                 
                 return product_id
         
+        except ProductCreateDenied as e:
+            traceback.print_exc()
+            raise e
+        
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def update_product_code(self, connection, data):
@@ -144,10 +148,13 @@ class ProductCreateDao:
                 if not result:
                     traceback.print_exc()
                     raise ProductCodeUpdatedDenied('unable_to_update_product_code')
-                
-                return result
+
+        except ProductCodeUpdatedDenied as e:
+            traceback.print_exc()
+            raise e
         
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def insert_product_image(self, connection, data):
@@ -193,7 +200,12 @@ class ProductCreateDao:
                 
                 return result
         
+        except ProductImageCreateDenied as e:
+            traceback.print_exc()
+            raise e
+        
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def insert_stock(self, connection, data):
@@ -241,10 +253,15 @@ class ProductCreateDao:
                 if not result:
                     traceback.print_exc()
                     raise StockCreateDenied('unable_to_create_stocks')
-    
+                
                 return result
         
+        except StockCreateDenied as e:
+            traceback.print_exc()
+            raise e
+        
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def insert_product_history(self, connection, data):
@@ -297,14 +314,23 @@ class ProductCreateDao:
                 ,%(account_id)s
             );
         """
+        try:
+            with connection.cursor() as cursor:
+                result = cursor.execute(sql, data)
+    
+                if not result:
+                    raise ProductHistoryCreateDenied('unable_to_create_product_history')
+                
+                return result
         
-        with connection.cursor() as cursor:
-            result = cursor.execute(sql, data)
-
-            if not result:
-                raise ProductHistoryCreateDenied('unable_to_create_product_history')
+        except ProductHistoryCreateDenied as e:
+            traceback.print_exc()
+            raise e
+        
+        except Exception as e:
+            traceback.print_exc()
+            raise e
             
-            return result
     
     def insert_product_sales_volumes(self, connection, product_id):
         """ 상품 판매량 정보 초기 등록
@@ -344,7 +370,12 @@ class ProductCreateDao:
                 
                 return result
         
+        except ProductSalesVolumeCreateDenied as e:
+            traceback.print_exc()
+            raise e
+        
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def get_product_origin_types(self, connection):
@@ -388,7 +419,12 @@ class ProductCreateDao:
                 
                 return result
         
+        except ProductOriginTypesNotExist as e:
+            traceback.print_exc()
+            raise e
+        
         except Exception as e:
+            traceback.print_exc()
             raise e
 
     def get_size_list(self, connection):
@@ -432,7 +468,12 @@ class ProductCreateDao:
     
                 return result
         
+        except SizeNotExist as e:
+            traceback.print_exc()
+            raise e
+        
         except Exception as e:
+            traceback.print_exc()
             raise e
 
     def get_color_list(self, connection):
@@ -465,14 +506,23 @@ class ProductCreateDao:
             ORDER BY
                 id;
         """
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql)
-            result = cursor.fetchall()
-            
-            if not result:
-                raise ColorNotExist('fail_to_get_color_list')
-
-            return result
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql)
+                result = cursor.fetchall()
+                
+                if not result:
+                    raise ColorNotExist('fail_to_get_color_list')
+    
+                return result
+        
+        except ColorNotExist as e:
+            traceback.print_exc()
+            raise e
+        
+        except Exception as e:
+            traceback.print_exc()
+            raise e
 
     def search_seller_list(self, connection, data):
         """셀러 정보 취득 (전방 일치 검색)
@@ -511,6 +561,7 @@ class ProductCreateDao:
                 return result
         
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def get_main_category_list(self, connection):
@@ -540,6 +591,8 @@ class ProductCreateDao:
                 main_categories
             WHERE
                 is_deleted = 0
+            ORDER BY
+                id;
         """
         
         try:
@@ -550,6 +603,9 @@ class ProductCreateDao:
                     raise MainCategoryNotExist('fail_to_get_main_category_list')
     
                 return result
+        
+        except MainCategoryNotExist as e:
+            raise e
         
         except Exception as e:
             raise e
@@ -597,5 +653,10 @@ class ProductCreateDao:
     
                 return result
         
+        except SubCategoryNotExist as e:
+            traceback.print_exc()
+            raise e
+        
         except Exception as e:
+            traceback.print_exc()
             raise e

@@ -1,5 +1,6 @@
 import io
 import base64
+import traceback
 
 from PIL                     import Image
 from werkzeug.utils          import secure_filename
@@ -151,11 +152,29 @@ class ProductCreateService:
             # payload['detail_information'] = encode
             
             return self.create_product_dao.insert_product(connection, data)
-            
+        
+        except CompareQuantityCheck as e:
+            traceback.print_exc()
+            raise e
+        
+        except RequiredFieldException as e:
+            traceback.print_exc()
+            raise e
+        
+        except RequiredFieldException as e:
+            traceback.print_exc()
+            raise e
+        
+        except DateCompareException as e:
+            traceback.print_exc()
+            raise e
+        
         except KeyError as e:
+            traceback.print_exc()
             raise e
         
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def update_product_code_service(self, connection, product_id):
@@ -189,12 +208,14 @@ class ProductCreateService:
                 'product_id'   : product_id
             }
             
-            return self.create_product_dao.update_product_code(connection, data)
+            self.create_product_dao.update_product_code(connection, data)
         
         except KeyError as e:
+            traceback.print_exc()
             raise e
         
         except Exception as e:
+            traceback.print_exc()
             raise e
 
     def create_product_images_service(self, connection, seller_id, product_id, product_images):
@@ -255,8 +276,8 @@ class ProductCreateService:
                     raise FileSizeException('file_size_too_large')
                 
                 # 파일 사이즈(가로, 세로) 체크 (640*720 미만인 경우 에러)
-                # if image.size[0] < 640 or image.size[1] < 720:
-                #     raise FileScaleException('file_scale_at_least_640*720')
+                if image.size[0] < 640 or image.size[1] < 720:
+                    raise FileScaleException('file_scale_at_least_640*720')
                 
                 # 파일 확장자 체크 (JPEG, JPG 허용)
                 if image.format != "JPEG":
@@ -287,7 +308,24 @@ class ProductCreateService:
                 
                 self.create_product_dao.insert_product_image(connection, data)
         
+        except NotValidFileException as e:
+            traceback.print_exc()
+            raise e
+        
+        except FileScaleException as e:
+            traceback.print_exc()
+            raise e
+        
+        except FileSizeException as e:
+            traceback.print_exc()
+            raise e
+        
+        except FileUploadFailException as e:
+            traceback.print_exc()
+            raise e
+        
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def create_stock_service(self, connection, product_id, stocks):
@@ -342,9 +380,11 @@ class ProductCreateService:
                 self.create_product_dao.insert_stock(connection, data)
         
         except KeyError as e:
+            traceback.print_exc()
             raise e
         
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def create_product_history_service(self, connection, product_id, data):
@@ -385,11 +425,13 @@ class ProductCreateService:
                 data['discounted_price'] = None
             
             return self.create_product_dao.insert_product_history(connection, data)
-            
+        
         except KeyError as e:
+            traceback.print_exc()
             raise e
         
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def create_product_sales_volumes_service(self, connection, product_id):
@@ -416,6 +458,7 @@ class ProductCreateService:
             return self.create_product_dao.insert_product_sales_volumes(connection, product_id)
         
         except Exception as e:
+            traceback.print_exc()
             raise e
         
     def main_category_list_service(self, connection):
@@ -505,9 +548,11 @@ class ProductCreateService:
             return result
         
         except KeyError as e:
+            traceback.print_exc()
             raise e
         
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def get_size_list_service(self, connection):
@@ -551,9 +596,11 @@ class ProductCreateService:
             return result
         
         except KeyError as e:
+            traceback.print_exc()
             raise e
         
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def get_product_origin_types_service(self, connection):
@@ -597,9 +644,11 @@ class ProductCreateService:
             return result
         
         except KeyError as e:
+            traceback.print_exc()
             raise e
         
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def search_seller_list_service(self, connection, data):
@@ -652,9 +701,11 @@ class ProductCreateService:
             return result
         
         except KeyError as e:
+            traceback.print_exc()
             raise e
         
         except Exception as e:
+            traceback.print_exc()
             raise e
     
     def get_sub_category_list_service(self, connection, data):
@@ -703,7 +754,9 @@ class ProductCreateService:
             return result
         
         except KeyError as e:
+            traceback.print_exc()
             raise e
         
         except Exception as e:
+            traceback.print_exc()
             raise e

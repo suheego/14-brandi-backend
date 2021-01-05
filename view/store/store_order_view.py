@@ -67,12 +67,12 @@ class StoreOrderView(MethodView):
             "cart_id": args[0],
             "user_id": g.account_id
         }
-
+        
         try:
             connection = get_connection(self.database)
             cart_items = self.service.get_cart_item_service(connection, data)
             return jsonify({'message': 'success', 'result': cart_items})
-
+        
         except Exception as e:
             raise e
         finally:

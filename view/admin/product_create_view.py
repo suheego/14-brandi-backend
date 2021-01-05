@@ -1,16 +1,19 @@
-from flask                          import jsonify, request, json
+import traceback
+
+from flask                          import jsonify, request, json, g
 from flask.views                    import MethodView
 from flask_request_validator.rules  import NotEmpty
 
-from utils.connection        import get_connection
+from utils.connection               import get_connection
+from utils.decorator                import signin_decorator
 from utils.custom_exceptions import (
-    DatabaseCloseFail
+    DatabaseCloseFail, MainCategoryNotExist
 )
 
-from utils.rules import (
-    NumberRule, DateRule
+from utils.rules                    import (
+    NumberRule
 )
-from flask_request_validator import (
+from flask_request_validator        import (
     Param,
     FORM,
     GET,
@@ -18,6 +21,7 @@ from flask_request_validator import (
     Enum,
     validate_params
 )
+
 
 class MainCategoriesListView(MethodView):
     """ Presentation Layer
@@ -34,7 +38,8 @@ class MainCategoriesListView(MethodView):
     def __init__(self, service, database):
         self.service = service
         self.database = database
-
+    
+    # @signin_decorator
     def get(self, *args):
         """GET 메소드: 상품 정보 등록에 필요한 메인 카테고리 리스트 취득
 
@@ -57,8 +62,13 @@ class MainCategoriesListView(MethodView):
             result     = self.service.main_category_list_service(connection)
             
             return jsonify({'message': 'success', 'result': result})
-
+        
+        except KeyError as e:
+            traceback.print_exc()
+            raise e
+        
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:
@@ -88,6 +98,7 @@ class CreateProductView(MethodView):
         self.service = service
         self.database = database
 
+    # @signin_decorator
     @validate_params(
         Param('seller_name',      GET, str, required=False, rules=[MaxLength(20)]),
         Param('main_category_id', GET, str, required=False, rules=[NumberRule()])
@@ -124,6 +135,8 @@ class CreateProductView(MethodView):
                 2020-12-30(심원두): 초기생성
         """
         try:
+            result = dict()
+            
             data = {
                 'seller_name'     : request.args.get('seller_name', None),
                 'main_category_id': request.args.get('main_category_id', None)
@@ -146,8 +159,6 @@ class CreateProductView(MethodView):
                 )
                 
                 return jsonify({'message': 'success', 'result': sub_categories})
-            
-            result = dict()
             
             result['product_origin_types'] = \
                 self.service.get_product_origin_types_service(
