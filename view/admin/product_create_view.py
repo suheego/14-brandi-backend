@@ -134,6 +134,7 @@ class CreateProductView(MethodView):
             History:
                 2020-12-30(심원두): 초기생성
         """
+        
         try:
             result = dict()
             
@@ -243,46 +244,47 @@ class CreateProductView(MethodView):
             Author: 심원두
 
             Returns:
-                200, {'message': 'success'}                                             : 상품 정보 등록 성공
+                200, {'message': 'success'}                                      : 상품 정보 등록 성공
 
             Raises:
-                400, {'message': 'key_error', 'errorMessage': 'key_error_' + format(e)} : 잘못 입력된 키값
+                400, {'message': 'key_error',
+                      'errorMessage': 'key_error_' + format(e)} : 잘못 입력된 키값
 
                 400, {'message': 'required field is blank',
-                      'errorMessage': 'required_field_check_fail'}                      : 필수 입력 항목 에러
+                      'errorMessage': 'required_field_check_fail'}               : 필수 입력 항목 에러
 
                 400, {'message': 'correlation check fail',
-                      'errorMessage': '_minimum_quantity_maximum_quantity'}             : 최소구매, 최대구매 수량 비교
+                      'errorMessage': '_minimum_quantity_maximum_quantity'}      : 최소구매, 최대구매 수량 비교
                 
                 400, {'message': 'correlation check fail',
-                      'errorMessage': '_discounted_price_origin_price'}                 : 판매가, 할인가 비교
+                      'errorMessage': '_discounted_price_origin_price'}          : 판매가, 할인가 비교
 
                 400, {'message': 'correlation check fail',
-                      'errorMessage': '_discount_start_date__discount_end_date'}        : 할인 시작일, 할인 종료일 비교
+                      'errorMessage': '_discount_start_date__discount_end_date'} : 할인 시작일, 할인 종료일 비교
 
                 500, {'message'     : 'product create denied',
-                      'errorMessage': 'unable_to_create_product'}                       : 상품 정보 등록 실패
+                      'errorMessage': 'unable_to_create_product'}                : 상품 정보 등록 실패
 
                 500, {'message'     : 'product code update denied',
-                      'errorMessage': 'unable_to_update_product_code'}                  : 상품 코드 갱신 실패
+                      'errorMessage': 'unable_to_update_product_code'}           : 상품 코드 갱신 실패
 
                 500, {'message'     : 'product image create denied',
-                      'errorMessage': 'unable_to_create_product_image'}                 : 상품 이미지 등록 실패
+                      'errorMessage': 'unable_to_create_product_image'}          : 상품 이미지 등록 실패
 
                 500, {'message'     : 'stock create denied',
-                      'errorMessage': 'unable_to_create_stocks'}                        : 상품 옵션 정보 등록 실패
+                      'errorMessage': 'unable_to_create_stocks'}                 : 상품 옵션 정보 등록 실패
 
                 500, {'message'     : 'product history create denied',
-                      'errorMessage': 'unable_to_create_product_history'}               : 상품 이력 등록 실패
+                      'errorMessage': 'unable_to_create_product_history'}        : 상품 이력 등록 실패
 
                 500, {'message': 'database_connection_fail',
-                      'errorMessage': 'database_close_fail'}                            : 커넥션 종료 실패
+                      'errorMessage': 'database_close_fail'}                     : 커넥션 종료 실패
 
                 500, {'message': 'database_error',
-                      'errorMessage': 'database_error_' + format(e)}                    : 데이터베이스 에러
+                      'errorMessage': 'database_error_' + format(e)}             : 데이터베이스 에러
 
                 500, {'message': 'internal_server_error',
-                      'errorMessage': format(e)})                                       : 서버 에러
+                      'errorMessage': format(e)})                                : 서버 에러
             History:
                 2020-12-29(심원두): 초기 생성
                 2020-01-03(심원두): 발리데이터 추가
@@ -320,15 +322,16 @@ class CreateProductView(MethodView):
                 data
             )
             
-            self.service.update_product_code_service(
+            product_code = self.service.update_product_code_service(
                 connection,
                 product_id
             )
             
-            self.service.create_product_images_service(
+            file_name_list = self.service.create_product_images_service(
                 connection,
                 data['seller_id'],
                 product_id,
+                product_code,
                 product_images
             )
             
@@ -337,14 +340,19 @@ class CreateProductView(MethodView):
                 product_id,
                 stocks
             )
-            
+
             self.service.create_product_history_service(
                 connection,
                 product_id,
                 data
             )
-            
+
             self.service.create_product_sales_volumes_service(
+                connection,
+                product_id
+            )
+            
+            self.service.create_bookmark_volumes_service(
                 connection,
                 product_id
             )
@@ -352,9 +360,12 @@ class CreateProductView(MethodView):
             connection.commit()
             
             return jsonify({'message': 'success'}), 200
-
+            
         except Exception as e:
+            traceback.print_exc()
             connection.rollback()
+            # self.service.delete_image_service(connection, file_name_list)
+            
             raise e
         
         finally:

@@ -8,12 +8,14 @@ from utils.custom_exceptions import (
     StockCreateDenied,
     ProductHistoryCreateDenied,
     ProductSalesVolumeCreateDenied,
+    ProductBookMarkVolumeCreateDenied,
     ProductOriginTypesNotExist,
     ColorNotExist,
     SizeNotExist,
     MainCategoryNotExist,
     SubCategoryNotExist
 )
+
 
 class ProductCreateDao:
     """ Persistence Layer
@@ -330,7 +332,6 @@ class ProductCreateDao:
         except Exception as e:
             traceback.print_exc()
             raise e
-            
     
     def insert_product_sales_volumes(self, connection, product_id):
         """ 상품 판매량 정보 초기 등록
@@ -374,6 +375,32 @@ class ProductCreateDao:
             traceback.print_exc()
             raise e
         
+        except Exception as e:
+            traceback.print_exc()
+            raise e
+    
+    def insert_bookmark_volumes(self, connection, product_id):
+        sql = """
+            INSERT INTO bookmark_volumes (
+                `product_id`
+            ) VALUES (
+                %s
+            );
+        """
+        
+        try:
+            with connection.cursor() as cursor:
+                result = cursor.execute(sql, product_id)
+                
+                if not result:
+                    raise ProductBookMarkVolumeCreateDenied('unable_to_create_bookmark_volumes')
+                
+                return result
+        
+        except ProductSalesVolumeCreateDenied as e:
+            traceback.print_exc()
+            raise e
+    
         except Exception as e:
             traceback.print_exc()
             raise e

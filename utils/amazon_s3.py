@@ -34,12 +34,33 @@ class S3FileManager:
             History:
                 2020-20-31(심원두): 초기 생성
         """
+        
         self.s3.upload_fileobj(
             file,
             current_app.config['S3_BUCKET_NAME'],
             file_name
         )
+        
         return file_name
+    
+    def file_delete(self, file_name):
+        """ Amazon S3 파일 업로드 클래스
+            Args:
+                file_name : 해당 파일명
+
+            Author: 심원두
+
+            Returns:
+                file_name : 인자로 받은 파일명. 이상 처리 되었을 경우 해당 파일 삭제
+
+            History:
+                2021-01-05(심원두): 초기 생성
+        """
+        
+        self.s3.delete_object(
+            Bucket = current_app.config['S3_BUCKET_NAME'],
+            Key    = file_name
+        )
 
 
 class GenerateFilePath:
@@ -75,7 +96,7 @@ class GenerateFilePath:
             return seller_path + '/background/'
         
         if path_type == 3:
-            return product_path + str(kwargs['seller_id']) + '/' + str(kwargs['product_id']) + '/' + 'images'
+            return product_path + str(kwargs['seller_id']) + '/' + str(kwargs['product_id']) + '/'
 
         if path_type == 4:
             return event_path + str(kwargs['today']) + '/banners/'

@@ -1,5 +1,5 @@
 import io
-import base64
+import uuid
 import traceback
 
 from PIL                     import Image
@@ -18,6 +18,7 @@ from utils.custom_exceptions import (
     FileScaleException,
     FileUploadFailException
 )
+
 
 class ProductCreateService:
     """ Business Layer
@@ -84,6 +85,7 @@ class ProductCreateService:
                 2020-12-30(심원두): 예외처리 구현
                 2020-01-03(심원두): 예외처리 추가/수정
         """
+        
         try:
             if int(data['minimum_quantity']) != 0 and int(data['maximum_quantity']) != 0:
                 if int(data['minimum_quantity']) > int(data['maximum_quantity']):
@@ -141,16 +143,6 @@ class ProductCreateService:
             
             data['discount_rate'] = float(data['discount_rate']) / 100
             
-            #TODO : HTML with image 파일 DB 저장
-            # 1. encode 방법
-            # html = payload['detail_information']
-            # encode = html.encode("utf-8")
-            # payload['detail_information'] = encode
-            # 2. base64 방법
-            # html = payload['detail_information']
-            # encode = base64.b64encode(html.encode()).decode()
-            # payload['detail_information'] = encode
-            
             return self.create_product_dao.insert_product(connection, data)
         
         except CompareQuantityCheck as e:
@@ -200,16 +192,17 @@ class ProductCreateService:
             History:
                 2020-12-29(심원두): 초기 생성
         """
+        
         try:
-            
-            # 상품 코드 생성
             data = {
                 'product_code' : 'P' + str(product_id).zfill(18),
                 'product_id'   : product_id
             }
             
             self.create_product_dao.update_product_code(connection, data)
-        
+            
+            return data['product_code']
+            
         except KeyError as e:
             traceback.print_exc()
             raise e
@@ -218,7 +211,7 @@ class ProductCreateService:
             traceback.print_exc()
             raise e
 
-    def create_product_images_service(self, connection, seller_id, product_id, product_images):
+    def create_product_images_service(self, connection, seller_id, product_id, product_code, product_images):
         """ 상품 이미지 등록
             
             Args:
@@ -256,57 +249,66 @@ class ProductCreateService:
                 2020-12-29(심원두): 초기 생성
                 2020-01-03(심원두): 이미지 업로드 예외 처리 수정, 파일 손상 이슈 수정
         """
+        
         try:
-            for index, product_image in enumerate(product_images):
-                
+            image_buffer   = []
+            file_name_list = []
+            
+            # 이미지 유효성 검사
+            for product_image in product_images:
                 if not product_image or not product_image.filename:
                     raise NotValidFileException('invalid_file')
                 
-                # 바이트 객체
+                image  = Image.open(product_image, 'r')
                 buffer = io.BytesIO()
-                # 이미지 열기 (읽기 모드)
-                image = Image.open(product_image, 'r')
-                # 임시 저장
+                
                 image.save(buffer, image.format)
-                # 포인터 리와인드
+                
+                product_image.seek(0, 2)
+                if product_image.tell() > 4194304:
+                    FileSizeException('file_size_too_large')
+                
                 buffer.seek(0)
                 
-                # 파일 크기 체크 (4메가 이상인 경우 에러)
-                if buffer.getvalue().__sizeof__() > 4194304:
-                    raise FileSizeException('file_size_too_large')
-                
-                # 파일 사이즈(가로, 세로) 체크 (640*720 미만인 경우 에러)
-                if image.size[0] < 640 or image.size[1] < 720:
+                width, height, = image.size
+                if width > 640 or height > 720:
                     raise FileScaleException('file_scale_at_least_640*720')
                 
-                # 파일 확장자 체크 (JPEG, JPG 허용)
                 if image.format != "JPEG":
                     raise FileExtensionException('only_allowed_jpg_type')
                 
-                # 이미지 파일 패스 생성
+                image_buffer.append(buffer)
+            
+            # 이미지 업로드 to S3
+            for index, buffer in enumerate(image_buffer):
                 file_path = GenerateFilePath().generate_file_path(
                     3,
                     seller_id  = seller_id,
                     product_id = product_id
                 )
                 
-                # 아마존 업로더
+                file_name = file_path + product_code + "-" + str(uuid.uuid4())
+                
                 url = S3FileManager().file_upload(
                     buffer,
-                    file_path + secure_filename(product_image.filename)
+                    file_name
                 )
                 
-                # 아마존 업로드 후 url 리턴 받지 못한 경우
                 if not url:
-                    raise FileUploadFailException('image_file_upload_fail')
+                    S3FileManager().file_delete(file_name)
+                    raise FileUploadFailException('image file upload to amazon fail')
+
+                file_name_list.append(file_name)
                 
                 data = {
-                    'image_url'   : url,
-                    'product_id'  : product_id,
-                    'order_index' : index
+                    'image_url'  : url,
+                    'product_id' : product_id,
+                    'order_index': index
                 }
                 
                 self.create_product_dao.insert_product_image(connection, data)
+            
+            return file_name_list
         
         except NotValidFileException as e:
             traceback.print_exc()
@@ -353,6 +355,7 @@ class ProductCreateService:
                 2020-12-29(심원두): 초기 생성
                 2020-01-03(심원두): 프론트엔드 상의 후 재고 관리 컬럼 추가에 대한 대응
         """
+        
         try:
             data = {}
             
@@ -424,7 +427,7 @@ class ProductCreateService:
             if not data['discounted_price']:
                 data['discounted_price'] = None
             
-            return self.create_product_dao.insert_product_history(connection, data)
+            self.create_product_dao.insert_product_history(connection, data)
         
         except KeyError as e:
             traceback.print_exc()
@@ -455,12 +458,41 @@ class ProductCreateService:
                 2020-12-29(심원두): 초기 생성
         """
         try:
-            return self.create_product_dao.insert_product_sales_volumes(connection, product_id)
+            
+            self.create_product_dao.insert_product_sales_volumes(connection, product_id)
         
         except Exception as e:
             traceback.print_exc()
             raise e
+    
+    def create_bookmark_volumes_service(self, connection, product_id):
+        """ 북 마크 정보 초기 등록
+
+            Args:
+                connection : 데이터 베이스 연결 객체
+                product_id : 상품 번호
+
+            Author: 심원두
+
+            Returns:
+                0: 북마크 정보 초기 등록 실패
+                1: 뷱마크 정보 초기 등록 성공
+
+            Raises:
+                500, {'message': 'bookmark volumes create denied',
+                      'errorMessage': 'unable_to_create_bookmark_volumes'}: 북마크 초기 등록 실패
+            
+            History:
+                2021-01-05(심원두): 초기 생성
+        """
+        try:
+            
+            self.create_product_dao.insert_bookmark_volumes(connection, product_id)
         
+        except Exception as e:
+            traceback.print_exc()
+            raise e
+    
     def main_category_list_service(self, connection):
         """ 메인 카테고리 정보 취득
             

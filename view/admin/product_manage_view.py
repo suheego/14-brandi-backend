@@ -1,3 +1,5 @@
+import traceback
+
 from flask                          import jsonify, request, json
 from flask.views                    import MethodView
 from flask_request_validator.rules  import NotEmpty
@@ -86,8 +88,7 @@ class ProductManageSearchView(MethodView):
         """
         
         try:
-            
-            data = {
+            search_condition = {
                 'lookup_start_date'         : request.args.get('lookup_start_date', None),
                 'lookup_end_date'           : request.args.get('lookup_end_date', None),
                 'seller_name'               : request.args.get('seller_name', None),
@@ -103,13 +104,35 @@ class ProductManageSearchView(MethodView):
                 'page_number'               : request.args.get('page_number'),
                 'limit'                     : request.args.get('limit')
             }
+            print(search_condition)
             
             connection = get_connection(self.database)
-            result     = self.service.search_product_service(connection, data)
+            result     = self.service.search_product_service(connection, search_condition)
+            
+            # print(search_condition['is_sale'])
+            
+            search_condition_back_to_front = {
+                'lookup_start_date'         : search_condition['lookup_start_date'],
+                'lookup_end_date'           : search_condition['lookup_end_date'],
+                'seller_name'               : search_condition['seller_name'],
+                'product_name'              : search_condition['product_name'],
+                'product_id'                : search_condition['product_id'],
+                'product_code'              : search_condition['product_code'],
+                'seller_attribute_type_ids' : search_condition['seller_attribute_type_ids'],
+                'is_sale'                   : 0 if search_condition['is_sale'] is None
+                                              else int(search_condition['is_sale']),
+                'is_display'                : 0 if search_condition['is_display'] is None
+                                              else int(search_condition['is_display']),
+                'is_discount'               : 0 if search_condition['is_discount'] is None
+                                              else int(search_condition['is_discount']),
+            }
+            
+            result['search_condition'] = search_condition_back_to_front
             
             return jsonify({'message': 'success', 'result': result})
         
         except Exception as e:
+            traceback.print_exc()
             raise e
         
         finally:
