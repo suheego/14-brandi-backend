@@ -68,6 +68,7 @@ class DefaultRule(AbstractRule):
         return value, errors
 
 
+
 class UsernameRule(AbstractRule):
     """ 비밀번호 규칙
 
@@ -93,6 +94,7 @@ class PhoneRule(AbstractRule):
     """ 휴대폰 자리수 규칙
 
     10~11 자리 숫자를 허용한다.
+    
 
     Author: 김기용
 
@@ -220,6 +222,15 @@ class BooleanRule(AbstractRule):
         return value, errors
 
 
+class OrderStatusRule(AbstractRule):
+    def validate(self, value):
+        status_set = [1, 2, 3, 8]
+        errors = []
+        if value not in status_set:
+            errors.append('order status must be one of 1, 2, 3, 8')
+        return value, errors
+
+
 class DateRule(AbstractRule):
     """ 날짜 형식 벨리데이터 (YYYY-MM-DD)
 
@@ -236,6 +247,79 @@ class DateRule(AbstractRule):
             errors.append('date format should be YYYY-MM-DD')
         return value, errors
 
+      
+class PositiveInteger(AbstractRule):
+    """ 양의 정수 규칙
+
+        0보다 큰 수만 허용한다.
+
+        Author: 김민구
+
+        History:
+            2021-01-01(김민구)
+    """
+
+    def validate(self, value):
+        errors = []
+        if value <= 0:
+            errors.append('must_be_bigger_than_0')
+        return value, errors
+
+
+class EnquiryAnswerTypeRule(AbstractRule):
+    """ Q&A answer type 규칙
+
+        답변 유무를 전달하는 type 쿼리스트링 값을 검사
+        wait, complete, all만 허용한다.
+
+        Author: 김민구
+
+        History:
+            2021-01-03(김민구)
+    """
+
+    def validate(self, value):
+        status_set = ['wait', 'complete', 'all']
+        errors = []
+        if value not in status_set:
+            errors.append('type_is_incorrect')
+        return value, errors
+
+
+class EnquiryUserTypeRule(AbstractRule):
+    """ Q&A user type 규칙
+
+        모든 질문을 조회할지 자신의 질문만 조회할지를 따지는 규칙
+        all, self만 허용한다.
+
+        Author: 김민구
+
+        History:
+            2021-01-03(김민구)
+    """
+
+    def validate(self, value):
+        status_set = ['self', 'all']
+        errors = []
+        if value not in status_set:
+            errors.append('type_is_incorrect')
+        return value, errors
+
+
+class SortTypeRule(AbstractRule):
+    """ 정해진 sort_type 만 허용한다.
+        
+        Author: 김기용
+
+        History:
+            2021-01-01(김기용)
+    """
+    def validate(self, value):
+        sort_set = ['1', '2', '3']
+        errors = []
+        if value not in sort_set:
+            errors.append('1~3 값만 받습니다.')
+        return value, errors
 
 
 class DateTimeRule(AbstractRule):
@@ -311,5 +395,3 @@ class PageRule(AbstractRule):
         if value <= 0:
             errors.append('page cannot be less than 1')
         return value, errors
-
-

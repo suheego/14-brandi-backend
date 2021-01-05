@@ -9,7 +9,7 @@ from flask_request_validator import (
 
 from utils.connection import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
-from utils.rules import NumberRule, DecimalRule, EmailRule, PostalCodeRule, PhoneRule
+from utils.rules import DecimalRule, EmailRule, PostalCodeRule, PhoneRule
 from utils.decorator import signin_decorator
 
 
@@ -30,24 +30,29 @@ class StoreOrderView(MethodView):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
-        Param('cart_id', PATH, str)
+        Param('order_id', PATH, int)
     )
     def get(self, *args):
-        """ GET 메소드: 해당 유저의 장바구니 상품 정보를 조회.
+        """ GET 메소드: 해당 유저가 직전에 마친 결제 정보를 조회
+        결제가 완료된 페이지에서 확인하는 정보다.
 
-        cart_id에 해당되는 장바구니 상품을 테이블에서 조회 후 가져옴
+        order_id에 해당되는 결제 상품 정보를 테이블에서 조회 후 가져옴
 
         Args: args = ('account_id', 'cart_id')
 
         Author: 고수희
 
         Returns:
-            return {
-            "message": "success",
-            "result": {"totalPrice"":9000,
-
+            #통화에 대한 정의와 정수로 변환
+            {
+                "message": "success",
+                "result": {
+                    "order_number": "20210101000001000",
+                    "total_price": 8000.0
+                }
+            }
 
         Raises:
             400, {'message': 'key error',
@@ -61,18 +66,20 @@ class StoreOrderView(MethodView):
 
         History:
             2020-12-28(고수희): 초기 생성
-            2020-12-30(고수희): 1차 수정 - 데코레이터 추가, 사용자 권한 체
+            2020-12-30(고수희): 1차 수정 - 데코레이터 추가, 사용자 권한 체크
+            2021-01-02(고수희): decorator 수정
         """
         data = {
-            "cart_id": args[0],
-            "user_id": g.account_id
+            "order_id": args[0],
+            "user_id": g.account_id,
+            "user_permission": g.permission_type_id
         }
         
         try:
             connection = get_connection(self.database)
-            cart_items = self.service.get_cart_item_service(connection, data)
-            return jsonify({'message': 'success', 'result': cart_items})
-        
+            store_order_info = self.service.get_store_order_service(connection, data)
+            return jsonify({'message': 'success', 'result': store_order_info})
+
         except Exception as e:
             raise e
         finally:
@@ -88,7 +95,7 @@ class StoreOrderAddView(MethodView):
 
     Attributes:
         database: app.config['DB']에 담겨있는 정보(데이터베이스 관련 정보)
-        service : CartItemService 클래스
+        service : StoreOrderService 클래스
 
     Author: 고수희
 
@@ -100,27 +107,27 @@ class StoreOrderAddView(MethodView):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    @signin_decorator(True)
     @validate_params(
-        Param('productId', JSON, str, rules=[NumberRule()]),
-        Param('stockId', JSON, str, rules=[NumberRule()]),
-        Param('quantity', JSON, str, rules=[NumberRule()]),
+        Param('cartId', JSON, int),
+        Param('productId', JSON, int),
+        Param('stockId', JSON, int),
+        Param('quantity', JSON, int),
         Param('originalPrice', JSON, str, rules=[DecimalRule()]),
         Param('sale', JSON, str, rules=[DecimalRule()]),
         Param('discountedPrice', JSON, str, rules=[DecimalRule()]),
+        Param('totalPrice', JSON, str, rules=[DecimalRule()]),
         Param('soldOut', JSON, bool),
         Param('senderName', JSON, str),
-        Param('senderPhone', JSON, str, rules=[DecimalRule()]),
+        Param('senderPhone', JSON, str, rules=[PhoneRule()]),
         Param('senderEmail', JSON, str, rules=[EmailRule()]),
-        Param('recipientName', JSON, str, rules=[DecimalRule()]),
+        Param('recipientName', JSON, str),
         Param('recipientPhone', JSON, str, rules=[PhoneRule()]),
-        Param('recipientEmail', JSON, str, rules=[EmailRule()]),
         Param('address1', JSON, str),
         Param('address2', JSON, str),
         Param('postNumber', JSON, str, rules=[PostalCodeRule()]),
-        Param('deliveryId', JSON, str, rules=[NumberRule()]),
+        Param('deliveryId', JSON, int),
         Param('deliveryMemo', JSON, str, required=False),
-        Param('deliveryMemoDefault', JSON, str, rules=[NumberRule()])
     )
     def post(self, *args):
         """POST 메소드: 장바구니 상품 생성
@@ -135,8 +142,9 @@ class StoreOrderAddView(MethodView):
         Raises:
             400, {'message': 'key error',
             'errorMessage': 'key_error'} : 잘못 입력된 키값
-            400, {'message': 'cart item create error',
-            'errorMessage': 'cart_item_create_error'} : 결제 실패
+
+
+
             400, {'message': 'unable to close database',
             'errorMessage': 'unable_to_close_database'} : 커넥션 종료 실패
             403, {'message': 'customer permission denied',
@@ -149,32 +157,33 @@ class StoreOrderAddView(MethodView):
         """
         data = {
             'user_id': g.account_id,
-            'product_id': args[0],
-            'stock_id': args[1],
-            'quantity': args[2],
-            'original_price': args[3],
-            'sale': args[4],
-            'discounted_price': args[5],
-            'sold_out': args[6],
-            'sender_name': args[7],
-            'sender_phone': args[8],
-            'sender_email': args[9],
-            'recipient_name': args[10],
-            'recipient_phone': args[11],
-            'recipient_email': args[12],
-            'address1': args[13],
-            'address2': args[14],
-            'post_number': args[15],
-            'delivery_memo_type_id': args[16],
-            'delivery_content': args[17],
-            'delivery_default': args[18]
+            'user_permission': g.permission_type_id,
+            'cart_id': args[0],
+            'product_id': args[1],
+            'stock_id': args[2],
+            'quantity': args[3],
+            'original_price': args[4],
+            'sale': args[5],
+            'discounted_price': args[6],
+            'total_price': args[7],
+            'sold_out': args[8],
+            'sender_name': args[9],
+            'sender_phone': args[10],
+            'sender_email': args[11],
+            'recipient_name': args[12],
+            'recipient_phone': args[13],
+            'address1': args[14],
+            'address2': args[15],
+            'post_number': args[16],
+            'delivery_memo_type_id': args[17],
+            'delivery_content': args[18],
         }
-        print(data)
+
         try:
             connection = get_connection(self.database)
-            cart_id = self.service.post_cart_item_service(connection, data)
+            order_id = self.service.post_order_service(connection, data)
             connection.commit()
-            return {'message': 'success', 'result': {"cartId": cart_id}}, 201
+            return {'message': 'success', 'result': {"order_id": order_id}}, 201
 
         except Exception as e:
             connection.rollback()
@@ -184,5 +193,6 @@ class StoreOrderAddView(MethodView):
             try:
                 if connection:
                     connection.close()
+
             except Exception:
                 raise DatabaseCloseFail('database close fail')

@@ -13,24 +13,32 @@ from .sample_user_view         import SampleUserView
 from .store.user_view          import SignUpView, SignInView, GoogleSocialSignInView
 from .store.product_list_view  import ProductListView, ProductSearchView, ProductDetailView
 from .store.category_list_view import CategoryListView
-from .store.destination_view   import DestinationView, DestinationDetailView
-from .store.cart_item_view     import CartItemView, CartItemAddView
-from .store.sender_view        import SenderView
-from .store.store_order_view   import StoreOrderView, StoreOrderAddView
+from .store.destination_view import DestinationView, DestinationDetailView
+from .store.cart_item_view import CartItemView, CartItemAddView
+from .store.sender_view import SenderView
+from .store.store_order_view import StoreOrderView, StoreOrderAddView
+from .store.bookmark_view import BookmarkView
+from .store.event_list_view import EventBannerListView, EventDetailInformationView, EventDetailProductListView, EventDetailButtonListView
+from .store.product_enquiry_view import ProductEnquiryListView, MyPageEnquiryListView
+from .store.seller_shop_view import SellerShopView, SellerShopSearchView, SellerShopCategoryView, SellerShopProductListView
 
 # admin1
 from .admin.order_view import OrderView, OrderDetailView
 from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
 
 # admin2
-from .admin.seller_view         import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView
+
+from .admin.seller_view import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView, SellerStatusView, \
+    SellerPasswordView, SellerSearchView
 from .admin.product_create_view import MainCategoriesListView, CreateProductView
 from .admin.product_manage_view import ProductManageSearchView, ProductManageDetailView
+
 
 from utils.error_handler import error_handle
 
 
 def create_endpoints(app, services, database):
+
     """ 앤드 포인트 시작
 
             Args:
@@ -58,6 +66,9 @@ def create_endpoints(app, services, database):
     sender_service       = services.sender_service
     product_list_service = services.product_list_service
     store_order_service  = services.store_order_service
+    seller_shop_service = services.seller_shop_service
+    seller_service = services.seller_service
+    create_product_service = services.create_product_service
 
     # admin1
     order_service = services.order_service
@@ -65,6 +76,7 @@ def create_endpoints(app, services, database):
 
     # admin2
     seller_service         = services.seller_service
+    seller_info_service    = services.seller_info_service
     product_create_service = services.product_create_service
     product_manage_service = services.product_manage_service
 
@@ -152,9 +164,59 @@ def create_endpoints(app, services, database):
                          database
                      ))
 
+    app.add_url_rule('/products/<int:product_id>/bookmarks',
+                     view_func=BookmarkView.as_view(
+                         'bookmark_view',
+                         services,
+                         database
+                     ))
+
+    app.add_url_rule('/event-list',
+                     view_func=EventBannerListView.as_view(
+                        'event_banner_list_view',
+                        services,
+                        database
+                     ))
+
+    app.add_url_rule('/event-list/<int:event_id>',
+                     view_func=EventDetailProductListView.as_view(
+                        'event_detail_list_view',
+                        services,
+                        database
+                     ))
+
+    app.add_url_rule('/event-list/<int:event_id>/information',
+                     view_func=EventDetailInformationView.as_view(
+                        'event_detail_information',
+                        services,
+                        database
+                     ))
+
+    app.add_url_rule('/event-list/<int:event_id>/buttons',
+                     view_func=EventDetailButtonListView.as_view(
+                        'event_detail_button_list_view',
+                        services,
+                        database
+                     ))
+
+    app.add_url_rule('/products/<int:product_id>/enquiries',
+                     view_func=ProductEnquiryListView.as_view(
+                         'product_enquiry_view',
+                         services,
+                         database
+                     ))
+
+    app.add_url_rule('/users/my-page/enquiries',
+                     view_func=MyPageEnquiryListView.as_view(
+                         'my_page_enquiry_view',
+                         services,
+                         database
+                     ))
+
 # ----------------------------------------------------------------------------------------------------------------------
 # 고수희
 # ----------------------------------------------------------------------------------------------------------------------
+    #장바구니 상품 추가 엔드포인트
     app.add_url_rule('/checkout/cart',
                      view_func=CartItemAddView.as_view(
                          'cart_item_add_view',
@@ -162,6 +224,7 @@ def create_endpoints(app, services, database):
                          database
                      ))
 
+    # 장바구니 상품 조회 엔드포인트
     app.add_url_rule('/checkout/cart/<int:cart_id>',
                      view_func=CartItemView.as_view(
                          'cart_item_view',
@@ -169,6 +232,7 @@ def create_endpoints(app, services, database):
                          database
                      ))
 
+    # 주문자 정보 조회 엔드포인트
     app.add_url_rule('/checkout/sender',
                     view_func=SenderView.as_view(
                         'sender_view',
@@ -176,6 +240,7 @@ def create_endpoints(app, services, database):
                         database
                     ))
 
+    # 상품 결제 엔드포인트
     app.add_url_rule('/checkout',
                      view_func=StoreOrderAddView.as_view(
                         'store_order_add_view',
@@ -183,12 +248,45 @@ def create_endpoints(app, services, database):
                         database
                     ))
 
+    # 상품 결제 조회 엔드포인트
     app.add_url_rule('/checkout/<int:order_id>',
                     view_func=StoreOrderView.as_view(
                         'store_order_view',
                         store_order_service,
                         database
                     ))
+
+    # 셀러샵 셀러 정보 조회 엔드포인트
+    app.add_url_rule('/shops/<int:seller_id>',
+                    view_func=SellerShopView.as_view(
+                        'seller_shop_view',
+                        seller_shop_service,
+                        database
+                    ))
+
+    # 셀러샵 셀러 상품 검색 엔드포인트
+    app.add_url_rule('/shops/<int:seller_id>/search',
+                    view_func=SellerShopSearchView.as_view(
+                        'seller_shop_search_view',
+                        seller_shop_service,
+                        database
+                    ))
+
+    # 셀러샵 카테고리 조회 엔드포인트
+    app.add_url_rule('/shops/<int:seller_id>/category',
+                     view_func=SellerShopCategoryView.as_view(
+                         'seller_shop_category_view',
+                         seller_shop_service,
+                         database
+                     ))
+
+    # 셀러샵 상품 조회 엔드포인트
+    app.add_url_rule('/shops/<int:seller_id>/products',
+                     view_func=SellerShopProductListView.as_view(
+                         'seller_shop_product_list_view',
+                         seller_shop_service,
+                         database
+                     ))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Admin 1 Section
@@ -280,6 +378,12 @@ def create_endpoints(app, services, database):
                          seller_service,
                          database
                      ))
+    app.add_url_rule('/admin/search',
+                     view_func=SellerSearchView.as_view(
+                         'seller_search_view',
+                         seller_service,
+                         database
+                     ))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 심원두 ◟( ˘ ³˘)◞ ♡
@@ -318,14 +422,28 @@ def create_endpoints(app, services, database):
     app.add_url_rule('/admin/<int:account_id>',
                      view_func=SellerInfoView.as_view(
                          'SellerInfoView',
-                         seller_service,
+                         seller_info_service,
                          database
                      ))
 
     app.add_url_rule('/admin/<int:account_id>/history',
                      view_func=SellerHistoryView.as_view(
                          'SellerHistoryView',
-                         seller_service,
+                         seller_info_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/status',
+                     view_func=SellerStatusView.as_view(
+                         'SellerStatusView',
+                         seller_info_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/<int:account_id>/change_password',
+                     view_func=SellerPasswordView.as_view(
+                         'SellerPasswordView',
+                         seller_info_service,
                          database
                      ))
 

@@ -13,7 +13,7 @@ from utils.custom_exceptions import (
 from utils.rules                    import (
     NumberRule
 )
-from flask_request_validator        import (
+from flask_request_validator import (
     Param,
     FORM,
     GET,
