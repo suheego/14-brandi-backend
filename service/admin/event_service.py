@@ -1,7 +1,7 @@
 import datetime
 
 from werkzeug.utils import secure_filename
-from utils.custom_exceptions import ButtonProductDoesNotMatch
+from utils.custom_exceptions import ButtonProductDoesNotMatch, EventDoesNotExist
 from utils.amazon_s3 import S3FileManager, GenerateFilePath
 
 from config import S3_BUCKET_URL
@@ -19,6 +19,10 @@ class EventService:
                 2020-12-28(강두연): 초기 생성
                 2020-12-29(강두연): 이벤트 리스트 조회 서비스 생성
                 2020-12-30(강두연): 이벤트 디테일 조회 서비스 생성
+                2020-12-31(강두연): 기획전 상품추가 페이지 카테고리 불러오기 서비스 생성
+                2020-12-31(강두연): 기획전 상품추가 페이지 상품 리스트 불러오기 서비스 생성
+                2021-01-02(강두연): 기획전 등록 서비스 생성
+                2021-01-02(강두연): 기획전 삭제 서비스 생성
     """
     def __init__(self, event_dao):
         self.event_dao = event_dao
@@ -461,6 +465,38 @@ class EventService:
                     self.event_dao.insert_product_into_event(connection, product)
 
             return data['event_id']
+
+        except Exception as e:
+            raise e
+
+    def event_delete_service(self, connection, data):
+        """ 기획전 삭제
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data: 뷰에서 넘겨 받은 딕셔너리
+
+            Returns:
+                성공여부
+
+            Raises:
+                400, {'message': 'key error',
+                      'errorMessage': 'key_error'} : 잘못 입력된 키값
+
+            History:
+                    2020-01-04(강두연): 초기 작성
+        """
+        try:
+            # 존재하지 않는 기획전 아이디 이거나, 논리삭제값이 0이 아닌경우 예외 처리포함
+            event = self.event_dao.get_event_detail(connection, data)
+
+            if event['event_kind_id'] == 2:
+                self.event_dao.delete_buttons_by_event(connection, data)
+
+            self.event_dao.delete_event_products_by_event(connection, data)
+            self.event_dao.delete_event(connection, data)
+
+            return True
 
         except Exception as e:
             raise e

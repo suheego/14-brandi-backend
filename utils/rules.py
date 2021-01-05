@@ -1,14 +1,10 @@
 """사용자 제작 규칙을 정의한다.
-
 request 를 통해 받은 Parameter 값을 이곳에 정의된 규칙과 비교해 에러 메세지를 처리해준다.
-
 기본적인 사용 예시:
-
 class CustomRule(AbstractRule):
     def validate(self, value:str) -> Tuple[str, list[str]]:
         ...
         return value, errors
-
 """
 
 import re
@@ -89,12 +85,10 @@ class UsernameRule(AbstractRule):
             errors.append('please_enter_6-20_letters_or_numbers')
         return value, errors
 
-      
+
 class PhoneRule(AbstractRule):
     """ 휴대폰 자리수 규칙
-
     10~11 자리 숫자를 허용한다.
-    
 
     Author: 김기용
 
@@ -134,11 +128,8 @@ class PasswordRule(AbstractRule):
 
 class PostalCodeRule(AbstractRule):
     """ 우편번호 자리수 규칙
-
     8 자리 숫자만 허용한다.
-
     Author: 김기용
-
     History:
         2020-12-28(김기용): 초기생성
     """
@@ -188,11 +179,8 @@ class DecimalRule(AbstractRule):
 
 class IsDeleteRule(AbstractRule):
     """ 논리 삭제 규칙
-
     0, 1 만 허용한다.
-
     Author: 김기용
-
     History:
         2020-12-28(김기용): 초기생성
     """
@@ -219,6 +207,14 @@ class BooleanRule(AbstractRule):
         errors = []
         if value not in exposure_set:
             errors.append('boolean field value should be 0 or 1')
+        return value, errors
+
+class OrderStatusRule(AbstractRule):
+    def validate(self, value):
+        status_set = [1, 2, 3, 8]
+        errors = []
+        if value not in status_set:
+            errors.append('order status must be one of 1, 2, 3, 8')
         return value, errors
 
 
@@ -326,7 +322,6 @@ class DateTimeRule(AbstractRule):
     """ DateTime 형식 벨리데이터 (YYYY-MM-DD hh:mm)
 
         Author: 강두연
-
         History:
             2021-01-02(강두연): 작성
     """
