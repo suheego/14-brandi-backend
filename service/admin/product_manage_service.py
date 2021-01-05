@@ -1,4 +1,5 @@
 from config                  import S3_BUCKET_URL
+from model                   import ProductManageDao, ProductCreateDao
 from utils.custom_exceptions import (
     DateCompareException,
     LookUpDateFieldRequiredCheck,
@@ -17,8 +18,10 @@ class ProductManageService:
         History:
             2020-12-31(심원두): 초기 생성
     """
-    def __init__(self, product_manage_dao):
-        self.product_manage_dao = product_manage_dao
+    
+    def __init__(self):
+        self.product_create_dao = ProductCreateDao()
+        self.product_manage_dao = ProductManageDao()
         
     def search_product_service(self, connection, data):
         """ 특정 조건에 따른 product 검색
@@ -84,7 +87,6 @@ class ProductManageService:
             
             data['page_number'] = int(data['page_number'])
             data['limit']       = int(data['limit'])
-            
             data['offset']      = (data['page_number'] * data['limit']) - data['limit']
             
             total_count  = self.product_manage_dao.get_total_products_count(
@@ -108,9 +110,9 @@ class ProductManageService:
                         'product_id'            : product['product_id'],
                         'seller_attribute_type' : product['seller_attribute_type'],
                         'seller_name'           : product['seller_name'],
-                        'origin_price'          : product['origin_price'],
-                        'discounted_price'      : product['discounted_price'],
-                        'discount_rate'         : product['discount_rate'],
+                        'origin_price'          : '{:,}'.format(int(product['origin_price'])),
+                        'discounted_price'      : '{:,}'.format(int(product['discounted_price'])),
+                        'discount_rate'         : int(product['discount_rate']) * 100,
                         'is_sale'               : product['is_sale'],
                         'is_display'            : product['is_display'],
                     } for product in product_list
@@ -195,15 +197,19 @@ class ProductManageService:
                 500, {'message': 'stock info not exist',
                       'errorMessage': 'stock_does_not_exist'}: 옵션 정보 취득 실패
         """
+        
         try:
-            product_detail = self.product_manage_dao.get_product_detail(connection, data)
+            product_detail     = self.product_manage_dao.get_product_detail(connection, data)
             
             data['product_id'] = product_detail['product_id']
+            
             product_images     = self.product_manage_dao.get_product_images(connection, data)
             product_options    = self.product_manage_dao.get_product_options(connection, data)
             
             result = {
                 'product_detail' : {
+                    'seller_id'                : product_detail['seller_id'],
+                    'seller_name'              : product_detail['seller_name'],
                     'product_code'             : product_detail['product_code'],
                     'is_sale'                  : product_detail['is_sale'],
                     'is_display'               : product_detail['is_display'],
@@ -213,7 +219,7 @@ class ProductManageService:
                     'sub_category_name'        : product_detail['sub_category_name'],
                     'is_product_notice'        : product_detail['is_product_notice'],
                     'manufacturer'             : product_detail['manufacturer'],
-                    'manufacturing_date'       : product_detail['manufacturing_date'].isoformat(),
+                    'manufacturing_date'       : product_detail['manufacturing_date'],
                     'product_origin_type_id'   : product_detail['product_origin_type_id'],
                     'product_origin_type_name' : product_detail['product_origin_type_name'],
                     'product_name'             : product_detail['product_name'],
