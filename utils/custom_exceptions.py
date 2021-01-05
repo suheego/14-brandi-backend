@@ -574,7 +574,7 @@ class OrderDoesNotExist(CustomUserError):
     """
     def __init__(self, error_message):
         status_code = 400
-        message = 'order does not exist'
+        message = 'order_does_not_exist'
         error_message = error_message
 
         super().__init__(status_code, message, error_message)

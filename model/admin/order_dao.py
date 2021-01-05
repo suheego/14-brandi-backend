@@ -151,7 +151,7 @@ class OrderDao:
             cursor.execute(sql, data)
             list = cursor.fetchall()
             if not list:
-                raise OrderDoesNotExist('order does not exist')
+                raise OrderDoesNotExist('주문 내역이 없습니다.')
             cursor.execute(total_count_sql, data)
             count = cursor.fetchall()
 
@@ -176,10 +176,10 @@ class OrderDao:
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             affected_row = cursor.execute(sql, data)
-            if affected_row == 0:
-                raise UnableToUpdate('unable to update status')
+            if affected_row != data['count_new_status']:
+                raise UnableToUpdate('업데이트가 불가합니다.')
 
-    def add_order_history_dao(self, connection, update_data):
+    def add_order_history_dao(self, connection, data):
         """ 주문 상태 변경 히스토리 생성
 
             Args:
@@ -196,9 +196,9 @@ class OrderDao:
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            created_rows = cursor.executemany(sql, update_data)
-            if created_rows == 0:
-                raise UnableToUpdate('unable to update status')
+            created_rows = cursor.executemany(sql, data['update_data'])
+            if created_rows != data['count_new_status']:
+                raise UnableToUpdate('업데이트가 불가합니다.')
 
 
 class OrderDetailDao():
@@ -256,7 +256,7 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                raise DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
 
 
@@ -305,7 +305,7 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                raise DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
 
 
@@ -356,7 +356,7 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                raise DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
 
 
@@ -406,7 +406,7 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                raise DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
 
 
@@ -440,12 +440,12 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                raise DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
 
 
     def get_updated_time_dao(self, connection, order_item_id):
-        """ 업데이트 시각
+        """ 업데이트 시각 이력
 
             Args:
                 connection   : 데이터베이스 연결 객체
@@ -492,7 +492,7 @@ class OrderDetailDao():
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             affect_row = cursor.execute(sql, data)
             if affect_row == 0:
-                raise DeniedUpdate('denied to update')
+                raise DeniedUpdate('업데이트가 실행되지 않았습니다.')
 
 
 
@@ -517,7 +517,7 @@ class OrderDetailDao():
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             affect_row = cursor.execute(sql, data)
             if affect_row == 0:
-                raise DeniedUpdate('denied to update')
+                raise DeniedUpdate('업데이트가 실행되지 않았습니다.')
 
 
     def update_address_dao(self, connection, data):
@@ -540,4 +540,4 @@ class OrderDetailDao():
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             affect_row = cursor.execute(sql, data)
             if affect_row == 0:
-                raise DeniedUpdate('denied to update')
+                raise DeniedUpdate('업데이트가 실행되지 않았습니다.')

@@ -20,7 +20,7 @@ class OrderView(MethodView):
         self.service = service
         self.database = database
 
-    #@signin_decorator
+    @signin_decorator
     @validate_params(
         Param('status', GET, int),
         Param('number', GET, str, required=False),
@@ -29,8 +29,8 @@ class OrderView(MethodView):
         Param('sender_phone', GET, str, required=False, rules=[NumberRule]),
         Param('seller_name', GET, str, required=False),
         Param('product_name', GET, str, required=False),
-        Param('start_date', GET, str, required=False),
-        Param('end_date', GET, str, required=False),
+        Param('start_date', GET, str, required=False, rules=[DateRule]),
+        Param('end_date', GET, str, required=False, rules=[DateRule]),
         Param('attributes', GET, list, required=False),
         Param('order_by', GET, str, required=False),
         Param('page', GET, int, rules=[PageRule()]),
@@ -38,10 +38,8 @@ class OrderView(MethodView):
     )
     def get(self, *args):
         data = {
-            #'permission': g.permission_type_id,
-            #'account': g.acount_id,
-            'permission': 2,
-            'account': 3,
+            'permission': g.permission_type_id,
+            'account': g.acount_id,
             'status': args[0],
             'number': args[1],
             'detail_number': args[2],
@@ -110,19 +108,25 @@ class OrderView(MethodView):
                 'errorMessage': 'key error'} : 잘못 입력된 키값
                 
             400, {'message': 'must_be_date_inputs_or_filter_inputs', 
-                'errorMessage': 'must be date inputs or filter inputs'}: 필터 조건 없음
+                'errorMessage': '검색어 조건과 날짜 조건 둘 중에 하나는 반드시 포함되어야 합니다.'}: 필터 조건 없음
                 
             400, {'message': 'must_be_other_date_input', 
-                'errorMessage': 'must be other date input'} : 날짜 조건 없음
+                'errorMessage': '시작일과 마지막일이 모두 포함되어야 합니다.'} : 날짜 조건 없음
                 
+            400, {'message': 'end_date_is_invalid', 
+                'errorMessage': '시작일이 마지막일보다 늦습니다.'} : 시작일이 마지막일보다 늦음
+
             400, {'message': 'unable_to_close_database', 
                 'errorMessage': 'unable to close database'}: 커넥션 종료 실패
                 
-            403, {'message': 'no_permission_to_get_order_list', 
-                'errorMessage': 'no permission to get order list'} : 주문 리스트 조회 권한 없음
+            403, {'message': 'no_permission', 
+                'errorMessage': '권한이 없습니다.'} : 주문 리스트 조회 권한 없음
                 
             400, {'message': 'order_does_not_exist', 
-                'errorMessage': 'order does not exist'} : 주문 리스트 없음
+                'errorMessage': '주문 내역이 없습니다.'} : 주문 리스트 없음
+                
+            500, {'message': 'internal_server_error',
+                     'errorMessage': 'internal server error'} : 알 수 없는 에러
             
 
         History:
@@ -152,8 +156,6 @@ class OrderView(MethodView):
         data = {
             'permission': g.permission_type_id,
             'account': g.acount_id,
-            'permission': 1,
-            'account': 1,
             "status": args[0],
             "ids": args[1]
         }
@@ -175,13 +177,16 @@ class OrderView(MethodView):
                     'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
                     
             400, {'message': 'now order status is not allowed to update status', 
-                    'errorMessage': 'now_order_status_is_not_allowed_to_update_status'}: 주문 상태 변경 불가능 상태
+                    'errorMessage': '현재 상태는 업데이트가 불가합니다.'}: 주문 상태 변경 불가능 상태
                     
-            400, {'message': 'unable to update status', 
-                    'errorMessage': 'unable_to_update_status'}: 수정 불가
+            400, {'message': 'unable_to_update_status', 
+                    'errorMessage': '업데이트가 불가합니다.'}: 수정 불가
                     
-            403, {'message': 'no permission', 
-                    'errorMessage': 'no_permission'} : 권한 없음
+            403, {'message': 'no_permission', 
+                    'errorMessage': '권한이 없습니다.'} : 권한 없음
+                    
+            500, {'message': 'internal_server_error',
+                     'errorMessage': 'internal server error'} : 알 수 없는 에러
 
         History:
             2021-01-01(김민서): 초기 생성    
@@ -296,10 +301,10 @@ class OrderDetailView(MethodView):
                 } : 필수 입력값 없음
                     
             400, {'message': 'does_not_exist_order_detail',
-                    'errorMessage': 'does not exist order detail'} : 주문 상세 정보 없음
+                    'errorMessage': '주문 상세 정보가 존재하지 않습니다.'} : 주문 상세 정보 없음
                     
             403, {'message': 'no_permission',
-                     'errorMessage': 'no permission'} : 권한 없음
+                     'errorMessage': '권한이 없습니다.'} : 권한 없음
                         
             400, {'message': 'unable_to_close_database',
                     'errorMessage': 'unable to close database'}: 커넥션 종료 실패
@@ -360,19 +365,22 @@ class OrderDetailView(MethodView):
                     'errorMessage': 'unable to close database'}: 커넥션 종료 실패
                     
             403, {'message': 'no_permission', 
-                    'errorMessage': 'no permission'} : 권한 없음
+                    'errorMessage': '권한이 없습니다.'} : 권한 없음
                     
             400, {'message': input_does_not_exist, 
-                    'errorMessage': 'input does not exist'} : 수정 정보 존재하지 않음
+                    'errorMessage': '수정 정보가 없습니다.'} : 수정 정보 존재하지 않음
                     
             400, {'message': 'one_of_address_inputs_does_not_exist', 
-                    'errorMessage': 'one of address inputs does not exist'} : 수정할 주소 정보 부족
+                    'errorMessage': '수정 주소 정보가 누락되었습니다.'} : 수정할 주소 정보 부족
                     
             400, {'message': 'unable_to_update', 
-                    'errorMessage': 'unable to update'} : 수정 불가   
+                    'errorMessage': '업데이트가 불가합니다.'} : 수정 불가   
                     
             400, {'message': 'denied_to_update', 
-                    'errorMessage': 'denied_to_update'} : 수정 실패
+                    'errorMessage': '업데이트가 실행되지 않았습니다.'} : 수정 실패
+                    
+            500, {'message': 'internal_server_error',
+                     'errorMessage': 'internal server error'} : 알 수 없는 에러
                     
 
         History:

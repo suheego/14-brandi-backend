@@ -63,20 +63,23 @@ class OrderService:
         try:
             # 권한 조회 및 에러 처리
             if not (data['permission'] == 1 or data['permission'] == 2):
-                raise NoPermission('no permission')
+                raise NoPermission('권한이 없습니다.')
 
             # 현재 주문 상태가 상품 준비 혹은 배송중이 아닌 경우 상태 업데이트 불가
             if not (data['status'] == 1 or data['status'] == 2):
-                raise NotAllowedStatus('now order status is not allowed to update status')
+                raise NotAllowedStatus('현재 상태는 업데이트가 불가합니다.')
 
             # 새로운 주문 상태 id 생성
             data['new_status'] = data['status'] + 1
 
-            #
-            update_data = [[id, data['new_status'], data['account']] for id in data['ids']]
+            # 주문 히스토리 DAO 데이터
+            data['update_data'] = [[id, data['new_status'], data['account']] for id in data['ids']]
+
+            # 주문 상태 변경 및 히스토리 내역 추가 개수
+            data['count_new_status'] = len(data['update_date'])
 
             self.admin_order_dao.update_order_status_dao(connection, data)
-            self.admin_order_dao.add_order_history_dao(connection, update_data)
+            self.admin_order_dao.add_order_history_dao(connection, data)
 
         except KeyError:
             return 'key_error'
@@ -86,7 +89,7 @@ class OrderService:
         try:
             # 권한 조회 및 에러 처리
             if not (data['permission'] == 1 or data['permission'] == 2):
-                raise NoPermission('no permission')
+                raise NoPermission('권한이 없습니다.')
             order_item_id = data["order_item_id"]
 
             # 주문 정보 조회
@@ -124,7 +127,7 @@ class OrderService:
         try:
             # 권한 조회 및 에러 처리
             if not (data['permission'] == 1 or data['permission'] == 2):
-                raise NoPermission('no permission')
+                raise NoPermission('권한이 없습니다.')
 
             order_item_id = data['order_item_id']
             updated_at_time = data['updated_at_time']
@@ -135,11 +138,11 @@ class OrderService:
 
             # 수정 정보가 없는 경우 에러 처리
             if not (sender_phone or recipient_phone or address1 or address2):
-                raise InputDoesNotExist('input does not exist')
+                raise InputDoesNotExist('수정 정보가 없습니다.')
 
             # 주소 정보와 상세 주소 정보 둘 중 하나가 없는 경우 에러 처리
             if (not address1 and address2) or (not address2 and address1):
-                raise UnableUpdateAddress('one of address inputs does not exist')
+                raise UnableUpdateAddress('수정 주소 정보가 누락되었습니다.')
 
             # 최근 업데이트 시각 정보 조회
             time = self.admin_order_dao.get_updated_time_dao(connection, order_item_id)
@@ -147,7 +150,7 @@ class OrderService:
 
             # 최근 업데이트 시각과 다를 때 에러 처리
             if time != updated_at_time:
-                raise UnableToUpdate('unable to update')
+                raise UnableToUpdate('업데이트가 불가합니다.')
 
             # 주소와 상세주소 정보 수정
             if address1 and address2:
