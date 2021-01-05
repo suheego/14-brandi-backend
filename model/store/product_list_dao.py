@@ -53,7 +53,7 @@ class ProductListDao:
         sql = """
         SELECT
             product_image.image_url AS image
-            , product.name
+            , product.name AS product_name
             , product.seller_id AS seller_id
             , seller.name AS seller_name
             , product.id AS product_id
@@ -237,8 +237,8 @@ class ProductListDao:
 
         sql="""
         SELECT DISTINCT
-            product_iamge.id
-            , product_image.image_url
+            product_image.id AS image_id
+            , product_image.image_url AS image_url
         FROM
             product_images AS product_image
         WHERE
@@ -375,9 +375,9 @@ class ProductListDao:
 
         sql = """
             SELECT
-                product.id
-                , product.name
-                , product.detail_infomation
+                product.id AS product_id
+                , product.name AS product_name
+                , product.detail_information
                 , product.seller_id AS seller_id
                 , seller.name AS seller_name
                 , product.origin_price
