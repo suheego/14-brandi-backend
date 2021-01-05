@@ -30,7 +30,7 @@ from .admin.enquiry_view import EnquiryView, AnswerView
 # admin2
 
 from .admin.seller_view import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView, SellerStatusView, \
-    SellerPasswordView, SellerSearchView
+    SellerPasswordView, SellerSearchView, SellerListView
 from .admin.product_create_view import MainCategoriesListView, CreateProductView
 from .admin.product_manage_view import ProductManageSearchView, ProductManageDetailView
 
@@ -398,6 +398,12 @@ def create_endpoints(app, services, database):
     app.add_url_rule('/admin/search',
                      view_func=SellerSearchView.as_view(
                          'seller_search_view',
+                         seller_service,
+                         database
+                     ))
+    app.add_url_rule('/admin/sellers',
+                     view_func=SellerListView.as_view(
+                         'seller_list_view',
                          seller_service,
                          database
                      ))

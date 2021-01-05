@@ -13,6 +13,7 @@ from flask                   import jsonify
 class SellerService:
 
     def __init__(self, config):
+        self.config = config
         self.seller_dao = SellerDao()
 
     def seller_signup_service(self, connection, data):
@@ -53,36 +54,41 @@ class SellerService:
         if not seller_info or not bcrypt.checkpw(data['password'].encode('utf-8'),seller_info['password'].encode('utf-8')):
             raise InvalidUser('invalid_user')
 
-        token = self.token_generator(seller_info['id'], seller_info['username'])
+        token = self.token_generator(seller_info)
 
         return token
 
-    def token_generator(self, account_id, username):
+    def token_generator(self, seller_info):
 
         payload = {
-            'account_id': account_id,
-            'username': username,
+            'account_id': seller_info['id']
+            ,'username' : seller_info['username']
+            ,'permission_type_id' : seller_info['permission_type_id']
         }
 
         token = jwt.encode(payload,
-                            self.config['SECRET_KEY'],
-                            self.config['ALGORITHM']).decode('utf-8')
+                            self.config['JWT_SECRET_KEY'],
+                            self.config['JWT_ALGORITHM']).decode('utf-8')
         if not token:
             raise TokenCreateDenied('token_create_fail')
 
         return token
 
+
     def seller_search_service(self, connection, data, page, page_view):
 
-        seller_list = self.seller_dao.get_seller_search(connection, data)
-        # page_size 몇개씩 보여줄건가
-        page = int(page)
-        page_view = int(page_view)
+        data['limit'] = int(page) * int(page_view)
+        data['offset'] = data['limit'] - int(page_view)
+        seller_info = self.seller_dao.get_seller_search(connection, data)
 
-        limit     = page * page_view
-        offset    = limit - page_view
-        seller_list  = seller_list[offset:limit]
+        return seller_info
 
+
+    def seller_list_service(self, connection, offset):
+        seller_list = self.seller_dao.get_seller_list(connection, offset)
+        if not seller_list:
+            return []
         return seller_list
+
 
       
