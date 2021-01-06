@@ -283,9 +283,6 @@ class ProductHistoryCreateDenied(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
-
-# S - 상품 등록 관련 Exception Class ===============================================================
-
 # class InvalidSellerId(CustomUserError):
 #     def __init__(self, error_message):
 #         status_code = 400
@@ -293,12 +290,19 @@ class ProductHistoryCreateDenied(CustomUserError):
 #         error_message = error_message
 #         super().__init__(status_code, message, error_message)
 
-# E - 상품 등록 관련 Exception Class ===============================================================
 
 class ProductSalesVolumeCreateDenied(CustomUserError):
     def __init__(self, error_message):
         status_code = 500
         message = 'product sales volume create denied'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+class ProductBookMarkVolumeCreateDenied(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        message = 'bookmark volume create denied'
         error_message = error_message
         super().__init__(status_code, message, error_message)
 

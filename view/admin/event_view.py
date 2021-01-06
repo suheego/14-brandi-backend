@@ -1,8 +1,18 @@
 import json
+import traceback
 from datetime import datetime
 
 from flask import jsonify, request
 from flask.views import MethodView
+from flask_request_validator import (
+    Param,
+    PATH,
+    JSON,
+    FORM,
+    GET,
+    validate_params
+)
+
 from utils.connection import get_connection
 from utils.custom_exceptions import (
     DatabaseCloseFail,
@@ -14,10 +24,8 @@ from utils.custom_exceptions import (
     ButtonsMinimumCount,
     StartAndEndDateContext,
     ImageIsRequired,
-    ProductButtonNameRequired,
-    EventDeleteDenied
+    ProductButtonNameRequired
 )
-
 from utils.rules import (
     NumberRule,
     EventStatusRule,
@@ -27,15 +35,6 @@ from utils.rules import (
     CategoryFilterRule,
     PageRule,
     DateTimeRule,
-)
-
-from flask_request_validator import (
-    Param,
-    PATH,
-    JSON,
-    FORM,
-    GET,
-    validate_params
 )
 
 
@@ -149,6 +148,7 @@ class EventView(MethodView):
             return jsonify({'message': 'success', 'result': events})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:
@@ -210,7 +210,7 @@ class EventView(MethodView):
                       'errorMessage': 'start and end datetime context error'} : 시작날짜가 종료날짜보다 미래일 때
 
             History:
-                    2020-01-02(강두연): 초기 작성
+                    2021-01-02(강두연): 초기 작성
         """
         data = {
             'name': request.form.get('name'),
@@ -275,6 +275,7 @@ class EventView(MethodView):
 
         except Exception as e:
             connection.rollback()
+            traceback.print_exc()
             raise e
 
         finally:
@@ -296,7 +297,7 @@ class EventDetailView(MethodView):
 
         History:
             2020-12-31(강두연): 초기 생성, 기획전 상세정보 조회 기능 작성
-            2020-01-04(강두연): 기획전 논리 삭제 작성
+            2021-01-04(강두연): 기획전 논리 삭제 작성
     """
     def __init__(self, service, database):
         self.service = service
@@ -469,6 +470,7 @@ class EventDetailView(MethodView):
             return jsonify({"message": "success", "result": result})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:
@@ -498,7 +500,7 @@ class EventDetailView(MethodView):
                       'errorMessage': 'failed to delete event'} : 이벤트 삭제 실패했을 때
 
             History:
-                    2020-01-04(강두연): 작성
+                    2021-01-04(강두연): 작성
         """
         data = {
             'event_id': args[0]
@@ -506,12 +508,156 @@ class EventDetailView(MethodView):
 
         try:
             connection = get_connection(self.database)
-            if not self.service.event_delete_service(connection, data):
-                raise EventDeleteDenied('failed to delete event')
+            self.service.event_delete_service(connection, data)
             connection.commit()
             return jsonify({'message': 'success', 'deleted_event_id': data['event_id']})
 
         except Exception as e:
+            connection.rollback()
+            traceback.print_exc()
+            raise e
+
+        finally:
+            try:
+                if connection:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+    @validate_params(
+        Param('event_id', PATH, int, required=True),
+        Param('name', FORM, str, required=True),
+        Param('start_datetime', FORM, str, required=True, rules=[DateTimeRule()]),
+        Param('end_datetime', FORM, str, required=True, rules=[DateTimeRule()]),
+        Param('is_display', FORM, int, required=True, rules=[BooleanRule()]),
+        Param('banner_image_uploaded', FORM, int, required=True, rules=[BooleanRule()]),
+        Param('detail_image_uploaded', FORM, int, required=True, rules=[BooleanRule()]),
+        Param('buttons', FORM, list, required=False),
+        Param('products', FORM, list, required=False)
+    )
+    def put(self, *args):
+        """ 기획전 수
+
+            Args:
+                args[0] (event_id): 기획전 번호(아이디)
+                name: 기획전 이름
+                start_datetime: 기획전 시작날짜시간
+                end_datetime: 기획전 종료날짜시간
+                is_display: 노출여부
+                banner_image_uploaded: 배너이미지 수정여부
+                detail_image_uploaded: 상세이미지 수정여부
+                buttons: 기획전에 수정된 버튼 (최종 버튼)
+                products: 기획전에 수정된 상품 (최종 상품)
+                banner_image: 배너이미지 파일
+                detail_image: 상세이미지 파일
+
+            Returns: {
+                'message': 'success',
+                'event_id': 수정된 기획전 아이디
+            }
+
+            Raises:
+                400, {'message': 'at least two buttons should be created',
+                      'errorMessage': 'button is required'} : 기획전 종류가 버튼형일때 버튼이 없을 때
+
+                400, {'message': 'at least two buttons should be created',
+                      'errorMessage': 'at least two buttons are required'} : 기획전 종류가 버튼인데 2개 미만의 버튼이 들어왔을 때
+
+                400, {
+                    'message': 'button name is required in each product',
+                    'errorMessage': 'button name is required in each product'
+                } : 기획전 종류가 버튼인데 상품에 버튼이름 키,값이 없을 때
+
+                400, {'message': 'Event kind does not match',
+                      'errorMessage': 'event kind is not buttons'} : 기획전 종류가 버튼형이 아닌데 버튼들에 대한 정보가 들어왔을 때
+
+                400, {'message': 'image files are required',
+                      'errorMessage': 'image is required'} : 이미지가 필요함
+
+                400, {'message': 'start date and end date context error',
+                      'errorMessage': 'start and end datetime context error'} : 시작날짜가 종료날짜보다 미래일 때
+
+            History:
+                    2021-01-04(강두연): 초기 작성
+        """
+        data = {
+            'event_id': args[0],
+            'name': request.form.get('name'),
+            'start_datetime': request.form.get('start_datetime'),
+            'end_datetime': request.form.get('end_datetime'),
+            'is_display': request.form.get('is_display'),
+            'banner_image_uploaded': request.form.get('banner_image_uploaded'),
+            'detail_image_uploaded': request.form.get('detail_image_uploaded')
+        }
+
+        if data['banner_image_uploaded'] == '1':
+            data['banner_image_uploaded'] = True
+            banner_image = request.files.get('banner_image')
+            # 이미지 파일 존재 유무 확인
+            if not banner_image or not banner_image.filename:
+                raise ImageIsRequired('banner image is required')
+            data['banner_image'] = banner_image
+        else:
+            data['banner_image_uploaded'] = False
+
+        if data['detail_image_uploaded'] == '1':
+            data['detail_image_uploaded'] = True
+            detail_image = request.files.get('detail_image')
+            # 이미지 파일 존재 유무 확인
+            if not detail_image or not detail_image.filename:
+                raise ImageIsRequired('detail image is required')
+            data['detail_image'] = detail_image
+        else:
+            data['detail_image_uploaded'] = False
+
+        buttons = request.form.get('buttons')
+        products = request.form.get('products')
+
+        if products:
+            products = json.loads(products)
+
+        # 시작 날짜가 종료날짜보다 미래일 때
+        start = datetime.strptime(data['start_datetime'], "%Y-%m-%d %H:%M")
+        end = datetime.strptime(data['end_datetime'], "%Y-%m-%d %H:%M")
+
+        if start >= end:
+            raise StartAndEndDateContext('start and end datetime context error')
+
+        try:
+            connection = get_connection(self.database)
+
+            # 기획전 종류 체크
+            data['event_kind_id'] = self.service.get_event_kind_id_service(connection, data['event_id'])
+            if data['event_kind_id'] == 2:
+                # 기획전 종류가 버튼인데 버튼이 없을 때
+                if not buttons:
+                    raise ButtonsMinimumCount('button is required')
+
+                buttons = json.loads(buttons)
+
+                # 기획전 종류가 버튼인데 2개 미만의 버튼이 들어왔을 때
+                if len(buttons) < 2:
+                    raise ButtonsMinimumCount('at least two buttons are required')
+
+                # 기획전 종류가 버튼인데 상품에 버튼이름 키,값이 없을 때
+                if products:
+                    for product in products:
+                        if 'button_name' not in product or not product['button_name']:
+                            raise ProductButtonNameRequired('button name is required in each product')
+
+            # 기획전 종류가 버튼형이 아닌데 버튼들에 대한 정보가 들어왔을 때
+            elif data['event_kind_id'] != 2 and buttons:
+                print(data['event_kind_id'])
+                raise EventKindDoesNotMatch('event kind is not buttons')
+
+            self.service.modify_event_service(connection, data, buttons, products)
+
+            connection.commit()
+
+            return jsonify({'message': 'success', 'event_id': data['event_id']}), 200
+
+        except Exception as e:
+            traceback.print_exc()
             connection.rollback()
             raise e
 
@@ -687,6 +833,7 @@ class EventProductsCategoryView(MethodView):
             return jsonify({'message': 'success', 'result': result})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:
@@ -834,6 +981,7 @@ class EventProductsToAddView(MethodView):
             return jsonify({'message': 'success', 'result': products})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:

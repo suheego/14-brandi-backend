@@ -302,6 +302,21 @@ class EnquiryUserTypeRule(AbstractRule):
         return value, errors
 
 
+class SellerTypeRule(AbstractRule):
+    """ 정해진 seller_attribute_type_id 만 허용한다.
+
+        Author: 김영환
+
+        History:
+            2021-01-01(김영환)
+    """
+    def validate(self, value):
+        sort_set = ['1', '2', '3','4', '5', '6', '7']
+        errors = []
+        if value not in sort_set:
+            errors.append('1~7 값만 받습니다.')
+        return value, errors
+
 class SortTypeRule(AbstractRule):
     """ 정해진 sort_type 만 허용한다.
         

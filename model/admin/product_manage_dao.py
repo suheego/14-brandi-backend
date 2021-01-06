@@ -17,6 +17,7 @@ class ProductManageDao:
             2020-12-31(심원두): 초기 생성
             2021-01-03(심원두): 상품 리스트 기능 구현, 상품 상세 정보 조회 기능 작성 중
     """
+    
     def __generate_where_sql(self, data):
         """상품 리스트 검색에 필요한 조건 쿼리문 편집
             
@@ -36,6 +37,7 @@ class ProductManageDao:
             
             Raises: -
         """
+        
         where_condition = ""
         
         try:
@@ -77,10 +79,8 @@ class ProductManageDao:
                     where_condition += "\nAND product.discount_rate = 0"
             
             # TODO: Login Decorator : seller sign-in not master
-            # if not data.get('seller_id', None):
-            #     where_condition += "\t" + \
-            #        "AND product.seller_id = '{seller_id}'" \
-            #        .format(seller_id=data['seller_id'])
+            if data['seller_id']:
+                where_condition += "\nAND product.seller_id = %(seller_id)s" \
         
         except Exception as e:
             raise e
@@ -105,6 +105,7 @@ class ProductManageDao:
             
             Raises: -
         """
+        
         sql = """
         SELECT
             COUNT(*) AS total_count
@@ -146,6 +147,7 @@ class ProductManageDao:
             Raises:
                 -
         """
+        
         sql = """
         SELECT
             product.updated_at AS 'updated_at'
@@ -173,6 +175,7 @@ class ProductManageDao:
             AND product_image.is_deleted = 0
             AND product_image.order_index = 1
         """
+        
         sql     += self.__generate_where_sql(data)
         order_by = "\nORDER BY product.id DESC"
         limit    = "\nLIMIT %(offset)s, %(limit)s;"
@@ -204,9 +207,13 @@ class ProductManageDao:
                 500, {'message': 'product does not exist',
                       'errorMessage': 'product_does_not_exist'} : 상품 정보 취득 실패
         """
+        
         sql = """
         SELECT
-            product.`product_code` AS 'product_code'
+            product.`id` AS 'product_id'
+            ,product.`product_code` AS 'product_code'
+            ,product.seller_id AS 'seller_id'
+            ,seller.`name` AS 'seller_name'
             ,product.`is_sale` AS 'is_sale'
             ,product.`is_display` AS 'is_display'
             ,product.main_category_id AS 'main_category_id'
@@ -229,14 +236,15 @@ class ProductManageDao:
             ,product.`minimum_quantity` AS 'minimum_quantity'
             ,product.`maximum_quantity` AS 'maximum_quantity'
             ,product.`updated_at` AS 'updated_at'
-            ,product.`id` AS 'product_id'
         FROM
             products AS product
+        INNER JOIN sellers AS seller
+            ON product.seller_id = seller.account_id
         INNER JOIN main_categories AS main_category
             ON product.main_category_id = main_category.id
         INNER JOIN sub_categories AS sub_category
             ON product.sub_category_id = sub_category.id
-        INNER JOIN product_origin_types AS product_origin_type
+        LEFT JOIN product_origin_types AS product_origin_type
             ON product.product_origin_type_id = product_origin_type.id
         WHERE
             product.is_deleted = 0
@@ -272,6 +280,7 @@ class ProductManageDao:
                 500, {'message': 'product image not exist',
                       'errorMessage': 'product_image_not_exist'}: 상품 이미지 정보 취득 실패
         """
+        
         sql = """
         SELECT
             image_url AS 'product_image_url'
@@ -285,14 +294,19 @@ class ProductManageDao:
             order_index ASC;
         """
         
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql, data)
-            result = cursor.fetchall()
+        try:
             
-            if not result:
-                raise ProductImageNotExist('product_image_not_exist')
-            
-            return result
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data)
+                result = cursor.fetchall()
+                
+                if not result:
+                    raise ProductImageNotExist('product_image_not_exist')
+                
+                return result
+        
+        except Exception as e:
+            raise e
     
     def get_product_options(self, connection, data):
         """상품 옵션 리스트 취득
@@ -313,6 +327,7 @@ class ProductManageDao:
                 500, {'message': 'stock info not exist',
                       'errorMessage': 'stock_does_not_exist'} : 옵션 정보 취득 실패
         """
+        
         sql = """
         SELECT
             stock.id AS 'stock_id'
@@ -336,11 +351,15 @@ class ProductManageDao:
             stock.product_option_code ASC;
         """
         
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(sql, data)
-            result = cursor.fetchall()
-            
-            if not result:
-                raise StockNotNotExist('stock_does_not_exist')
-    
-            return result
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, data)
+                result = cursor.fetchall()
+                
+                if not result:
+                    raise StockNotNotExist('stock_does_not_exist')
+        
+                return result
+        
+        except Exception as e:
+            raise e
