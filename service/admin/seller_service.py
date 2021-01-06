@@ -5,12 +5,16 @@ from utils.custom_exceptions import (
                                         InvalidUser
                                     )
 import bcrypt, jwt
+from model          import SellerDao
+
+from flask                   import jsonify
+
 
 class SellerService:
 
-    def __init__(self, seller_dao,config):
-        self.seller_dao = seller_dao
+    def __init__(self, config):
         self.config = config
+        self.seller_dao = SellerDao()
 
     def seller_signup_service(self, connection, data):
 
@@ -43,7 +47,6 @@ class SellerService:
         if not create_seller_history_result:
             raise UserCreateDenied('unable_to_create_seller_history')
 
-
     def seller_signin_service(self, connection, data):
 
         seller_info = self.seller_dao.get_seller_infomation(connection, data)
@@ -51,135 +54,41 @@ class SellerService:
         if not seller_info or not bcrypt.checkpw(data['password'].encode('utf-8'),seller_info['password'].encode('utf-8')):
             raise InvalidUser('invalid_user')
 
-        token = self.token_generator(seller_info['id'], seller_info['username'])
+        token = self.token_generator(seller_info)
 
         return token
 
-    def token_generator(self, account_id, username):
+    def token_generator(self, seller_info):
 
         payload = {
-            'account_id' : account_id,
-            'username': username,
+            'account_id': seller_info['id']
+            ,'username' : seller_info['username']
+            ,'permission_type_id' : seller_info['permission_type_id']
         }
 
         token = jwt.encode(payload,
-                           self.config['SECRET_KEY'],
-                           self.config['ALGORITHM']).decode('utf-8')
+                            self.config['JWT_SECRET_KEY'],
+                            self.config['JWT_ALGORITHM']).decode('utf-8')
         if not token:
             raise TokenCreateDenied('token_create_fail')
 
         return token
 
+
+    def seller_search_service(self, connection, data, page, page_view):
+
+        data['limit'] = int(page) * int(page_view)
+        data['offset'] = data['limit'] - int(page_view)
+        seller_info = self.seller_dao.get_seller_search(connection, data)
+
+        return seller_info
+
+
+    def seller_list_service(self, connection, offset):
+        seller_list = self.seller_dao.get_seller_list(connection, offset)
+        if not seller_list:
+            return []
+        return seller_list
+
+
       
-class SellerInfoService:
-
-    def __init__(self, seller_dao):
-        self.seller_dao = seller_dao
-
-    def get_seller_info(self, connection, data):
-        """해당 아이디를 가진 셀러 상세정보 검색 함수
-        seller_dao 의 get_seller_info 함수로 전달
-        Args:
-            connection : 데이터베이스 연결 객체
-            data       : seller 계정
-        Author:
-            이영주
-        Returns:
-            result_seller_info(dao로 전달)
-        Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}: 잘못 입력된 키값
-        History:
-            2020-12-28(이영주): 초기 생성
-        """
-        try:
-            account_id = data['account_id']
-            result_seller_info = self.seller_dao.get_seller_info(connection, account_id)
-            return result_seller_info
-
-        except KeyError:
-            raise KeyError('Key_error')
-
-    def get_seller_history(self, connection, data):
-        """해당 아이디를 가진 셀러 히스토리 검색 함수
-        Args:
-            connection: 데이터베이스 연결 객체
-            data      : View 에서 넘겨받은 dict 객체
-        Author: 이영주
-        Returns:
-                "result": [
-                    {
-                        "id": 50,
-                        "seller_status": "휴점",
-                        "updated_at": "Thu, 24 Dec 2020 23:31:43 GMT",
-                        "updater_name": "seller50"
-                    }
-                ]
-        Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}: 잘못 입력된 키값
-        History:
-            2020-12-29(이영주): 초기 생성/ 작업중
-        """
-        try:
-            account_id = data['account_id']
-            return self.seller_dao.get_history_dao(connection, account_id)
-
-        except KeyError:
-            raise KeyError('Key_error')
-
-    def patch_seller_info(self, connection, data):
-        """해당 아이디를 가진 셀러 정보 업데이트
-        Args:
-            connection: 데이터베이스 연결 객체
-            data      : View 에서 넘겨받은 dict 객체
-        Author: 이영주
-        Returns:
-            return
-        Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}: 잘못 입력된 키값
-
-        History:
-            2020-12-29(이영주): 초기 생성/ 작업중
-        """
-
-        try:
-            return self.seller_dao.patch_seller_info(connection, data)
-
-        except KeyError:
-
-            raise KeyError('Key_error')
-
-    def post_person_in_charge(self, connection, data):
-        """해당 아이디를 가진 셀러 정보 업데이트
-
-        Args:
-            connection: 데이터베이스 연결 객체
-            data      : View 에서 넘겨받은 dict 객체
-
-        Author: 이영주
-
-        Returns:
-            return
-
-        Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}: 잘못 입력된 키값
-
-        History:
-            2020-12-30(이영주): 초기 생성
-        """
-        try:
-#            if data['order_index'] == 1:
-#            return self.seller_dao.patch_seller_info(connection, data)
-
-
-
-            return self.seller_dao.post_person_in_charge(connection, data) #추가 담당자 로직
-
-
-
-# 그 해당 값이 동시에 들어올 수 있으니까 get 리스트를 써야하는게 맞dma
-        except KeyError:
-             raise KeyError('Key_error')
-
-
-        # get dao를 또 만들어야하는지?
-

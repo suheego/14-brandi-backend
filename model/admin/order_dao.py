@@ -18,53 +18,91 @@ class OrderDao:
             2020-2012-29(김민서): 초기 생성
             2020-12-30(김민서): 1차 수정
             2020-12-31(김민서): 2차 수정
+            2020-01-05(김민서): get_order_list_dao - sql문 정리
     """
 
+
     def get_order_list_dao(self, connection, data):
+        # 카운트 sql
         total_count_sql = """
-            SELECT COUNT(*) AS total_count
-        """
+                    SELECT COUNT(*) AS total_count
+                """
 
+        # 기본 sql
         sql = """
-            SELECT 
-                order_item.id,
-                order_item.created_at AS created_at_date,
-                order_item.updated_at AS updated_at_date,
-                `order`.order_number AS order_number,
-                order_item.order_detail_number AS order_detail_number,
-                seller.`name` AS seller_name,
-                product.`name` AS product_name,
-                CONCAT(color.`name`, '/', size.`name`) AS option_information,
-                stock.extra_cost AS option_extra_cost,
-                order_item.quantity AS quantity,
-                `order`.sender_name AS customer_name,
-                `order`.sender_phone AS customer_phone,
-                `order`.total_price AS total_price,
-                order_item_status.`name` AS `status`
-        """
+                    SELECT 
+                        order_item.id
+                        , order_item.created_at AS created_at_date
+                        , `order`.order_number AS order_number
+                        , order_item.order_detail_number AS order_detail_number
+                        , product.`name` AS product_name
+                        , `order`.sender_name AS customer_name
+                        , `order`.sender_phone AS customer_phone
+                """
 
+        # 마스터 공통 sql
+        master_sql = """
+                    , seller.`name` AS seller_name
+                    , `order`.total_price AS total_price
+                    , order_item_status.`name` AS `status`
+                """
+
+        # 필터링 sql
         extra_sql = """
-            FROM order_items AS order_item
-                INNER JOIN orders AS `order` 
-                    ON order_item.order_id = `order`.id
-                INNER JOIN products AS product 
-                    ON order_item.product_id = product.id
-                INNER JOIN sellers AS seller 
-                    ON product.seller_id = seller.account_id
-                INNER JOIN stocks AS stock 
-                    ON order_item.stock_id = stock.id
-                INNER JOIN colors AS color 
-                    ON stock.color_id = color.id
-                INNER JOIN sizes AS size 
-                    ON stock.size_id = size.id
-                INNER JOIN order_item_status_types AS order_item_status 
-                    ON order_item.order_item_status_type_id = order_item_status.id
-            WHERE
-                order_item.is_deleted = 0
-                AND order_item_status.id = %(status)s
-        """
+                    FROM order_items AS order_item
+                        INNER JOIN orders AS `order` 
+                            ON order_item.order_id = `order`.id
+                        INNER JOIN products AS product 
+                            ON order_item.product_id = product.id
+                        INNER JOIN sellers AS seller 
+                            ON product.seller_id = seller.account_id
+                        INNER JOIN stocks AS stock 
+                            ON order_item.stock_id = stock.id
+                        INNER JOIN colors AS color 
+                            ON stock.color_id = color.id
+                        INNER JOIN sizes AS size 
+                            ON stock.size_id = size.id
+                        INNER JOIN order_item_status_types AS order_item_status 
+                            ON order_item.order_item_status_type_id = order_item_status.id
+                    WHERE
+                        order_item.is_deleted = 0
+                        AND order_item_status.id = %(status)s
+                """
 
-        # 검색 권한 조건
+        permission = data['permission']
+        status = data['status']
+
+        # 마스터인 경우 공통 sql 추가
+        if permission == 1:
+            sql += master_sql
+
+        # 상품 준비 관리 상태가 아닌 경우
+        if not status == 1:
+            sql += ", order_item.updated_at AS updated_at_date"
+
+        # 마스터인 동시에 배송중 상태가 아닌 경우
+        if (permission == 1) and (not status == 2):
+            sql += """
+                , CONCAT(color.`name`, '/', size.`name`) AS option_information
+                , stock.extra_cost AS option_extra_cost
+                , order_item.quantity AS quantity
+            """
+
+        # 셀러인 동시에 배송중 상태가 아닌 경우
+        if (permission == 2) and (not status == 3):
+            sql += """
+                , order_item_status.`name` AS `status`
+            """
+
+        # 셀러인 동시에 상품 준비 상태이거나 구매 확정 상태인 경우
+        if (permission == 2) and (status == 1 or status == 8):
+            sql += """
+                , CONCAT(color.`name`, '/', size.`name`) AS option_information
+                , order_item.quantity AS quantity
+            """
+
+        # 필터링 조건 추가
+        # 권한 조건 확인
         if data["permission"] == 2:
             extra_sql += "AND seller.account_id = %(account)s"
 
@@ -113,12 +151,11 @@ class OrderDao:
             cursor.execute(sql, data)
             list = cursor.fetchall()
             if not list:
-                raise OrderDoesNotExist('order does not exist')
+                raise OrderDoesNotExist('주문 내역이 없습니다.')
             cursor.execute(total_count_sql, data)
             count = cursor.fetchall()
 
             return {'total_count': count[0]['total_count'], 'order_lists': list}
-
 
 
     def update_order_status_dao(self, connection, data):
@@ -139,10 +176,10 @@ class OrderDao:
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             affected_row = cursor.execute(sql, data)
-            if affected_row == 0:
-                raise UnableToUpdate('unable to update status')
+            if affected_row != data['count_new_status']:
+                raise UnableToUpdate('업데이트가 불가합니다.')
 
-    def add_order_history_dao(self, connection, update_data):
+    def add_order_history_dao(self, connection, data):
         """ 주문 상태 변경 히스토리 생성
 
             Args:
@@ -159,9 +196,9 @@ class OrderDao:
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            created_rows = cursor.executemany(sql, update_data)
-            if created_rows == 0:
-                raise UnableToUpdate('unable to update status')
+            created_rows = cursor.executemany(sql, data['update_data'])
+            if created_rows != data['count_new_status']:
+                raise UnableToUpdate('업데이트가 불가합니다.')
 
 
 class OrderDetailDao():
@@ -219,7 +256,7 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                raise DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
 
 
@@ -268,7 +305,7 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                raise DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
 
 
@@ -319,7 +356,7 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                raise DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
 
 
@@ -369,7 +406,7 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                raise DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
 
 
@@ -403,12 +440,12 @@ class OrderDetailDao():
             cursor.execute(sql, order_item_id)
             result = cursor.fetchall()
             if not result:
-                raise DoesNotOrderDetail('does not exist order detail')
+                raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
 
 
     def get_updated_time_dao(self, connection, order_item_id):
-        """ 업데이트 시각
+        """ 업데이트 시각 이력
 
             Args:
                 connection   : 데이터베이스 연결 객체
@@ -455,7 +492,7 @@ class OrderDetailDao():
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             affect_row = cursor.execute(sql, data)
             if affect_row == 0:
-                raise DeniedUpdate('denied to update')
+                raise DeniedUpdate('업데이트가 실행되지 않았습니다.')
 
 
 
@@ -480,7 +517,7 @@ class OrderDetailDao():
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             affect_row = cursor.execute(sql, data)
             if affect_row == 0:
-                raise DeniedUpdate('denied to update')
+                raise DeniedUpdate('업데이트가 실행되지 않았습니다.')
 
 
     def update_address_dao(self, connection, data):
@@ -503,4 +540,4 @@ class OrderDetailDao():
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             affect_row = cursor.execute(sql, data)
             if affect_row == 0:
-                raise DeniedUpdate('denied to update')
+                raise DeniedUpdate('업데이트가 실행되지 않았습니다.')
