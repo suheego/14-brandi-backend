@@ -2,7 +2,7 @@ import json
 import traceback
 from datetime import datetime
 
-from flask import jsonify, request
+from flask import jsonify, request, g
 from flask.views import MethodView
 from flask_request_validator import (
     Param,
@@ -14,6 +14,7 @@ from flask_request_validator import (
 )
 
 from utils.connection import get_connection
+from utils.decorator import signin_decorator
 from utils.custom_exceptions import (
     DatabaseCloseFail,
     DateMissingOne,
@@ -24,7 +25,8 @@ from utils.custom_exceptions import (
     ButtonsMinimumCount,
     StartAndEndDateContext,
     ImageIsRequired,
-    ProductButtonNameRequired
+    ProductButtonNameRequired,
+    NoPermission
 )
 from utils.rules import (
     NumberRule,
@@ -57,6 +59,7 @@ class EventView(MethodView):
         self.service = service
         self.database = database
 
+    @signin_decorator()
     @validate_params(
         Param('name', GET, str, required=False),
         Param('number', GET, str, required=False, rules=[NumberRule()]),
@@ -125,6 +128,8 @@ class EventView(MethodView):
                 2020-12-28(강두연): 초기 생성
                 2020-12-29(강두연): 검색 조건에 맞게 필터링 기능 작성
         """
+        if g.permission_type_id != 1:
+            raise NoPermission('마스터 이용자만 사용 가능합니다')
 
         data = {
             'name': args[0],
@@ -144,7 +149,7 @@ class EventView(MethodView):
 
         try:
             connection = get_connection(self.database)
-            events = self.service.get_events_service(connection, data)
+            events = self.service.get_events_sdervice(connection, data)
             return jsonify({'message': 'success', 'result': events})
 
         except Exception as e:
@@ -158,6 +163,7 @@ class EventView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database close fail')
 
+    @signin_decorator()
     @validate_params(
         Param('name', FORM, str, required=True),
         Param('start_datetime', FORM, str, required=True, rules=[DateTimeRule()]),
@@ -212,6 +218,9 @@ class EventView(MethodView):
             History:
                     2021-01-02(강두연): 초기 작성
         """
+        if g.permission_type_id != 1:
+            raise NoPermission('마스터 이용자만 사용 가능합니다')
+
         data = {
             'name': request.form.get('name'),
             'start_datetime': request.form.get('start_datetime'),
@@ -303,6 +312,7 @@ class EventDetailView(MethodView):
         self.service = service
         self.database = database
 
+    @signin_decorator()
     @validate_params(
         Param('event_id', PATH, int, required=True)
     )
@@ -463,6 +473,8 @@ class EventDetailView(MethodView):
         data = {
             'event_id': args[0]
         }
+        if g.permission_type_id != 1:
+            raise NoPermission('마스터 이용자만 사용 가능합니다')
 
         try:
             connection = get_connection(self.database)
@@ -480,10 +492,13 @@ class EventDetailView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database close fail')
 
+    @signin_decorator()
     @validate_params(
         Param('event_id', PATH, int, required=True)
     )
     def delete(self, *args):
+        if g.permission_type_id != 1:
+            raise NoPermission('마스터 이용자만 사용 가능합니다')
         """ 기획전 논리삭제
 
             Args:
@@ -524,6 +539,7 @@ class EventDetailView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database close fail')
 
+    @signin_decorator()
     @validate_params(
         Param('event_id', PATH, int, required=True),
         Param('name', FORM, str, required=True),
@@ -580,6 +596,9 @@ class EventDetailView(MethodView):
             History:
                     2021-01-04(강두연): 초기 작성
         """
+        if g.permission_type_id != 1:
+            raise NoPermission('마스터 이용자만 사용 가능합니다')
+
         data = {
             'event_id': args[0],
             'name': request.form.get('name'),
@@ -685,6 +704,7 @@ class EventProductsCategoryView(MethodView):
         self.service = service
         self.database = database
 
+    @signin_decorator()
     @validate_params(
         Param('filter', JSON, str, required=True, rules=[CategoryFilterRule()]),
         Param('menu_id', JSON, int, required=False, rules=[ProductMenuRule()]),
@@ -810,6 +830,8 @@ class EventProductsCategoryView(MethodView):
             History:
                 2020-12-31(강두연): 초기 작성
         """
+        if g.permission_type_id != 1:
+            raise NoPermission('마스터 이용자만 사용 가능합니다')
 
         data = {
             'filter': args[0],
@@ -861,6 +883,7 @@ class EventProductsToAddView(MethodView):
         self.service = service
         self.database = database
 
+    @signin_decorator()
     @validate_params(
         Param('product_name', GET, str, required=False),
         Param('product_number', GET, str, required=False, rules=[NumberRule()]),
@@ -941,6 +964,8 @@ class EventProductsToAddView(MethodView):
             History:
                     2020-12-31(강두연): 초기 작성
         """
+        if g.permission_type_id != 1:
+            raise NoPermission('마스터 이용자만 사용 가능합니다')
 
         data = {
             'product_name': args[0],
