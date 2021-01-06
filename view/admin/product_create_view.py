@@ -247,7 +247,7 @@ class CreateProductView(MethodView):
             Author: 심원두
             
             Returns:
-                200, {'message': 'success'}                                                             : 상품 정보 등록 성공
+                200, {'message': 'success'}                                                   : 상품 정보 등록 성공
             
             Raises:
                 400, {'message': 'key_error',
@@ -306,9 +306,6 @@ class CreateProductView(MethodView):
                 
                 500, {'message': 'stock create denied',
                       'errorMessage': 'unable_to_create_stocks'}                              : 상품 옵션 정보 등록 실패
-                
-                500, {'message': 'product history create denied',
-                      'errorMessage': 'unable_to_create_product_history'}                     : 상품 이력 등록 실패
                 
                 500, {'message': 'product history create denied',
                       'errorMessage': 'unable_to_create_product_history'}                     : 상품 이력 등록 실패

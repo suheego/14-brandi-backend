@@ -184,7 +184,7 @@ class ProductCreateService:
         
         except Exception as e:
             raise e
-
+    
     def create_product_images_service(self, connection, seller_id, product_id, product_code, product_images):
         """ 상품 이미지 등록
             
@@ -223,6 +223,7 @@ class ProductCreateService:
                 2020-12-29(심원두): 초기 생성
                 2021-01-03(심원두): 이미지 업로드 예외 처리 수정, 파일 손상 이슈 수정
                 2021-01-05(심원두): S3 에 이미지 업로드 처리를, 예외처리 처리 후에 하도록 수정.
+                2021-01-06(심원두): 인덱스가 0부터 들어가는 오류 수정
         """
         
         try:
@@ -244,7 +245,7 @@ class ProductCreateService:
                 buffer.seek(0)
                 
                 width, height, = image.size
-                if width > 640 or height > 720:
+                if width < 640 or height < 720:
                     raise FileScaleException('file_scale_at_least_640*720')
                 
                 if image.format != "JPEG":
@@ -273,7 +274,7 @@ class ProductCreateService:
                 data = {
                     'image_url'  : url,
                     'product_id' : product_id,
-                    'order_index': index
+                    'order_index': index + 1
                 }
                 
                 self.create_product_dao.insert_product_image(connection, data)
