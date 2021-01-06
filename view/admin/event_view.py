@@ -149,7 +149,7 @@ class EventView(MethodView):
 
         try:
             connection = get_connection(self.database)
-            events = self.service.get_events_sdervice(connection, data)
+            events = self.service.get_events_service(connection, data)
             return jsonify({'message': 'success', 'result': events})
 
         except Exception as e:
