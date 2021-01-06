@@ -439,13 +439,12 @@ class EventService:
 
             data['event_id'] = self.event_dao.create_event(connection, data)
 
-            if products and buttons:
+            if buttons:
                 button_product_matched = False
 
-            if buttons:
                 for button in buttons:
                     button['event_id'] = data['event_id']
-                    button_id = self.event_dao.create_button(connection, button)
+                    button_id = self.event_dao.create_or_update_button(connection, button)
                     if products:
                         for product in products:
                             if product['button_name'] == button['button_name']:
