@@ -406,7 +406,7 @@ class EventService:
                 } : 기획전 종류가 버튼형이고 추가할 상 객체가 있지만 상품과 매치된 버튼이 단 하나도 없음
 
             History:
-                    2020-01-02(강두연): 초기 작성
+                    2021-01-02(강두연): 초기 작성
         """
         try:
             banner_file_path = GenerateFilePath().generate_file_path(
@@ -424,18 +424,16 @@ class EventService:
             secured_detail_file_name = secure_filename(data['detail_image'].filename)
 
             # save to AMAZON S3
-            data['banner_image'] = S3FileManager().file_upload(
+            data['banner_image'] = S3_BUCKET_URL + S3FileManager().file_upload(
                 data['banner_image'],
                 banner_file_path + secured_banner_file_name
             )
 
-            data['detail_image'] = S3FileManager().file_upload(
+            data['detail_image'] = S3_BUCKET_URL + S3FileManager().file_upload(
                 data['detail_image'],
                 detail_file_path + secured_detail_file_name
             )
 
-            data['banner_image'] = S3_BUCKET_URL + data['banner_image']
-            data['detail_image'] = S3_BUCKET_URL + data['detail_image']
             data['start_datetime'] += ':00'
             data['end_datetime'] += ':00'
 
@@ -456,13 +454,14 @@ class EventService:
                                 button_product_matched = True
                                 self.event_dao.insert_product_into_button(connection, product)
 
-            if not button_product_matched:
-                raise ButtonProductDoesNotMatch('there are product and button objects but no buttons are matched')
+                if products and not button_product_matched:
+                    raise ButtonProductDoesNotMatch('there are product and button objects but no buttons are matched')
 
-            elif not buttons and products:
-                for product in products:
-                    product['event_id'] = data['event_id']
-                    self.event_dao.insert_product_into_event(connection, product)
+            else:
+                if products:
+                    for product in products:
+                        product['event_id'] = data['event_id']
+                        self.event_dao.insert_product_into_event(connection, product)
 
             return data['event_id']
 
@@ -484,7 +483,7 @@ class EventService:
                       'errorMessage': 'key_error'} : 잘못 입력된 키값
 
             History:
-                    2020-01-04(강두연): 초기 작성
+                    2021-01-04(강두연): 초기 작성
         """
         try:
             # 존재하지 않는 기획전 아이디 이거나, 논리삭제값이 0이 아닌경우 예외 처리포함
@@ -496,7 +495,148 @@ class EventService:
             self.event_dao.delete_event_products_by_event(connection, data)
             self.event_dao.delete_event(connection, data)
 
-            return True
+        except Exception as e:
+            raise e
+
+    def get_event_kind_id_service(self, connection, event_id):
+        """ 기획전 종류 아이디 가져오기 (버튼, 상품)
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                event_id: 뷰에서 넘겨받은 기획전 아이디
+
+            Returns:
+                성공여부
+
+            Raises:
+                400, {'message': 'key error',
+                      'errorMessage': 'key_error'} : 잘못 입력된 키값
+
+            History:
+                    2021-01-05(강두연): 초기 작성
+        """
+        try:
+            return self.event_dao.get_event_kind_id(connection, event_id)
+
+        except Exception as e:
+            raise e
+
+    def modify_event_service(self, connection, data, buttons=None, products=None):
+        """ 기획전 수정
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data: 뷰에서 넘겨 받은 딕셔너리
+                buttons: 상품이 버튼형일때 버튼에 대한 정보를 담고있는 딕셔너리 리스트
+                products: 기획전에 추가할 상품이 있을 때 상품에 대한 정보를 담고있는 딕셔너리 리스트
+
+            Returns:
+                None
+
+            Raises:
+                400, {'message': 'key error',
+                      'errorMessage': 'key_error'} : 잘못 입력된 키값
+
+                400, {
+                    'message': 'although there are product and button objects, no buttons are matched',
+                    'errorMessage': 'product is not mapped into any button'
+                } : 기획전 종류가 버튼형이고 추가할 상품 객체가 있지만 상품에 매치된 버튼이 없음
+
+            History:
+                    2021-01-04(강두연): 초기 작성
+                    2021-01-05(강두연): 로직 수정
+                    2021-01-06(강두연): 버튼관련 로직 수정
+        """
+        try:
+            # 배너 이미지 변경하면 업로드
+            if data['banner_image_uploaded']:
+                file_path = GenerateFilePath().generate_file_path(
+                    4,
+                    today=datetime.date.today().isoformat().replace('-', '/')
+                )
+                secured_file_name = secure_filename(data['banner_image'].filename)
+                data['banner_image'] = S3_BUCKET_URL + S3FileManager().file_upload(
+                    data['banner_image'],
+                    file_path + secured_file_name
+                )
+
+            # 상세 이미지 변경하면 업로드
+            if data['detail_image_uploaded']:
+                file_path = GenerateFilePath().generate_file_path(
+                    5,
+                    today=datetime.date.today().isoformat().replace('-', '/')
+                )
+                secured_file_name = secure_filename(data['detail_image'].filename)
+                data['detail_image'] = S3_BUCKET_URL + S3FileManager().file_upload(
+                    data['detail_image'],
+                    file_path + secured_file_name
+                )
+
+            data['start_datetime'] += ':00'
+            data['end_datetime'] += ':00'
+
+            self.event_dao.update_event_detail(connection, data)
+
+            # 버튼형이면 버튼 데이터 업데이트
+            if data['event_kind_id'] == 2:
+                # 전체 버튼 논리삭제
+                self.event_dao.delete_buttons_by_event(connection, data)
+
+                for button in buttons:
+                    button['event_id'] = data['event_id']
+                    # 생성하기전에 같은 이름, 이벤트 아이디를 가진 논리삭제된 버튼이 있으면 복구한 후 update 함
+                    button['id'] = self.event_dao.create_or_update_button(connection, button)
+
+                    if products:
+                        # 상품 데이터가 있으면 버튼아이디를 상품에 버튼에 관한 키 벨류 추가 (매핑)
+                        for product in products:
+                            if product['button_name'] == button['button_name']:
+                                product['product_matched'] = 1
+                                product['button_id'] = button['id']
+
+            if not products:
+                # 상품 데이터가 없으면 기존의 상품을 삭제하고 종료
+                self.event_dao.delete_event_products_by_event(connection, data)
+                return
+
+            # 상품 데이터가 있으면 정보 갱신
+            if products:
+                # 기존의 상품들 불러오기
+                exist_products = self.event_dao.get_event_products(connection, data)
+
+                for product in products:
+                    product['event_id'] = data['event_id']
+
+                    # 새로 받아온 등록할 각 상품 마다 기존에 기획전에 존재하는 상품인지 표기
+                    product['exist'] = False
+                    for exist_product in exist_products:
+                        if product['product_id'] == exist_product['product_id']:
+                            product['exist'] = True     # 이미 존재하는 상품인지 표기
+                            exist_products.remove(exist_product)    # exist_products 리스트에는 삭제처리해야하는 상품들만 남게 됨
+
+                    # 기획전이 버튼형일 때
+                    if data['event_kind_id'] == 2:
+                        if 'product_matched' not in product:
+                            # 버튼정보를 갱신하면서 버튼과 상품이 매핑이 되어야 하는데 안되었을 경우 예외처리
+                            raise ButtonProductDoesNotMatch('product is not mapped into any button')
+
+                        if product['exist']:
+                            # 버튼형이고 상품이 기존에 존재했더라면 종속되는 버튼이 바뀌는 경우만 고려
+                            if product['button_id'] != exist_product['event_button_id']:
+                                self.event_dao.move_button_products(connection, product)
+                        else:
+                            # 기존에 존재하지않다면 버튼에 상품 추가
+                            self.event_dao.insert_product_into_button(connection, product)
+
+                    # 버튼형이 아닐 때
+                    else:
+                        if not product['exist']:
+                            # 상품이 기존에 존재하는 상품이면 업데이트 할 내역이 없기 때문에 존재하지 않는 경우만 고려
+                            self.event_dao.insert_product_into_event(connection, product)
+
+                # 삭제처리 해야하는 상품들 삭제처리
+                for product_to_remove in exist_products:
+                    self.event_dao.delete_event_product(connection, product_to_remove)
 
         except Exception as e:
             raise e
