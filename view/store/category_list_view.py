@@ -1,3 +1,5 @@
+import traceback
+
 from flask.views import MethodView
 from flask import jsonify
 
@@ -78,6 +80,7 @@ class CategoryListView(MethodView):
             return jsonify({'message': 'success', 'result': result})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:

@@ -1,5 +1,3 @@
-import traceback
-
 import pymysql
 
 from utils.custom_exceptions import DatabaseError, DataManipulationFail
@@ -52,7 +50,6 @@ class UserDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def phone_exist_check(self, connection, data):
@@ -90,7 +87,6 @@ class UserDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def email_exist_check(self, connection, data):
@@ -128,7 +124,6 @@ class UserDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def create_account(self, connection, data):
@@ -176,7 +171,6 @@ class UserDao:
             raise e
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def create_user(self, connection, data):
@@ -224,10 +218,45 @@ class UserDao:
             raise e
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
-    def get_user_infomation(self, connection, data):
+    def get_account_id(self, connection, data):
+        """ 유저 account_id 조회
+
+                    Args:
+                        connection : 데이터베이스 연결 객체
+                        data       : 서비스에서 넘겨 받은 dict 객체
+
+                    Author: 김민구
+
+                    Returns:
+                        1 (account_id)
+
+                    Raises:
+                        500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+
+                    History:
+                        2021-01-05(김민구): 초기 생성
+                """
+
+        sql = """
+            SELECT 
+                account_id
+            FROM
+                users
+            WHERE
+                email = %(email)s
+        """
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(sql, data)
+                return cursor.fetchone()[0]
+
+        except Exception:
+            raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
+
+    def get_user_information(self, connection, data):
         """ 유저 account_id, 로그인아이디, 비밀번호, permission_type 조회
 
             Args:
@@ -256,17 +285,24 @@ class UserDao:
             FROM 
                 accounts
             WHERE 
-                username = %(username)s
-                AND is_deleted=0;
+                is_deleted=0
         """
 
         try:
+            if 'account_id' in data:
+                sql += """
+                AND id = %(account_id)s
+                """
+            elif 'username' in data:
+                sql += """
+                AND username = %(username)s
+                """
+
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
                 cursor.execute(sql, data)
                 return cursor.fetchone()
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def social_create_account(self, connection, data):
@@ -312,7 +348,6 @@ class UserDao:
             raise e
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def social_create_user(self, connection, data):
@@ -358,5 +393,4 @@ class UserDao:
             raise e
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')

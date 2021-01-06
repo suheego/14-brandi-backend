@@ -1,3 +1,5 @@
+import traceback
+
 from flask.views import MethodView
 from flask import jsonify, g
 
@@ -68,6 +70,7 @@ class BookmarkView(MethodView):
             return jsonify({'message': 'success'}), 200
 
         except Exception as e:
+            traceback.print_exc()
             connection.rollback()
             raise e
 
@@ -117,6 +120,7 @@ class BookmarkView(MethodView):
             return jsonify({'message': 'success'}), 200
 
         except Exception as e:
+            traceback.print_exc()
             connection.rollback()
             raise e
 

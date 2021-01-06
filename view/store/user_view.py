@@ -1,3 +1,5 @@
+import traceback
+
 from flask.views import MethodView
 from flask import jsonify, request
 
@@ -7,8 +9,8 @@ from flask_request_validator import (
     JSON
 )
 
-# from google.oauth2 import id_token
-# from google.auth.transport import requests
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 from utils.connection import get_connection
 from utils.custom_exceptions import InvalidToken, DatabaseCloseFail
@@ -85,6 +87,7 @@ class SignUpView(MethodView):
             return jsonify({'message': 'success'}), 200
 
         except Exception as e:
+            traceback.print_exc()
             connection.rollback()
             raise e
 
@@ -158,6 +161,7 @@ class SignInView(MethodView):
             return jsonify({'message': 'success', 'token': token}), 200
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:
@@ -216,6 +220,7 @@ class GoogleSocialSignInView(MethodView):
                 2020-12-29(김민구): 초기 생성
                 2020-12-31(김민구): 에러 문구 변경
                 2021-01-02(김민구): 데이터 조작 에러 추가
+                2021-01-05(김민구): 기존 회원이 존재할 때 username이 달라서 생기는 이슈를 제거함
         """
 
         connection = None
@@ -223,11 +228,13 @@ class GoogleSocialSignInView(MethodView):
             google_token = request.headers.get('Authorization')
             connection = get_connection(self.database)
             user_info = id_token.verify_oauth2_token(google_token, requests.Request())
+
             token = self.user_service.social_sign_in_logic(connection, user_info)
             connection.commit()
             return jsonify({'message': 'success', 'token': token}), 200
 
         except Exception as e:
+            traceback.print_exc()
             connection.rollback()
             raise e
 

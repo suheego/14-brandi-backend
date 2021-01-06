@@ -1,5 +1,3 @@
-import traceback
-
 from utils.custom_exceptions import DatabaseError, DataManipulationFail
 
 
@@ -54,7 +52,6 @@ class BookmarkDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def create_bookmark(self, connection, data):
@@ -95,7 +92,6 @@ class BookmarkDao:
             raise e
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def delete_bookmark(self, connection, data):
@@ -136,7 +132,6 @@ class BookmarkDao:
             raise e
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def update_bookmark_volume_count(self, connection, data):
@@ -155,6 +150,12 @@ class BookmarkDao:
 
         History:
             2021-01-02(김민구): 초기 생성
+
+        Notes:
+            bookmark_count는 unsigned가 걸려있음
+            만약 0인 상태에서 -1이 연산된다면 데이터 입력이 실패하게 된다.
+            이 때 에러를 발생시키지 않고 success로 넘긴다.
+            데이터베이스의 unsigned error 번호는 1690이므로 1690에 대한 에러가 뜬다면 None을 리턴시킨다.
         """
 
         sql = """
@@ -163,18 +164,14 @@ class BookmarkDao:
             SET 
                 bookmark_count = bookmark_count + %(count)s
             WHERE
-                product_id = %(product_id)s;
+                product_id = %(product_id)s
         """
 
         try:
             with connection.cursor() as cursor:
-                result = cursor.execute(sql, data)
-                if not result:
-                    raise DataManipulationFail('북마크 추가 혹은 삭제를 실패하였습니다.')
+                cursor.execute(sql, data)
 
-        except DataManipulationFail as e:
-            raise e
-
-        except Exception:
-            traceback.print_exc()
+        except Exception as e:
+            if '1690' in e.__str__():
+                return None
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
