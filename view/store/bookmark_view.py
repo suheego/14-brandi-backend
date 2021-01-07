@@ -25,6 +25,7 @@ class BookmarkView(MethodView):
 
         History:
             2020-01-02(김민구): 초기 생성
+            2020-01-07(김민구): 상품 존재 유무 체크 추가
     """
 
     def __init__(self, services, database):
@@ -56,6 +57,10 @@ class BookmarkView(MethodView):
                 500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'}  : 데이터베이스 에러
                 500, {'message': 'data_manipulation_fail', 'error_message': '북마크 추가를 실패하였습니다.'} : 데이터 조작 에러
                 500, {'message': 'internal_server_error', 'error_message': format(e)})               : 서버 에러
+
+        History:
+            2020-01-02(김민구) 초기 생성
+            2020-01-07(김민구): 상품 존재 유무 체크 추가
         """
 
         connection = None
@@ -106,6 +111,10 @@ class BookmarkView(MethodView):
                 500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'}  : 데이터베이스 에러
                 500, {'message': 'data_manipulation_fail', 'error_message': '북마크 삭제를 실패하였습니다.'} : 데이터 조작 에러
                 500, {'message': 'internal_server_error', 'error_message': format(e)})               : 서버 에러
+
+        History:
+            2020-01-02(김민구) 초기 생성
+            2020-01-07(김민구): 상품 존재 유무 체크 추가
         """
 
         connection = None
