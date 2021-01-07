@@ -65,7 +65,7 @@ class ProductListService:
 
             Args:
                 connection: 데이터베이스 연결 객체
-                search    : 쿼리스트링이 담긴 변수
+                data      : 쿼리스트링이 담긴 변수
 
             Author: 김기용
 
@@ -93,7 +93,7 @@ class ProductListService:
 
             Args:
                 connection: 데이터베이스 연결 객체
-                search    : 쿼리스트링이 담긴 변수
+                data    : 쿼리스트링이 담긴 변수
 
             Author: 김기용
 
@@ -102,17 +102,18 @@ class ProductListService:
 
             History:
                 2020-12-31(김기용): 초기 생성
-                2020-01-05(김기용): 누락된여러개의 size와 color 값을 추가
+                2020-01-05(김기용): 누락된여러개의 size 와 color 값을 추가
         """
+        try:
 
-        # product_image를 가져온다
-        images = self.product_dao.get_product_image_dao(connection, data)
-        sizes = self.product_dao.get_product_size_dao(connection, data)
-        colors = self.product_dao.get_product_color_dao(connection, data)
-        product = self.product_dao.get_product_detail_dao(connection, data)
-        product['colors'] = colors
-        product['sizes'] = sizes
-        product['images'] = images 
+            images = self.product_dao.get_product_image_dao(connection, data)
+            sizes = self.product_dao.get_product_size_dao(connection, data)
+            colors = self.product_dao.get_product_color_dao(connection, data)
+            product = self.product_dao.get_product_detail_dao(connection, data)
+            product['colors'] = colors
+            product['sizes'] = sizes
+            product['images'] = images
+            return product
+        except KeyError('키 값이 일치하지 않습니다.'):
+            raise
 
-        return product
-        

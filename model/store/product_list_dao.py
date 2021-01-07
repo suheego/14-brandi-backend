@@ -74,6 +74,7 @@ class ProductListDao:
             ON bookmark.product_id = product.id
         WHERE
             product.name LIKE %(search)s
+            AND product.is_deleted=0
         ORDER BY
              (CASE WHEN %(sort_type)s=1 THEN bookmark_count END) DESC
             , (CASE WHEN %(sort_type)s=2 THEN sales_count END) DESC
@@ -81,7 +82,7 @@ class ProductListDao:
         LIMIT %(limit)s;
 
         """
-        # 내부적으로 CASE가 동작이 어떻게 되는지 알아보기 CASE
+
         try:
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
                 data['search'] = '%%' + data['search'] + '%%' 
@@ -235,7 +236,7 @@ class ProductListDao:
                 2020-01-00(김기용): 초기 생성
         """
 
-        sql="""
+        sql = """
         SELECT DISTINCT
             product_image.id AS image_id
             , product_image.image_url AS image_url
@@ -276,6 +277,7 @@ class ProductListDao:
             History:
                 2020-01-00(김기용): 초기 생성
         """
+
         sql = """
             SELECT DISTINCT
                 color.name AS color_name
@@ -342,7 +344,8 @@ class ProductListDao:
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_product_detail_dao(self, connection, data):
-        """ 상품 검색 및 정렬
+        """ 상품 상세정보
+
             Args:
                 connection : 데이터베이스 연결 객체
                 data       : 서비스에서 넘겨 받은 data
@@ -370,7 +373,8 @@ class ProductListDao:
                 2020-12-31(김기용): 초기 생성
                 2021-01-01(김기용): 1차 수정: 구현 완료
                 2021-01-02(김기용): 2차 수정: 북마크 개수 추가
-                2021-01-03(김기용): 3차 수정: 유저별 북마크 확인
+                2021-01-03(김기용): 3차 수정: 유저별 북마크 확인기능 추가
+                2021-01-05(김기용): 4차 수정: 비회원 로그인 북마크 반환값 추가
         """
 
         sql = """
@@ -385,36 +389,51 @@ class ProductListDao:
                 , product.discounted_price
                 , product_sales_volume.sales_count
                 , bookmark.bookmark_count
+                                        
+        """
+
+        sql_with_account = """
                 , EXISTS(
-                    SELECT
-                        id
+                            SELECT
+                                id
+                            FROM
+                                bookmarks
+                            WHERE
+                                account_id = %(account_id)s
+                                AND product_id= %(product_id)s
+                                AND is_deleted =0
+                            ) AS is_bookmarked
+                """
+
+        sql_without_account = """
                     FROM
-                        bookmarks
+                        products AS product
+                    INNER JOIN stocks AS stock
+                        ON stock.product_id = product.id
+                    INNER JOIN sellers AS seller
+                        ON product.seller_id = seller.account_id
+                    INNER JOIN product_sales_volumes AS product_sales_volume
+                        ON product_sales_volume.product_id = product.id
+                    INNER JOIN bookmark_volumes AS bookmark
+                        ON bookmark.product_id = product.id
                     WHERE
-                        account_id = %(account_id)s
-                        AND product_id= %(product_id)s
-                        AND is_deleted =0
-                    ) AS is_bookmarked
-            FROM
-                products AS product
-            INNER JOIN stocks AS stock
-                ON stock.product_id = product.id
-            INNER JOIN sellers AS seller
-                ON product.seller_id = seller.account_id
-            INNER JOIN product_sales_volumes AS product_sales_volume
-                ON product_sales_volume.product_id = product.id
-            INNER JOIN bookmark_volumes AS bookmark
-                ON bookmark.product_id = product.id
-            WHERE 
-                product.id = %(product_id)s
-                AND product.is_deleted = 0
-                ;
+                        product.id = %(product_id)s
+                        AND product.is_deleted = 0
+                        ;
         """
         try:
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                if 'account_id' not in data:
+                    sql += sql_without_account
+                    cursor.execute(sql, data)
+                    result = cursor.fetchone()
+                    result['is_bookmarked'] = 0
+                    return result
+                sql += sql_with_account + sql_without_account
                 cursor.execute(sql, data)
                 result = cursor.fetchone()
                 return result
+
         except Exception:
             traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
