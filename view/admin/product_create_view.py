@@ -10,6 +10,7 @@ from utils.custom_exceptions import (
 from utils.rules import (
     NumberRule, DateRule
 )
+from flask_request_validator.rules  import NotEmpty
 from flask_request_validator import (
     Param,
     FORM,

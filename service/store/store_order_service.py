@@ -100,9 +100,7 @@ class StoreOrderService:
                 raise CheckoutDenied('unable_to_checkout')
 
             # 상품 품절 여부 체크
-            sold_out = self.store_order_dao.order_product_soldout_dao(connection, data)
-            if sold_out['sold_out'] is True:
-                raise CheckoutDenied('unable_to_checkout')
+            self.store_order_dao.order_product_soldout_dao(connection, data)
 
             # 배송 정보 추가 (배송 메모가 직접 입력일 경우)
             if data['delivery_memo_type_id'] == 5:
