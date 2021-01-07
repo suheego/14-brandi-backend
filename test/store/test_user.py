@@ -59,6 +59,9 @@ class TestUser(TestCase):
         mock_id_token.verify_oauth2_token.return_value = {
              "email": "test_user@gmail.com"
         }
-        response = self.client.post('/users/social-signin', headers={'Authorization': 'google_token'})
+        response = self.client.post(
+            '/users/social-signin',
+            headers={'Authorization': 'google_token'}
+        )
         assert response.status_code == 200
         assert b'token' in response.data

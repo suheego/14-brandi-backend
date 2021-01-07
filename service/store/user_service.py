@@ -86,7 +86,7 @@ class UserService:
                 2020-12-31(김민구): 에러 문구 변경
         """
 
-        user = self.user_dao.get_user_infomation(connection, data)
+        user = self.user_dao.get_user_information(connection, data)
         if not user or not bcrypt.checkpw(data['password'].encode('utf-8'), user['password'].encode('utf-8')):
             raise InvalidUser('로그인에 실패했습니다.')
 
@@ -123,6 +123,7 @@ class UserService:
         token = jwt.encode(payload, self.config['JWT_SECRET_KEY'], self.config['JWT_ALGORITHM']).decode('utf-8')
         if not token:
             raise TokenCreateDenied('로그인에 실패했습니다.')
+
         return token
 
     def social_sign_in_logic(self, connection, data):
@@ -144,30 +145,36 @@ class UserService:
             History:
                 2020-12-29(김민구): 초기 생성
                 2020-12-31(김민구): 에러 문구 변경
+                2021-01-05(김민구): 기존 회원이 존재할 때 username이 달라서 생기는 이슈를 제거함
 
             Notes:
-                소셜이 구글 하나라고 가정한 상황이기 때문에 확장성이 떨어짐
-                확장성을 떠나서도 너무 하드코딩적인 방식
-                테이블 구조를 바꿔야 합당하나 시간관계상 아래와 같이 진행
-                소셜회원은 email의 아이디 뒤에 해당 "/소셜 플랫폼"을 추가
-                어차피 소셜회원은 브랜디 계정 전환 전까지 일반 로그인을 할 수가 없다.(비밀번호가 없다)
-                소셜회원이 브랜디 계정으로 전환할 시 "/소셜 플랫폼"을 제거해서 브랜디 회원에 해당 아이디가 존재하는 지 확인
+                테이블 구조를 바꿔야 합당하나 시간관계상 그냥 진행
+                    - accounts와 1대1관계인 social_users 필요
+                    - 여러 가지 소셜 플랫폼을 관리하는 테이블인 social_platforms 필요
+
+                소셜회원은 email주소를 아이디로 판단
+                소셜회원은 브랜디 계정 전환 전까지 일반 로그인을 할 수가 없다.(비밀번호가 없다)
+                소셜회원이 브랜디 계정으로 전환할 시 "@소셜 플랫폼 주소"를 제거해서 브랜디 회원에 해당 아이디가 존재하는 지 확인
                 아이디가 없다면 그 아이디 그대로 회원가입 진행
                 중복 아이디라면 아이디를 바꿔서 가입할 수 있게 만든다.
         """
 
-        email = data['email']
-        data['username'] = email.split('@')[0] + '/google'
         email_check = self.user_dao.email_exist_check(connection, data)
+
         if not email_check:
+            data['username'] = data['email']
             data['permission_type_id'] = 3
             account_id = self.user_dao.social_create_account(connection, data)
             data['account_id'] = account_id
             self.user_dao.social_create_user(connection, data)
+            user = self.user_dao.get_user_information(connection, data)
 
-        user = self.user_dao.get_user_infomation(connection, data)
+        else:
+            data['account_id'] = self.user_dao.get_account_id(connection, data)
+            user = self.user_dao.get_user_information(connection, data)
+
         if not user:
             raise InvalidUser('구글 소셜 로그인에 실패했습니다.')
-        print(user)
+
         token = self.token_generator(user)
         return token

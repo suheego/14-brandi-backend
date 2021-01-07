@@ -1,3 +1,5 @@
+import traceback
+
 from flask.views import MethodView
 from flask import jsonify
 
@@ -31,14 +33,16 @@ class EventBannerListView(MethodView):
         self.database = database
 
     @validate_params(
-        Param('offset', GET, int),
-        Param('is_proceeding', GET, bool)
+        Param('offset', GET, int, required=False, default=0),
+        Param('limit', GET, int, required=False, default=30),
+        Param('is_proceeding', GET, bool, required=False, default=1)
     )
     def get(self, *args):
         """ GET 메소드: 기획전 배너 리스트 조회
 
             Args:
                 offset = 0부터 시작
+                limit = 30단위
                 is_proceeding = 0 or 1
 
             Author: 김민구
@@ -77,13 +81,15 @@ class EventBannerListView(MethodView):
         try:
             data = {
                 'offset': args[0],
-                'is_proceeding': args[1]
+                'limit': args[1],
+                'is_proceeding': args[2]
             }
             connection = get_connection(self.database)
             result = self.event_list_service.event_banner_list_logic(connection, data)
             return jsonify({'message': 'success', 'result': result})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:
@@ -158,6 +164,7 @@ class EventDetailInformationView(MethodView):
             return jsonify({'message': 'success', 'result': result})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:
@@ -231,6 +238,7 @@ class EventDetailButtonListView(MethodView):
             return jsonify({'message': 'success', 'result': result})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:
@@ -259,7 +267,8 @@ class EventDetailProductListView(MethodView):
         self.database = database
 
     @validate_params(
-        Param('offset', GET, int),
+        Param('offset', GET, int, required=False, default=0),
+        Param('limit', GET, int, required=False, default=30),
         Param('event_id', PATH, int, rules=[PositiveInteger()])
     )
     def get(self, *args):
@@ -267,6 +276,7 @@ class EventDetailProductListView(MethodView):
 
             Args:
                 offset = 0부터 시작 (30 단위)
+                limit = 30단위
                 event_id = 기획전 아이디
 
             Author: 김민구
@@ -310,13 +320,15 @@ class EventDetailProductListView(MethodView):
         try:
             data = {
                 'offset': args[0],
-                'event_id': args[1]
+                'limit': args[1],
+                'event_id': args[2]
             }
             connection = get_connection(self.database)
             result = self.event_list_service.event_detail_list_logic(connection, data)
             return jsonify({'message': 'success', 'result': result})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:

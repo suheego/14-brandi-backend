@@ -21,7 +21,7 @@ class ProductEnquiryService:
 
             Args:
                 connection : 데이터베이스 연결 객체
-                data       : view에서 넘겨 받은 dict (product_id, type, offset, [user_id])
+                data       : view에서 넘겨 받은 dict (product_id, type, offset, limit, [user_id])
                     type = self, all
 
             Author: 김민구
@@ -92,7 +92,7 @@ class ProductEnquiryService:
 
             Args:
                 connection : 데이터베이스 연결 객체
-                data       : view에서 넘겨 받은 dict (product_id, type, offset, user_id)
+                data       : view에서 넘겨 받은 dict (product_id, type, offset, limit, user_id)
                     type = wait, complete, all
 
             Author: 김민구

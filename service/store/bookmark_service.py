@@ -1,5 +1,5 @@
 from model import BookmarkDao
-from utils.custom_exceptions import AlreadyExistBookmark, NotExistBookmark
+from utils.custom_exceptions import AlreadyExistBookmark, NotExistBookmark, ProductNotExist
 
 
 class BookmarkService:
@@ -12,6 +12,7 @@ class BookmarkService:
 
         History:
             2020-01-02(김민구): 초기 생성
+            2020-01-07(김민구): 상품 존재 유무 체크 추가
     """
 
     def __init__(self):
@@ -34,6 +35,10 @@ class BookmarkService:
         History:
             2021-01-02(김민구): 초기 생성
         """
+
+        product_exist = self.bookmark_dao.get_product_exist(connection, data)
+        if not product_exist:
+            raise ProductNotExist('해당 상품이 존재하지 않습니다.')
 
         exist = self.bookmark_dao.get_bookmark_exist(connection, data)
         if exist:
@@ -60,7 +65,12 @@ class BookmarkService:
 
         History:
             2021-01-02(김민구): 초기 생성
+            2020-01-07(김민구): 상품 존재 유무 체크 추가
         """
+
+        product_exist = self.bookmark_dao.get_product_exist(connection, data)
+        if not product_exist:
+            raise ProductNotExist('해당 상품이 존재하지 않습니다.')
 
         exist = self.bookmark_dao.get_bookmark_exist(connection, data)
         if not exist:

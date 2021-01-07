@@ -1169,3 +1169,44 @@ class ButtonProductDoesNotMatch(CustomUserError):
         error_message = error_message
         super().__init__(status_code, message, error_message)
 
+
+class ButtonProductDoesNotMatch(CustomUserError):
+    """ 기획전 종류가 버튼형이고 상품추가할 객체가 있지만 상품과 매치된 버튼이 단 하나도 없음
+
+        Author: 강두연
+
+        History:
+            2021-01-02(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'although there are product and button objects, no buttons are matched'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
+
+
+
+
+
+
+
+
+
+
+
+
+class NotEnoughProduct(CustomUserError):
+    """ 재고가 충분하지 않음
+
+        Author: 고수희
+
+        History:
+            2021-01-06(강두연): 작성
+    """
+
+    def __init__(self, error_message):
+        status_code = 400
+        message = 'Not Enough Product'
+        error_message = error_message
+        super().__init__(status_code, message, error_message)
