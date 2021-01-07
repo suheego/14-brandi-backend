@@ -5,6 +5,7 @@ from flask_request_validator.rules  import NotEmpty
 from utils.connection        import get_connection
 from utils.custom_exceptions import DatabaseCloseFail
 from utils.rules             import NumberRule, PageRule, DateRule, DefaultRule
+from flask_request_validator.rules  import NotEmpty
 from flask_request_validator import (
     Param,
     GET,

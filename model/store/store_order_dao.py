@@ -5,6 +5,8 @@ from utils.custom_exceptions import (
     OrderNotExist,
     OrderCreateDenied,
     ProductNotExist,
+    CheckoutDenied,
+    NotEnoughProduct,
     DeleteDenied,
     DeliveryMemoCreateDenied,
     OrderItemCreateDenied,
@@ -107,12 +109,23 @@ class StoreOrderDao:
                 if not result:
                     raise ProductNotExist('product_does_not_exist')
 
+                # 상품 재고가 주문량을 소화할 수 있는지 체크
+                if result['remain'] < data['quantity']:
+                    raise NotEnoughProduct('Not as many in stock as quantity')
+
                 # 상품 재고가 0인지 확인하여, 상품이 품절되었는지 체크
                 if result['remain'] <= 0:
-                    return {'sold_out': True}
-                return {'sold_out': False}
+                    raise CheckoutDenied('unable_to_checkout')
 
         except ProductNotExist as e:
+            traceback.print_exc()
+            raise e
+
+        except NotEnoughProduct as e:
+            traceback.print_exc()
+            raise e
+
+        except CheckoutDenied as e:
             traceback.print_exc()
             raise e
 
@@ -184,6 +197,10 @@ class StoreOrderDao:
 
         # TODO 다른 주문이 같은 시점에 주문이 될 수 있음
         today_sql = """
+        SELECT count(*)+1 as today 
+        FROM orders 
+        WHERE date(created_at) = date(now())
+        ;
         """
 
         try:
@@ -232,11 +249,7 @@ class StoreOrderDao:
         , total_price
         )
         VALUES (
-        CONCAT(DATE_FORMAT(now(), '%%Y%%m%%d'),(LPAD(
-        SELECT count(*)+1 as today
-        FROM orders
-        WHERE date(created_at) = date(now())
-,6,0)),(LPAD(0,3,0)))
+        CONCAT(DATE_FORMAT(now(), '%%Y%%m%%d'),(LPAD(%(today)s,6,0)),(LPAD(0,3,0)))
         , %(sender_name)s
         , %(sender_phone)s
         , %(sender_email)s
