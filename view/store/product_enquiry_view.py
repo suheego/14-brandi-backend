@@ -1,3 +1,5 @@
+import traceback
+
 from flask.views import MethodView
 from flask import jsonify, g
 
@@ -34,15 +36,17 @@ class ProductEnquiryListView(MethodView):
     @signin_decorator(False)
     @validate_params(
         Param('product_id', PATH, int, rules=[PositiveInteger()]),
-        Param('offset', GET, int),
-        Param('type', GET, str, rules=[EnquiryUserTypeRule()])
+        Param('offset', GET, int, required=False, default=0),
+        Param('limit', GET, int, required=False, default=5),
+        Param('type', GET, str, required=False, default='all', rules=[EnquiryUserTypeRule()])
     )
     def get(self, *args):
         """ GET 메소드: 상품 Q&A 리스트 조회
 
             Args:
                 product_id = 0부터 시작
-                offset  = 30단위
+                offset  = 5단위
+                limit = 5
                 type = self 혹은 all
 
             Author: 김민구
@@ -103,7 +107,8 @@ class ProductEnquiryListView(MethodView):
             data = {
                 'product_id': args[0],
                 'offset': args[1],
-                'type': args[2]
+                'limit': args[2],
+                'type': args[3]
             }
 
             if data['type'] == 'self':
@@ -117,6 +122,7 @@ class ProductEnquiryListView(MethodView):
             return jsonify({'message': 'success', 'result': result})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:
@@ -146,14 +152,16 @@ class MyPageEnquiryListView(MethodView):
 
     @signin_decorator()
     @validate_params(
-        Param('type', GET, str, rules=[EnquiryAnswerTypeRule()]),
-        Param('offset', GET, int)
+        Param('type', GET, str, required=False, default='all', rules=[EnquiryAnswerTypeRule()]),
+        Param('offset', GET, int, required=False, default=0),
+        Param('limit', GET, int, required=False, default=5)
     )
     def get(self, *args):
         """ GET 메소드: 유저의 Q&A 리스트 조회
 
             Args:
-                offset  = 30단위
+                offset  = 5단위
+                limit = 5
                 type = wait 혹은 complete 혹은 all
 
             Author: 김민구
@@ -208,6 +216,7 @@ class MyPageEnquiryListView(MethodView):
             data = {
                 'type': args[0],
                 'offset': args[1],
+                'limit': args[2],
                 'user_id': g.account_id
             }
 
@@ -216,6 +225,7 @@ class MyPageEnquiryListView(MethodView):
             return jsonify({'message': 'success', 'result': result})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:
