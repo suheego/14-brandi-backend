@@ -113,10 +113,10 @@ class StoreOrderAddView(MethodView):
         Param('productId', JSON, int),
         Param('stockId', JSON, int),
         Param('quantity', JSON, int),
-        Param('originalPrice', JSON, str, rules=[DecimalRule()]),
+        Param('originalPrice', JSON,int),
         Param('sale', JSON, str, rules=[DecimalRule()]),
-        Param('discountedPrice', JSON, str, rules=[DecimalRule()]),
-        Param('totalPrice', JSON, str, rules=[DecimalRule()]),
+        Param('discountedPrice', JSON, int),
+        Param('totalPrice', JSON, int),
         Param('soldOut', JSON, bool),
         Param('senderName', JSON, str),
         Param('senderPhone', JSON, str, rules=[PhoneRule()]),
@@ -132,7 +132,29 @@ class StoreOrderAddView(MethodView):
     def post(self, *args):
         """POST 메소드: 장바구니 상품 생성
 
-        Args: args = ('account_id', 'product_id', 'stock_id', 'quantity', 'origin_price', 'sale', 'discounted_price')
+        Args: args = (
+        'user_id',
+        'user_permission',
+        'cart_id',
+        'product_id',
+        'stock_id',
+        'quantity',
+        'original_price',
+        'sale',
+        'discounted_price',
+        'total_price',
+        'sold_out',
+        'sender_name',
+        'sender_phone',
+        'sender_email',
+        'recipient_name',
+        'recipient_phone',
+        'address1',
+        'address2',
+        'post_number',
+        'delivery_memo_type_id',
+        'delivery_content'
+        )
 
         Author: 고수희
 
