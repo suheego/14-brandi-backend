@@ -42,11 +42,15 @@ class StoreOrderService:
         """
         try:
             # 사용자의 권한 체크
-            if data['user_permissions'] != 3:
+            if data['user_permission'] != 3:
                 raise CustomerPermissionDenied('customer_permission_denied')
 
             # 상품 결제 완료 결과 조회
             return self.store_order_dao.get_store_order_dao(connection, data)
+
+        except CustomerPermissionDenied as e:
+            traceback.print_exc()
+            raise e
 
         except KeyError:
             traceback.print_exc()
@@ -133,6 +137,10 @@ class StoreOrderService:
             self.store_order_dao.patch_customer_information_dao(connection, data)
 
             return order
+
+        except CustomerPermissionDenied as e:
+            traceback.print_exc()
+            raise e
 
         except KeyError:
             traceback.print_exc()
