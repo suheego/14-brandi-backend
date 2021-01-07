@@ -1,11 +1,12 @@
 import traceback
+import json
 
 from flask import g
 from utils.decorator import signin_decorator
 from utils.rules import SortTypeRule, NumberRule
 
 from flask.views import MethodView
-from flask import jsonify, request
+from flask import jsonify
 
 from flask_request_validator import (
     validate_params,
@@ -19,7 +20,7 @@ from utils.custom_exceptions import DatabaseCloseFail
 
 class ProductDetailView(MethodView):
     def __init__(self, service, database):
-        self.service  = service
+        self.service = service
         self.database = database
     
     @signin_decorator(False)
@@ -37,27 +38,36 @@ class ProductDetailView(MethodView):
             200, {'message': 'success', 'result': 상품정보}   
         
         Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
-            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
+            400, {'message': 'key error', 'errorMessage': '키 값이 일치하지 않습니다.'}
+            500, {'message': 'unable to close database', 'errorMessage': '커넥션 종료 실패'}
+            500, {'message': 'internal server error', 'errorMessage': format(e)}): 서버 에러
         History:
 
                 2020-12-31(김기용): 초기 생성
                 2021-01-01(김기용): 1차 구현
                 2021-01-02(김기용): 북마크에대한 정보를 추가해주었다.
         """
+        connection = None
+
         try:
-            data=dict()
+            data = dict()
             data['product_id'] = product_id
-            data['account_id'] = g.account_id
+
+            if 'account_id' in g:
+                data['account_id'] = g.account_id
+
             connection = get_connection(self.database)
             result = self.service.product_detail_service(connection, data)
             return jsonify({'message': 'success', 'result': result})
         except Exception as e:
+            traceback.print_exc()
             raise e
         finally:
-            if connection is not None:
-                connection.close()
+            try:
+                if connection is not None:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('서버에 알 수 없는 에러가 발생했습니다.')
 
 
 class ProductSearchView(MethodView):
@@ -66,9 +76,9 @@ class ProductSearchView(MethodView):
         self.database = database
 
     @validate_params(
-            Param('q', GET, str),
-            Param('limit', GET, str, rules=[NumberRule()]),
-            Param('sort_type', GET, str, rules=[SortTypeRule()])
+            Param('q', GET, str, required=True),
+            Param('limit', GET, str, required=True, rules=[NumberRule()]),
+            Param('sort_type', GET, str, required=True, rules=[SortTypeRule()])
             )
     def get(self, *args):
         """ GET 메소드: 상품 검색 
@@ -87,19 +97,20 @@ class ProductSearchView(MethodView):
             200, {'message': 'success', 'result': 상품정보들}   
         
         Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
-            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
+            400, {'message': 'key error', 'errorMessage': '키 값이 일치하지 않습니다.'}
+            400, {'message': 'invalid_parameter', 'error_message': '[데이터]가(이) 유효하지 않습니다.'}
+            500, {'message': 'unable to close database', 'errorMessage': '커넥션 종료 실패'}: 커넥션 종료 실패
+            500, {'message': 'internal server error', 'errorMessage': format(e)}): 서버 에러
         History:
 
                 2020-12-31(김기용): 초기 생성
                 2021-01-01(김기용): 북마크에 대한 정보 추가
-                2021-01-02(김기용): Param 값에대한 Rule을 정의해주었다.
+                2021-01-02(김기용): Param 값에대한 Rule 을 정의해주었다.
         """
 
         connection = None
-        try:
 
+        try:
             data = {
                     'search': args[0],
                     'limit': int(args[1]),
@@ -109,11 +120,12 @@ class ProductSearchView(MethodView):
             connection = get_connection(self.database)
             result = self.service.product_search_service(connection, data)
             return jsonify({'message': 'success', 'result': result})
-        except Exception as e:
-            raise e
         finally:
-            if connection is not None:
-                connection.close()
+            try:
+                if connection is not None:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('서버에 알 수 없는 에러가 발생했습니다.')
 
 
 class ProductListView(MethodView):
