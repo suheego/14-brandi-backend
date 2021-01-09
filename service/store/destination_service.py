@@ -35,20 +35,21 @@ class DestinationService:
         try:
             if not data['permission_type_id'] == 3:
                 raise NotUser('유저가 아닙니다.')
-            # 넘어오는 기본 배송지가 1인 경우
-            if data['default_location'] == "1":
-                self.destination_dao.update_default_location_false(connection, data)
 
-            # 넘어오는 기본 배송지가 0인경우
-            flag = self.destination_dao.check_default_flag(connection, data)
+            # 넘어오는값이 0 인경우: 변경하려는 기본 배송지의 값이 1, 0 인지 검색 true/false 값 반환
+            if data['default_location'] == "0":
+                flag = self.destination_dao.check_default_flag(connection, data)
 
-            # flag == false: 0 -> 0 건드리지 않는다.
-            if not flag:
+                # flag == false: 0 -> 0 건드리지 않는다.
+                if not flag:
+                    return self.destination_dao.update_destination_info_dao(connection, data)
+
+                # flag == true: 0 -> 1  나머지 배송지를 1로 바꿔준다.
+                self.destination_dao.update_default_location_true(connection, data)
                 return self.destination_dao.update_destination_info_dao(connection, data)
-            # flag == true: 0 -> 1  나머지 배송지를 1로 바꿔준다.
-            self.destination_dao.update_default_location_true(connection, data)
 
-            # 3. 수정 진행
+            # 넘어오는 값이 1인경우
+            self.destination_dao.update_default_location_false(connection, data)
             return self.destination_dao.update_destination_info_dao(connection, data)
 
         except KeyError:
@@ -178,12 +179,12 @@ class DestinationService:
             if not data['permission_type_id'] == 3:
                 raise NotUser('유저가 아닙니다.')
 
-            # 2. 해당 유저의 배송지 정보가 5개를 초과하는지 체크 True/False
+            # 2. 해당 유저의 배송지 정보가 5개를 초과하는지 개수를 반환
             default_location_length_flag = self.destination_dao.check_default_location_length(connection, data['user_id'])
             if default_location_length_flag >= 5:
                 raise DataLimitExceeded('최대 입력할 수 있는 배송지 개수를 초과했습니다.(최대 5개)')
 
-            # 3. 없으면 default_location 설정 
+            # 3. 유저 아이디로 배송지를 가지고 있는지 조사 truthy, falsy 값을 반환
             default_location_flag = self.destination_dao.check_default_location_by_user(connection, data['user_id'])
             if not default_location_flag:
                 data['default_location'] = 1

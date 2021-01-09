@@ -51,7 +51,7 @@ class ProductListDao:
         """
 
         sql = """
-        SELECT
+        SELECT DISTINCT
             product_image.image_url AS image
             , product.name AS product_name
             , product.seller_id AS seller_id
@@ -259,9 +259,13 @@ class ProductListDao:
     def get_product_color_dao(self, connection, data):
         """ 상품 컬러들을 조회한다.
 
+            상품이 여러 컬러들을 가질 수 있게 되고
+            컬러도 여러 상품들을 가질 수 있게 됨으로
+            중복이 발생한다. 그래서 DISTINCT를 사용
+
             Args:
                 connection : 데이터베이스 연결 객체
-                offset     : 서비스에서 넘겨 받은 int
+                data     : 서비스에서 넘겨 받은 data
 
             Author: 김기용
 
@@ -302,9 +306,13 @@ class ProductListDao:
     def get_product_size_dao(self, connection, data):
         """ 상품 사이즈를 조회한다.
 
+            상품이 여러 사이즈들을 가질 수 있게 되고
+            사이즈도 여러 상품들을 가질 수 있게 됨으로
+            중복이 발생한다. 그래서 DISTINCT 를 사용
+
             Args:
                 connection : 데이터베이스 연결 객체
-                offset     : 서비스에서 넘겨 받은 int
+                data     : 서비스에서 넘겨 받은 data
 
             Author: 김기용
 
@@ -315,7 +323,7 @@ class ProductListDao:
                 }
 
             Raises:
-                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'} : 데이터베이스 에러
+                500, {'message': 'database_error', 'error_message': '서버에 알 수 없는 에러가 발생했습니다.'}
 
             History:
                 2020-01-00(김기용): 초기 생성
@@ -378,7 +386,7 @@ class ProductListDao:
         """
 
         sql = """
-            SELECT
+            SELECT 
                 product.id AS product_id
                 , product.name AS product_name
                 , product.detail_information
@@ -429,8 +437,8 @@ class ProductListDao:
                     result = cursor.fetchone()
                     result['is_bookmarked'] = 0
                     return result
-                sql += sql_with_account + sql_without_account
-                cursor.execute(sql, data)
+                query = sql + sql_with_account + sql_without_account
+                cursor.execute(query, data)
                 result = cursor.fetchone()
                 return result
 
