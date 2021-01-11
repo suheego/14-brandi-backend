@@ -44,7 +44,7 @@ class DestinationService:
                 if not flag:
                     return self.destination_dao.update_destination_info_dao(connection, data)
 
-                # flag == true: 0 -> 1  나머지 배송지를 1로 바꿔준다.
+                # flag == true: 0 -> 1  기본배송지를 0으로 만들기때문에 나머지 배송지를 1로 바꿔준다.
                 self.destination_dao.update_default_location_true(connection, data)
                 return self.destination_dao.update_destination_info_dao(connection, data)
 
@@ -110,7 +110,7 @@ class DestinationService:
             if not data['permission_type_id'] == 3:
                 raise NotUser('유저가 아닙니다.')
 
-            # 2. 유저 정보 조회
+            # 2. 유저의 배송지 정보 조회
             return self.destination_dao.get_user_destination(connection, data['account_id'])
 
         except KeyError:
