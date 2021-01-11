@@ -14,7 +14,7 @@ from utils.decorator import signin_decorator
 
 class DestinationDetailView(MethodView):
 
-    def __init__(self, service , database):
+    def __init__(self, service, database):
         self.service = service
         self.database = database
 
@@ -29,20 +29,29 @@ class DestinationDetailView(MethodView):
 
         Author: 김기용
 
-        Returns: 201, {'message': 'success', 'reuslt':'배송지 상세 정보'}: 배송지 생성 성공
+        Returns: 201, {"message": "success", "result": {"address1": "주소1",
+                                                        "address2": "주소2",
+                                                        "default_location": 0,
+                                                        "id": 3,
+                                                        "phone": "01012345678",
+                                                        "post_number": "12345678",
+                                                        "recipient": "수취인",
+                                                        "user_id": 152
+                                                        }}
 
         Raises:
-            400, {'message': 'key_error', 'errorMessage': 'key_error'}                            : 잘못 입력된 키값
-            400, {'message': 'destination_dose_not_exist', 'errorMessage': '존재하지 않는 배송지'}: 배송지 조회 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                 : 서버 에러
+            500, {'message': 'internal server error', 'errorMessage': format(e)})
 
         History:
             2020-12-29(김기용): 초기 생성
         """
-        data = dict()
-        data['destination_id'] = destination_id
+
+        connection = None
 
         try:
+            data = dict()
+            data['destination_id'] = destination_id
+
             connection = get_connection(self.database)
             destination_detail = self.service.get_destination_detail_service(connection, data)
             return {'message': 'success', 'result': destination_detail[0]}
@@ -64,7 +73,7 @@ class DestinationView(MethodView):
         self.service = service
         self.database = database
 
-    @signin_decorator(True)
+    @signin_decorator(False)
     def get(self):
         """GET 메소드:   해당 유저에 대한 배송지 정보 받아오기
 
@@ -73,28 +82,28 @@ class DestinationView(MethodView):
         Args:
             g.account_id: 데코레이터에서 넘겨받은 유저 정보
 
-
         Author: 김기용
 
         Returns: 200, {'message': 'success', 'result': 유저 배송지 정보들}: 배송지 조회 성공
 
         Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
-            400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                            : 유저 불일치 
-            401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}     : 계정 정보 없음
-            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
+            400, {'message': 'key error', 'errorMessage': '키 값이 일치하지 않습니다.'}
+            500, {'message': 'unable to close database', 'errorMessage': '커넥션 종료 실패'}:
+            500, {'message': 'internal server error', 'errorMessage': format(e)})
 
         History:
             2020-12-29(김기용): 초기 생성
             2021-01-02(김기용): 데코레이터 수정
         """
 
-        data = dict()
-        data['account_id'] = g.account_id
-        data['permission_type_id'] = g.permission_type_id
+        connection = None
 
         try:
+            data = dict()
+            if 'account_id' in g:
+                data['account_id'] = g.account_id
+            if 'permission_type_id' in g:
+                data['permission_type_id'] = g.permission_type_id
             connection = get_connection(self.database)
             destination_detail = self.service.get_destination_detail_by_user_service(connection, data)
             return {'message': 'success', 'result': destination_detail}
@@ -137,31 +146,29 @@ class DestinationView(MethodView):
         Returns: 201, {'message': 'success'}: 배송지 생성 성공
 
         Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}                                       : 잘못 입력된 키값
-            400, {'message': 'destination_creatation_denied', 'errorMessage': '배송지를 생성하지 못했습니다'}: 배송지 생성 실패
-            400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                                     : 유저 불일치
-            400, {'message': 'data_limit_reached', 'errorMessage': 'max_destination_limit_reached'}          : 최대 생성 개수 초과
-            401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}              : 계정 정보 없음
-            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}         : 커넥션 종료 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                            : 서버 에러
+            400, {'message': 'invalid_parameter', 'error_message': '[데이터]가(이) 유효하지 않습니다.'}
+            500, {'message': 'unable_to_close_database', 'errorMessage': '커넥션 종료 실패'}
+            500, {'message': 'internal_server_error', 'errorMessage': format(e)})
 
         History:
             2020-12-28(김기용): 초기 생성
             2020-12-29(김기용): 데코레이터 추가
-            2020-12-30(김기용): 수정된 데코레이터반영: 데코레이터에서 user_type을 받음
+            2020-12-30(김기용): 수정된 데코레이터반영: 데코레이터에서 permission_type 을 받음
             2021-01-02(김기용): 수정된 데코레이터 반영: signin_decorator(True)
         """
+        connection = None
 
-        data = {
-            'user_id': g.account_id,
-            'permission_type_id': g.permission_type_id,
-            'recipient': args[0],
-            'phone': args[1],
-            'address1': args[2],
-            'address2': args[3],
-            'post_number': args[4],
-        }
         try:
+            data = {
+                'user_id': g.account_id,
+                'permission_type_id': g.permission_type_id,
+                'recipient': args[0],
+                'phone': args[1],
+                'address1': args[2],
+                'address2': args[3],
+                'post_number': args[4],
+            }
+
             connection = get_connection(self.database)
             self.service.create_destination_service(connection, data)
             connection.commit()
@@ -200,23 +207,23 @@ class DestinationView(MethodView):
             Returns: {'message':'success'}
 
             Raises: 
-                400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
-                400, {'message': 'not_a_user', 'errorMessage': 'not_a_user'}                            : 유저 불일치
-                500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
-                500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
+                500, {'message': 'unable to close database', 'errorMessage': '커넥션 종료 실패'}
+                500, {'message': 'internal server error', 'errorMessage': format(e)})
         """
-        data = dict()
-        data['destination_id'] = args[0]
-        data['recipient'] = args[1]
-        data['phone'] = args[2]
-        data['address1'] = args[3]
-        data['address2'] = args[4]
-        data['post_number'] = args[5]
-        data['default_location'] = args[6]
-        data['account_id'] = g.account_id
-        data['permission_type_id'] = g.permission_type_id
+        connection = None
 
         try:
+            data = dict()
+            data['destination_id'] = args[0]
+            data['recipient'] = args[1]
+            data['phone'] = args[2]
+            data['address1'] = args[3]
+            data['address2'] = args[4]
+            data['post_number'] = args[5]
+            data['default_location'] = args[6]
+            data['account_id'] = g.account_id
+            data['permission_type_id'] = g.permission_type_id
+
             connection = get_connection(self.database)
             self.service.update_destination_info_service(connection, data)
             connection.commit()
@@ -248,21 +255,22 @@ class DestinationView(MethodView):
         Returns: 200, {'message': 'success'}: 배송지 삭제 성공
 
         Raises:
-            400, {'message': 'key error', 'errorMessage': 'key_error'}                              : 잘못 입력된 키값
-            401, {'message': 'account_does_not_exist', 'errorMessage': 'account_does_not_exist}     : 계정 정보 없음
-            500, {'message': 'unable to close database', 'errorMessage': 'unable_to_close_database'}: 커넥션 종료 실패
-            500, {'message': 'internal server error', 'errorMessage': format(e)})                   : 서버 에러
+            500, {'message': 'unable_to_close_database', 'errorMessage': '커넥션 종료 실패'}
+            500, {'message': 'internal_server_error', 'errorMessage': format(e)}): 서버 에러
 
         History:
             2020-12-29(김기용): 초기 생성
             2020-12-30(김기용): 데코레이터 추가
         """
-        data = dict()
-        data['destination_id'] = args[0]
-        data['account_id'] = g.account_id
-        data['permission_type_id'] = g.permission_type_id
+
+        connection = None
         
         try:
+            data = dict()
+            data['destination_id'] = args[0]
+            data['account_id'] = g.account_id
+            data['permission_type_id'] = g.permission_type_id
+
             connection = get_connection(self.database)
             self.service.delete_destination_service(connection, data)
             connection.commit()

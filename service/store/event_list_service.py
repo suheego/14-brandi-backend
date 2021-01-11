@@ -108,7 +108,7 @@ class EventListService:
                 해당 기획전의 버튼 리스트를 반환
         """
 
-        event_button_list = self.event_list_dao.get_event_button(connection,event_id)
+        event_button_list = self.event_list_dao.get_event_button(connection, event_id)
         return event_button_list
 
     def event_detail_list_logic(self, connection, data):

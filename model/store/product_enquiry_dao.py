@@ -1,5 +1,3 @@
-import traceback
-
 import pymysql
 
 from utils.custom_exceptions import DatabaseError
@@ -54,7 +52,6 @@ class ProductEnquiryDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_product_enquiry_list(self, connection, data):
@@ -62,7 +59,7 @@ class ProductEnquiryDao:
 
         Args:
             connection: 데이터베이스 연결 객체
-            data: 서비스에서 넘겨 받은 dict (type, offset)
+            data: 서비스에서 넘겨 받은 dict (type, offset, limit)
                 type = self 혹은 all
                 offset = 0부터 시작(5단위)
 
@@ -115,9 +112,9 @@ class ProductEnquiryDao:
                 '''
 
             sql += '''
-                ORDER BY 
-                    enquiry.id DESC
-                LIMIT %(offset)s, 5
+            ORDER BY 
+                enquiry.id DESC
+            LIMIT %(offset)s, %(limit)s
             '''
 
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -126,7 +123,6 @@ class ProductEnquiryDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_enquiry_reply_list(self, connection, data):
@@ -134,7 +130,7 @@ class ProductEnquiryDao:
 
         Args:
             connection: 데이터베이스 연결 객체
-            data: 서비스에서 넘겨 받은 dict (type, offset)
+            data: 서비스에서 넘겨 받은 dict
                 enquiry_ids = 질문 아이디들이 담긴 튜플
 
         Returns: 답변이 담긴 리스트 반환
@@ -182,7 +178,6 @@ class ProductEnquiryDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_my_page_enquiry_list(self, connection, data):
@@ -190,7 +185,7 @@ class ProductEnquiryDao:
 
         Args:
             connection: 데이터베이스 연결 객체
-            data: 서비스에서 넘겨 받은 dict (type, offset, user_id)
+            data: 서비스에서 넘겨 받은 dict (type, offset, limit, user_id)
                 type = wait, complete, all
                 offset = 0부터 시작(5단위)
 
@@ -240,17 +235,17 @@ class ProductEnquiryDao:
         try:
             if data['type'] == 'complete':
                 sql += """
-                    AND enquiry.is_completed = 1
+                AND enquiry.is_completed = 1
                 """
             elif data['type'] == 'wait':
                 sql += """
-                    AND enquiry.is_completed = 0
+                AND enquiry.is_completed = 0
                 """
 
             sql += """
             ORDER BY 
                 enquiry.id DESC
-            LIMIT %(offset)s, 5
+            LIMIT %(offset)s, %(limit)s
             """
 
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -259,5 +254,4 @@ class ProductEnquiryDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')

@@ -1,5 +1,3 @@
-import traceback
-
 import pymysql
 
 from utils.custom_exceptions import DatabaseError
@@ -59,7 +57,6 @@ class CategoryListDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_second_category_list(self, connection):
@@ -106,7 +103,6 @@ class CategoryListDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_third_category_list(self, connection):
@@ -153,5 +149,4 @@ class CategoryListDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
