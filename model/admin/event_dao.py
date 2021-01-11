@@ -20,6 +20,9 @@ class EventDao:
             2020-12-28(강두연): 초기 생성 및 조회 기능 작성
             2020-12-29(강두연): 이벤트 검색조건별 조회 작성
             2020-12-30(강두연): 이벤트 상세정보 및 수정페이지 기능 작성
+            2021-01-02(강두연): 기획전 추가 기능 작성
+            2021-01-04(강두연): 기획전 수정 관련기능 작성
+            2021-01-05(강두연): 기획전 수정 관련기능 추가, 기획전 관련 INSERT 메소드에서 논리삭제 복구 기능 추가
     """
 
     def get_events_list(self, connection, data):
@@ -91,7 +94,7 @@ class EventDao:
                 , `event`.created_at AS created_at
                 , (SELECT COUNT(CASE WHEN events_products.event_id = `event`.id THEN 1 END)
                     FROM events_products) AS product_count
-            """
+        """
 
         extra_sql = """
             FROM `events` AS `event`
@@ -272,7 +275,7 @@ class EventDao:
                     "discounted_price": 9000.0,
                     "event_button_id": null, # 이벤트가 버튼형일때는 버튼 아이디가 들어옴
                     "event_id": 1,
-                    "id_discount": "할인",
+                    "is_discount": "할인",
                     "is_display": "진열",
                     "is_sale": "판매",
                     "original_price": 10000.0,
@@ -313,12 +316,12 @@ class EventDao:
                 , product.product_code AS product_number
                 , product.`name` AS product_name
                 , seller.`name` AS seller_name
-                 , product.created_at AS product_created_at
+                , product.created_at AS product_created_at
                 , product.origin_price AS original_price
                 , product.discounted_price AS discounted_price
                 , CASE WHEN product.is_sale = 0 THEN '미판매' ELSE '판매' END AS is_sale
                 , CASE WHEN product.is_display = 0 THEN '미진열' ELSE '진열' END AS is_display
-                , CASE WHEN product.discount_rate = 0.00 THEN '미할인' ELSE '할인' END AS id_discount
+                , CASE WHEN product.discount_rate = 0.00 THEN '미할인' ELSE '할인' END AS is_discount
                 , product.discount_rate AS discount_rate
             FROM events_products AS event_product
                 INNER JOIN products AS product
@@ -360,7 +363,8 @@ class EventDao:
             FROM
                 events_products
             WHERE
-                event_id = %(event_id)s;
+                event_id = %(event_id)s
+                AND is_deleted = 0;
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -595,7 +599,7 @@ class EventDao:
                   'errorMessage': 'category and menu does not match'}: 카테고리와 메뉴가 매칭안됨
 
             400, {'message': 'category not exist',
-                  'errorMessage': 'category doesnot exist'}: 카테고리가 존재하지 않음
+                  'errorMessage': 'category does not exist'}: 카테고리가 존재하지 않음
        """
         if not data['menu_id'] and not data['first_category_id']:
             sql = """
@@ -659,7 +663,7 @@ class EventDao:
                 return 27 (생성된 기획전 프라이머리키 아이디)
 
             History:
-                2020-01-02(강두연): 초기 작성
+                2021-01-02(강두연): 초기 작성
 
             Raises:
                 400, {'message': 'unable to create event',
@@ -693,7 +697,7 @@ class EventDao:
                 raise CreateEventDenied('unable to create event')
             return result
 
-    def create_button(self, connection, data):
+    def create_or_update_button(self, connection, data):
         """ 기획전 버튼 생성
 
             Args:
@@ -704,12 +708,42 @@ class EventDao:
                 return 27 (생성된 버튼 프라이머리키 아이디)
 
             History:
-                2020-01-02(강두연): 초기 작성
+                2021-01-02(강두연): 초기 작성
+                2021-01-04(강두연): 논리 삭제된 버튼과 동일한 이름과 이벤트 아이디의 버튼을 만드려고하면 로우를 생성하지않고 논리삭제 값을 바꿔주게 수정
+                2021-01-05(강두연): 사용중인 버튼중에 이름이 같은 버튼이 이미 존재하면 에러 반환
 
             Raises:
                 400, {'message': 'unable to create button',
                       'errorMessage': 'unable to create button'} : 버튼 생성 실패
+
+                400, {'message': 'unable to create button',
+                      'errorMessage': 'button name must be unique in an event'} : 버튼 이름 중복
         """
+        check_sql = """
+            SELECT
+                id
+            FROM 
+                event_buttons
+            WHERE
+                `name` = %(button_name)s
+                AND is_deleted = 1
+                AND event_id = %(event_id)s;
+        """
+
+        duplicate_check_sql = """
+            SELECT
+                EXISTS (
+                    SELECT
+                        *
+                    FROM
+                        event_buttons
+                    WHERE
+                        `name` = %(button_name)s
+                        AND is_deleted = 0
+                        AND event_id = %(event_id)s
+                ) AS duplicate_button;
+        """
+
         sql = """
             INSERT INTO event_buttons (
                 `name`
@@ -722,6 +756,26 @@ class EventDao:
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(duplicate_check_sql, data)
+            duplicate_check = cursor.fetchone()
+            if duplicate_check['duplicate_button']:
+                raise CreateButtunDenied('button name must be unique in an event')
+
+            cursor.execute(check_sql, data)
+            check = cursor.fetchone()
+            if check:
+                check['button_index'] = data['button_index']
+                sql = """
+                    UPDATE
+                        event_buttons
+                    SET
+                        is_deleted = 0
+                        order_index = %(button_index)s
+                    WHERE id = %(id)s
+                """
+                cursor.execute(sql, check)
+                return check['id']
+
             cursor.execute(sql, data)
             result = cursor.lastrowid
             if not result:
@@ -739,11 +793,37 @@ class EventDao:
                 return 27 (연결된 기획전 상품 프라이머리키 아이디)
 
             History:
-                2020-01-02(강두연): 초기 작성
+                2021-01-02(강두연): 초기 작성
 
             Raises:
                 400, {'message': 'unable to insert product into button',
                       'errorMessage': 'unable to insert product into button'} : 상품 연결 실패
+        """
+
+        check_sql = """
+            SELECT
+                id
+            FROM
+                events_products
+            WHERE
+                event_id = %(event_id)s
+                AND product_id = %(product_id)s
+                AND event_button_id = %(button_id)s
+                AND is_deleted = 1;
+        """
+
+        duplicate_check_sql = """
+            SELECT
+                EXISTS (
+                    SELECT
+                        *
+                    FROM
+                        events_products
+                    WHERE
+                        event_id = %(event_id)s
+                        AND product_id = %(product_id)s
+                        AND is_deleted = 0
+                ) AS duplicate_event_product;
         """
 
         sql = """
@@ -758,6 +838,22 @@ class EventDao:
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(duplicate_check_sql, data)
+            duplicate_check = cursor.fetchone()
+            if duplicate_check['duplicate_event_product']:
+                raise InsertProductIntoButtonDenied('product is already included')
+            cursor.execute(check_sql, data)
+            check = cursor.fetchone()
+            if check:
+                cursor.execute("""
+                    UPDATE
+                        events_products
+                    SET
+                        is_deleted = 0
+                    WHERE
+                        id = %(id)s
+                """, check)
+                return
             cursor.execute(sql, data)
             result = cursor.lastrowid
             if not result:
@@ -775,12 +871,39 @@ class EventDao:
                 return 27 (연결된 기획전 상품 프라이머리키 아이디)
 
             History:
-                2020-01-02(강두연): 초기 작성
+                2021-01-02(강두연): 초기 작성
+                2021-01-04(강두연): 논리삭제된 같은 기획전, 상품 아이디를 가진 로우가 있을경우 복구 작성
+                2021-01-05(강두연): 같은 기획전 내에 중복상품있는지 체크 추가
 
             Raises:
                 400, {'message': 'unable to insert product into event',
                       'errorMessage': 'unable to insert product into event'} : 상품 연결 실패
         """
+        check_sql = """
+            SELECT
+                id
+            FROM
+                events_products
+            WHERE
+                event_id = %(event_id)s
+                AND product_id = %(product_id)s
+                AND is_deleted = 1;
+        """
+
+        duplicate_check_sql = """
+            SELECT
+                EXISTS (
+                    SELECT
+                        *
+                    FROM
+                        events_products
+                    WHERE
+                        event_id = %(event_id)s
+                        AND product_id = %(product_id)s
+                        AND is_deleted = 0
+                ) AS duplicate_event_product;
+        """
+
         sql = """
             INSERT INTO events_products (
                 event_id
@@ -791,8 +914,268 @@ class EventDao:
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(duplicate_check_sql, data)
+            duplicate_check = cursor.fetchone()
+            if duplicate_check['duplicate_event_product']:
+                raise InsertProductIntoEventDenied('product is already included')
+            cursor.execute(check_sql, data)
+            check = cursor.fetchone()
+            if check:
+                cursor.execute("""
+                    UPDATE
+                        events_products
+                    SET
+                        is_deleted = 0
+                    WHERE
+                        id = %(id)s
+                """, check)
+                return
             cursor.execute(sql, data)
             result = cursor.lastrowid
             if not result:
                 raise InsertProductIntoEventDenied('unable to insert product into event')
             return result
+
+    def delete_buttons_by_event(self, connection, data):
+        """ 이벤트 아이디로 버튼 삭제
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                None
+
+            History:
+                2021-01-04(강두연): 작성
+        """
+        sql = """
+            UPDATE 
+                event_buttons
+            SET 
+                is_deleted = 1
+            WHERE
+                event_id = %(event_id)s;
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+
+    def delete_event_products_by_event(self, connection, data):
+        """ 이벤트 아이디로 기획전 상품 삭제
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                None
+
+            History:
+                2021-01-04(강두연): 작성
+        """
+        sql = """
+            UPDATE
+                events_products
+            SET
+                is_deleted = 1
+            WHERE
+                event_id = %(event_id)s
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+
+    def delete_event(self, connection, data):
+        """ 기획전 아이디로 기획전 삭제
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                None
+
+            History:
+                2021-01-04(강두연): 작성
+        """
+        sql = """
+            UPDATE 
+                `events`
+            SET
+               is_deleted = 1
+            WHERE
+                id = %(event_id)s 
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+
+    def update_event_detail(self, connection, data):
+        """ 기획전 상세정보 업데이트
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                data : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                None
+
+            History:
+                2021-01-04(강두연): 작성
+        """
+
+        sql = """
+            UPDATE 
+                `events`
+            SET
+                `name` = %(name)s
+                , start_date = %(start_datetime)s
+                , end_date = %(end_datetime)s
+                , is_display = %(is_display)s
+        """
+
+        if data['banner_image_uploaded']:
+            sql += ', banner_image = %(banner_image)s'
+
+        if data['detail_image_uploaded']:
+            sql += ', detail_image = %(detail_image)s'
+
+        sql += 'WHERE id = %(event_id)s;'
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, data)
+
+    def get_event_kind_id(self, connection, event_id):
+        """ 기획전 아이디로 기획전 종류 아이디 받기 (버튼형, 상품형)
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                event_id : 비지니스 레이어에서 넘겨 받은 딕셔너리
+
+            Returns:
+                1 or 2
+
+            History:
+                2021-01-04(강두연): 작성
+        """
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute("""
+                SELECT 
+                    event_kind_id
+                FROM 
+                    `events`
+                WHERE id = %s;
+            """, event_id)
+            event_kind = cursor.fetchone()
+
+            return event_kind['event_kind_id']
+
+    def update_event_button(self, connection, button):
+        """ 버튼에 관한 정보 수정
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                button : 비지니스 레이어에서 넘겨 받은 버튼에대한 정보를 담고있는 딕셔너리
+
+            Returns:
+                None
+
+            History:
+                2021-01-05(강두연): 작성
+                2021-01-06(강두연): 미사용
+        """
+
+        sql = """
+            UPDATE 
+                event_buttons
+            SET
+                `name` = %(button_name)s
+                , order_index = %(button_index)s
+            WHERE
+                event_id = %(event_id)s
+                AND id = %(id)s;
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, button)
+
+    def delete_event_button(self, connection, button):
+        """ 기획전 버튼 논리삭제
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                button : 비지니스 레이어에서 넘겨 받은 버튼에대한 정보를 담고있는 딕셔너리
+
+            Returns:
+                None
+
+            History:
+                2021-01-05(강두연): 작성
+        """
+
+        sql = """
+            UPDATE
+                event_buttons
+            SET
+                is_deleted = 1
+            WHERE
+                id = %s;
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, button)
+
+    def move_button_products(self, connection, product):
+        """ 버튼형 기획전 상품 종속 버튼 변경
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                product : 비지니스 레이어에서 넘겨 받은 상품에대한 정보를 담고있는 딕셔너리
+
+            Returns:
+                None
+
+            History:
+                2021-01-05(강두연): 작성
+        """
+
+        sql = """
+            UPDATE
+                events_products
+            SET
+                event_button_id = %(button_id)s
+            WHERE
+                event_id = %(event_id)s
+                AND product_id = %(product_id)s
+                AND is_deleted = 0;
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, product)
+
+    def delete_event_product(self, connection, product):
+        """ 기획전 상품 논리삭제
+
+            Args:
+                connection: 데이터베이스 연결 객체
+                product : 비지니스 레이어에서 넘겨 받은 상품에대한 정보를 담고있는 딕셔너리
+
+            Returns:
+                None
+
+            History:
+                2021-01-05(강두연): 작성
+        """
+        sql = """
+            UPDATE
+                events_products
+            SET
+                is_deleted = 1
+            WHERE
+                product_id = %(product_id)s
+                AND event_id = %(event_id)s
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(sql, product)

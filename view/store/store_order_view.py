@@ -74,7 +74,7 @@ class StoreOrderView(MethodView):
             "user_id": g.account_id,
             "user_permission": g.permission_type_id
         }
-
+        
         try:
             connection = get_connection(self.database)
             store_order_info = self.service.get_store_order_service(connection, data)

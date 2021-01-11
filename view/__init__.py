@@ -25,11 +25,12 @@ from .store.seller_shop_view import SellerShopView, SellerShopSearchView, Seller
 # admin1
 from .admin.order_view import OrderView, OrderDetailView
 from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
+from .admin.enquiry_view import EnquiryView, AnswerView
 
 # admin2
 
 from .admin.seller_view import SellerSignupView, SellerSigninView, SellerInfoView, SellerHistoryView, SellerStatusView, \
-    SellerPasswordView, SellerSearchView
+    SellerPasswordView, SellerSearchView, SellerListView
 from .admin.product_create_view import MainCategoriesListView, CreateProductView
 from .admin.product_manage_view import ProductManageSearchView, ProductManageDetailView
 
@@ -68,7 +69,6 @@ def create_endpoints(app, services, database):
     store_order_service  = services.store_order_service
     seller_shop_service = services.seller_shop_service
     seller_service = services.seller_service
-    create_product_service = services.create_product_service
 
     # admin1
     order_service = services.order_service
@@ -361,6 +361,22 @@ def create_endpoints(app, services, database):
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
+# 이성보 ◟( ˘ ³˘)◞ ♡
+# ----------------------------------------------------------------------------------------------------------------------
+    app.add_url_rule('/enquiries',
+                     view_func=EnquiryView.as_view(
+                         'enquiry_view',
+                         services.enquiry_service,
+                         database
+                     ))
+
+    app.add_url_rule('/answer/<int:enquiry_id>',
+                     view_func=AnswerView.as_view(
+                         'answer_view',
+                         services.enquiry_service,
+                         database
+                     ))
+# ----------------------------------------------------------------------------------------------------------------------
 # Admin 2 Section
 # ----------------------------------------------------------------------------------------------------------------------
 # 김영환 ◟( ˘ ³˘)◞ ♡
@@ -384,24 +400,30 @@ def create_endpoints(app, services, database):
                          seller_service,
                          database
                      ))
+    app.add_url_rule('/admin/sellers',
+                     view_func=SellerListView.as_view(
+                         'seller_list_view',
+                         seller_service,
+                         database
+                     ))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 심원두 ◟( ˘ ³˘)◞ ♡
 # ----------------------------------------------------------------------------------------------------------------------
     app.add_url_rule('/admin/product/productRegist/main_category',
                      view_func=MainCategoriesListView.as_view(
-                         'main_category_view',
+                         'main_category_list_view',
                          product_create_service,
                          database
                      ))
-
+    
     app.add_url_rule('/admin/product/productRegist',
                      view_func=CreateProductView.as_view(
                          'product_create_view',
                          product_create_service,
                          database
                      ))
-
+    
     app.add_url_rule('/admin/products',
                      view_func=ProductManageSearchView.as_view(
                          'product_manage_search_view',
