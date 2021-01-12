@@ -64,7 +64,6 @@ class DefaultRule(AbstractRule):
         return value, errors
 
 
-
 class UsernameRule(AbstractRule):
     """ 비밀번호 규칙
 

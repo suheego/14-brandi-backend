@@ -220,8 +220,8 @@ class OrderDetailDao():
                 order_item_id: 비지니스 레이어에서 넘겨 받은 인자
 
             Returns:
-                [{'order_id': 2, 'order_number': '20201225000000002',
-                'order_purchased_date': datetime.datetime(2020, 12, 31, 13, 25, 3), 'total_price': Decimal('9000')}]
+                {'order_id': 2, 'order_number': '20201225000000002',
+                'order_purchased_date': datetime.datetime(2020, 12, 31, 13, 25, 3), 'total_price': Decimal('9000')}
 
             History:
                 2021-01-03(김민서): 작성
@@ -254,7 +254,8 @@ class OrderDetailDao():
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, order_item_id)
-            result = cursor.fetchall()
+            result = cursor.fetchone()
+
             if not result:
                 raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
@@ -268,8 +269,8 @@ class OrderDetailDao():
                 order_item_id: 비지니스 레이어에서 넘겨 받은 인자
 
             Returns:
-                [{'order_item_id': 3, 'order_detail_number': 'oidt00003', 'status': '배송중',
-                'order_item_purchased_date': datetime.datetime(2020, 12, 31, 13, 25, 3), 'customer_phone': '01990103'}]
+                {'order_item_id': 3, 'order_detail_number': 'oidt00003', 'status': '배송중',
+                'order_item_purchased_date': datetime.datetime(2020, 12, 31, 13, 25, 3), 'customer_phone': '01990103'}
 
             History:
                 2021-01-03(김민서): 작성
@@ -303,7 +304,7 @@ class OrderDetailDao():
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, order_item_id)
-            result = cursor.fetchall()
+            result = cursor.fetchone()
             if not result:
                 raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
@@ -317,8 +318,8 @@ class OrderDetailDao():
                 order_item_id: 비지니스 레이어에서 넘겨 받은 인자
 
             Returns:
-                [{'product_number': 'P0000000000000000001', 'product_name': '성보의하루1', 'price': '10000 원 (할인가 9000원)',
-                'discount_rate': Decimal('0.10'), 'brand_name': '나는셀러3',' option_information': 'Black/Free', 'qauntity': 1}]
+                {'product_number': 'P0000000000000000001', 'product_name': '성보의하루1', 'price': '10000 원 (할인가 9000원)',
+                'discount_rate': Decimal('0.10'), 'brand_name': '나는셀러3',' option_information': 'Black/Free', 'qauntity': 1}
 
             History:
                 2021-01-03(김민서): 작성
@@ -354,7 +355,7 @@ class OrderDetailDao():
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, order_item_id)
-            result = cursor.fetchall()
+            result = cursor.fetchone()
             if not result:
                 raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
@@ -365,11 +366,11 @@ class OrderDetailDao():
 
             Args:
                 connection   : 데이터베이스 연결 객체
-                        order_item_id: 비지니스 레이어에서 넘겨 받은 인자
+                order_item_id: 비지니스 레이어에서 넘겨 받은 인자
 
             Returns:
-                [{'user_id': 102, 'customer_name': 'user2', 'recipient_name': '도우너', 'recipient_phone': '01055555555',
-                'destination': '서울특별시 역삼동 (123321)', 'delivery_memo': '문
+                {"customer_name": "user1", "delivery_memo": "문 앞에 놓아주세요", "destination": "서울특별시 역삼동 (123321)",
+                    "recipient_name": "둘리", "recipient_phone": "01022222222", "user_id": 102}
 
             History:
                 2021-01-03(김민서): 작성
@@ -404,7 +405,7 @@ class OrderDetailDao():
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql, order_item_id)
-            result = cursor.fetchall()
+            result = cursor.fetchone()
             if not result:
                 raise DoesNotOrderDetail('주문 상세 정보가 존재하지 않습니다.')
             return result
