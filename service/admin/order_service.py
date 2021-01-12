@@ -58,7 +58,7 @@ class OrderService:
             return self.admin_order_dao.get_order_list_dao(connection, data)
 
         except KeyError:
-            raise KeyError('Key Error')
+            raise KeyError('key Error')
 
 
     def update_order_status_service(self, connection, data):
@@ -78,13 +78,15 @@ class OrderService:
             data['update_data'] = [[id, data['new_status'], data['account']] for id in data['ids']]
 
             # 주문 상태 변경 및 히스토리 내역 추가 개수
-            data['count_new_status'] = len(data['update_date'])
+            data['count_new_status'] = len(data['update_data'])
 
+            # 주문 상태 업데이트
             self.admin_order_dao.update_order_status_dao(connection, data)
+            # 주문 상태 히스토리 추가
             self.admin_order_dao.add_order_history_dao(connection, data)
 
         except KeyError:
-            return 'key_error'
+            raise KeyError('key error')
 
 
     def get_order_detail_service(self, connection, data):
