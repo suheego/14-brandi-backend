@@ -137,6 +137,8 @@ class ProductCreateService:
                     
             data['discount_rate'] = float(data['discount_rate']) / 100
             
+            print(type(data['detail_information']), data['detail_information'])
+            
             return self.create_product_dao.insert_product(connection, data)
         
         except KeyError as e:
@@ -424,7 +426,7 @@ class ProductCreateService:
 
             Returns:
                 0: 북마크 정보 초기 등록 실패
-                1: 뷱마크 정보 초기 등록 성공
+                1: 북마크 정보 초기 등록 성공
 
             Raises:
                 500, {'message': 'bookmark volumes create denied',
@@ -674,6 +676,7 @@ class ProductCreateService:
                     'seller_id'         : seller['seller_id'],
                     'seller_name'       : seller['seller_name'],
                     'profile_image_url' : S3_BUCKET_URL + seller['profile_image_url']
+                                          if not seller['profile_image_url'] else None
                 } for seller in seller_info
             ]
             

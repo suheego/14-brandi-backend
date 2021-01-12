@@ -143,7 +143,7 @@ class SellerSignupView(MethodView):
             connection = get_connection(self.database)
             self.service.seller_signup_service(connection,data)
             connection.commit()
-            return jsonify({'message': 'success'}),200
+            return jsonify({'message': 'success'}), 200
 
 
         except Exception as e:
@@ -178,7 +178,7 @@ class SellerSigninView(MethodView):
         try:
             connection = get_connection(self.database)
             token = self.service.seller_signin_service(connection, data)
-            return jsonify({'message':'login success','token': token}),200
+            return jsonify({'message': 'success', 'token': token}), 200
 
         except Exception as e:
             raise e

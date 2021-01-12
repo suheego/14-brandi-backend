@@ -354,9 +354,9 @@ class CreateProductView(MethodView):
                 'discount_end_date'      : request.form.get('discount_end_date', None)
             }
             
-            connection     = get_connection(self.database)
             product_images = request.files.getlist("image_files")
             stocks         = json.loads(request.form.get('options'))
+            connection     = get_connection(self.database)
             
             product_id = self.service.create_product_service(
                 connection,
