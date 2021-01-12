@@ -112,7 +112,7 @@ class ProductManageService:
                         'seller_name'           : product['seller_name'],
                         'origin_price'          : '{:,}'.format(int(product['origin_price'])),
                         'discounted_price'      : '{:,}'.format(int(product['discounted_price'])),
-                        'discount_rate'         : int(product['discount_rate']) * 100,
+                        'discount_rate'         : int(product['discount_rate']),
                         'is_sale'               : product['is_sale'],
                         'is_display'            : product['is_display'],
                     } for product in product_list

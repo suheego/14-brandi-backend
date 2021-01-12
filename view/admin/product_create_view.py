@@ -247,7 +247,7 @@ class CreateProductView(MethodView):
             Author: 심원두
             
             Returns:
-                200, {'message': 'success'}                                                             : 상품 정보 등록 성공
+                200, {'message': 'success'}                                                   : 상품 정보 등록 성공
             
             Raises:
                 400, {'message': 'key_error',
@@ -310,9 +310,6 @@ class CreateProductView(MethodView):
                 500, {'message': 'product history create denied',
                       'errorMessage': 'unable_to_create_product_history'}                     : 상품 이력 등록 실패
                 
-                500, {'message': 'product history create denied',
-                      'errorMessage': 'unable_to_create_product_history'}                     : 상품 이력 등록 실패
-                
                 500, {'message': 'bookmark volumes create denied',
                       'errorMessage': 'unable_to_create_bookmark_volumes'}                    : 북마크 초기 등록 실패
                 
@@ -357,9 +354,9 @@ class CreateProductView(MethodView):
                 'discount_end_date'      : request.form.get('discount_end_date', None)
             }
             
-            connection     = get_connection(self.database)
             product_images = request.files.getlist("image_files")
             stocks         = json.loads(request.form.get('options'))
+            connection     = get_connection(self.database)
             
             product_id = self.service.create_product_service(
                 connection,

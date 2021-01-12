@@ -14,7 +14,7 @@ from flask_request_validator import (
     PATH,
     Enum,
     MaxLength,
-    validate_params,
+    validate_params
 )
 
 class ProductManageSearchView(MethodView):
