@@ -218,7 +218,8 @@ class StoreOrderDao:
         , total_price
         )
         VALUES (
-        (CONCAT(DATE_FORMAT(now(), '%%Y%%m%%d'),(SELECT LPAD(count(*)+1,6,0) from orders as ord where date(created_at) = date(now())),(LPAD(0,3,0))))
+        (CONCAT(DATE_FORMAT(now(), '%%Y%%m%%d'),
+        (SELECT LPAD(count(*)+1,6,0)from orders as ord where date(created_at) = date(now())),(LPAD(0,3,0))))
         , %(sender_name)s
         , %(sender_phone)s
         , %(sender_email)s
@@ -287,14 +288,15 @@ class StoreOrderDao:
               , %(quantity)s
               , %(order_id)s
               , %(cart_id)s
-              , (CONCAT('B', DATE_FORMAT(now(), '%%Y%%m%%d'),(SELECT LPAD(count(*),6,0) from orders as ord where date(created_at) = date(now())),(LPAD(1,3,0))))
+              , (CONCAT('B',
+              (select replace(order_number,"000","001") from orders where id = %(order_id)s)))
               , %(order_item_status_type_id)s
               , %(original_price)s
               , %(discounted_price)s
               , %(sale)s
           );
           """
-        # TODO insert로 꺼내서 넣기
+
         try:
             with connection.cursor() as cursor:
                 cursor.execute(sql, data)
