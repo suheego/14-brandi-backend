@@ -18,15 +18,14 @@ class OrderService:
 
             History:
                 2020-12-29(김민서): 초기 생성
-                2020-12-30(김민서): 1차 수정
-                2020-12-31(김민서): 2차 수정
+                2021-01-12(김민서): 1차 수정
     """
     def __init__(self, admin_order_dao):
         self.admin_order_dao = admin_order_dao
 
     def get_orders_service(self, connection, data):
         try:
-            # 권한 체크
+            # 권한 체크 (마스터 혹은 셀러가 아닌 경우)
             if not (data['permission'] == 1 or data['permission'] == 2):
                 raise NoPermission('권한이 없습니다.')
 
@@ -35,28 +34,31 @@ class OrderService:
                 raise DateInputDoesNotExist('시작일과 마지막일이 모두 포함되어야 합니다.')
 
             # 시작일이 마지막일보다 더 늦는 경우
-            if data['start_date'] > data['end_date']:
-                raise EndDateIsInvalid("시작일이 마지막일보다 늦습니다.")
+            if data['start_date'] and data['end_date']:
+                if data['start_date'] > data['end_date']:
+                    raise EndDateIsInvalid("시작일이 마지막일보다 늦습니다.")
 
             # 날짜 조건과 검색어 조건 둘 중 하나의 조건은 반드시 필요
             if not(data['start_date'] or data['end_date'] or data['number'] or data['detail_number']
                     or data['sender_name'] or data['sender_phone'] or data['seller_name'] or data['product_name']):
                 raise OrderFilterNotExist('검색어 조건과 날짜 조건 둘 중에 하나는 반드시 포함되어야 합니다.')
 
-            # 주문 상태가 상품 준비 / 배송중 / 배송 완료 / 구매 확정 이 아닌 경우
-
+            # 페이지네이션
             data['length'] = int(data['length'])
             data['page'] = (data['page'] - 1) * data['length']
 
+            # 주문자 연락처
             if data['sender_phone']:
                 data['sender_phone'] = data['sender_phone'].replace("-", "")
+
+            # 상품명
             if data['product_name']:
                 data['product_name'] = '%' + data['product_name'] + '%'
 
             return self.admin_order_dao.get_order_list_dao(connection, data)
 
         except KeyError:
-            return 'key_error'
+            raise KeyError('Key Error')
 
 
     def update_order_status_service(self, connection, data):

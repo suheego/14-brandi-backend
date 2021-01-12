@@ -6,7 +6,6 @@ from utils.custom_exceptions import (OrderDoesNotExist,
                                      DeniedUpdate,
                                      )
 
-
 class OrderDao:
     """ Persistence Layer
 
@@ -31,42 +30,42 @@ class OrderDao:
         # 기본 sql
         sql = """
                     SELECT 
-                        order_item.id
-                        , order_item.created_at AS created_at_date
-                        , `order`.order_number AS order_number
-                        , order_item.order_detail_number AS order_detail_number
-                        , product.`name` AS product_name
-                        , `order`.sender_name AS customer_name
-                        , `order`.sender_phone AS customer_phone
+                        order_items.id
+                        , order_items.created_at AS created_at_date
+                        , orders.order_number AS order_number
+                        , order_items.order_detail_number AS order_detail_number
+                        , products.name AS product_name
+                        , orders.sender_name AS customer_name
+                        , orders.sender_phone AS customer_phone
                 """
 
         # 마스터 공통 sql
         master_sql = """
-                    , seller.`name` AS seller_name
-                    , `order`.total_price AS total_price
-                    , order_item_status.`name` AS `status`
+                    , sellers.name AS seller_name
+                    , orders.total_price AS total_price
+                    , order_item_status_types.name AS `status`
                 """
 
         # 필터링 sql
         extra_sql = """
-                    FROM order_items AS order_item
-                        INNER JOIN orders AS `order` 
-                            ON order_item.order_id = `order`.id
-                        INNER JOIN products AS product 
-                            ON order_item.product_id = product.id
-                        INNER JOIN sellers AS seller 
-                            ON product.seller_id = seller.account_id
-                        INNER JOIN stocks AS stock 
-                            ON order_item.stock_id = stock.id
-                        INNER JOIN colors AS color 
-                            ON stock.color_id = color.id
-                        INNER JOIN sizes AS size 
-                            ON stock.size_id = size.id
-                        INNER JOIN order_item_status_types AS order_item_status 
-                            ON order_item.order_item_status_type_id = order_item_status.id
+                    FROM order_items
+                        INNER JOIN orders 
+                            ON order_items.order_id = orders.id
+                        INNER JOIN products 
+                            ON order_items.product_id = products.id
+                        INNER JOIN sellers
+                            ON products.seller_id = sellers.account_id
+                        INNER JOIN stocks
+                            ON order_items.stock_id = stocks.id
+                        INNER JOIN colors 
+                            ON stocks.color_id = colors.id
+                        INNER JOIN sizes
+                            ON stocks.size_id = sizes.id
+                        INNER JOIN order_item_status_types
+                            ON order_items.order_item_status_type_id = order_item_status_types.id
                     WHERE
-                        order_item.is_deleted = 0
-                        AND order_item_status.id = %(status)s
+                        order_items.is_deleted = 0
+                        AND order_item_status_types.id = %(status)s
                 """
 
         permission = data['permission']
@@ -78,68 +77,68 @@ class OrderDao:
 
         # 상품 준비 관리 상태가 아닌 경우
         if not status == 1:
-            sql += ", order_item.updated_at AS updated_at_date"
+            sql += ", order_items.updated_at AS updated_at_date"
 
         # 마스터인 동시에 배송중 상태가 아닌 경우
         if (permission == 1) and (not status == 2):
             sql += """
-                , CONCAT(color.`name`, '/', size.`name`) AS option_information
-                , stock.extra_cost AS option_extra_cost
-                , order_item.quantity AS quantity
+                , CONCAT(colors.`name`, '/', sizes.`name`) AS option_information
+                , stocks.extra_cost AS option_extra_cost
+                , order_items.quantity AS quantity
             """
 
         # 셀러인 동시에 배송중 상태가 아닌 경우
         if (permission == 2) and (not status == 3):
             sql += """
-                , order_item_status.`name` AS `status`
+                , order_item_status_types.`name` AS `status`
             """
 
         # 셀러인 동시에 상품 준비 상태이거나 구매 확정 상태인 경우
         if (permission == 2) and (status == 1 or status == 8):
             sql += """
-                , CONCAT(color.`name`, '/', size.`name`) AS option_information
-                , order_item.quantity AS quantity
+                , CONCAT(colors.name, '/', sizes.name) AS option_information
+                , order_items.quantity AS quantity
             """
 
         # 필터링 조건 추가
         # 권한 조건 확인
         if data["permission"] == 2:
-            extra_sql += "AND seller.account_id = %(account)s"
+            extra_sql += "AND sellers.account_id = %(account)s"
 
         # 검색어 조건
         if data['number']:
-            extra_sql += " AND `order`.order_number = %(number)s"
+            extra_sql += " AND orders.order_number = %(number)s"
         if data['detail_number']:
             extra_sql += " AND order_items.order_detail_number = %(detail_number)s"
         if data['sender_name']:
-            extra_sql += " AND `order`.sender_name = %(sender_name)s"
+            extra_sql += " AND orders.sender_name = %(sender_name)s"
         if data['sender_phone']:
-            extra_sql += " AND `order`.sender_phone = %(sender_phone)s"
+            extra_sql += " AND orders.sender_phone = %(sender_phone)s"
         if data['seller_name']:
-            extra_sql += " AND seller.`name` = %(seller_name)s"
+            extra_sql += " AND sellers.name = %(seller_name)s"
         if data['product_name']:
-            extra_sql += " AND product.`name` LIKE %(product_name)s"
+            extra_sql += " AND products.name LIKE %(product_name)s"
 
         # 날짜 조건
         if data['start_date'] and data['end_date']:
-            extra_sql += """ AND order_item.updated_at BETWEEN CONCAT(%(start_date)s, ' 00:00:00') AND CONCAT(%(end_date)s, ' 23:59:59')
+            extra_sql += """ AND order_items.updated_at BETWEEN CONCAT(%(start_date)s, ' 00:00:00') AND CONCAT(%(end_date)s, ' 23:59:59')
             """
 
         # 셀러 속성 조건
         if data['attributes']:
-            extra_sql += " AND seller.seller_attribute_type_id IN %(attributes)s"
+            extra_sql += " AND sellers.seller_attribute_type_id IN %(attributes)s"
 
         # 정렬 조건
         if data['status'] == 1:
             if data['order_by'] == 'recent':
-                extra_sql += " ORDER BY order_item.id DESC"
+                extra_sql += " ORDER BY order_items.id DESC"
             else:
-                extra_sql += " ORDER BY order_item.id ASC"
+                extra_sql += " ORDER BY order_items.id ASC"
         else:
             if data['order_by'] == 'recent':
-                extra_sql += " ORDER BY order_item.updated_at DESC"
+                extra_sql += " ORDER BY order_items.updated_at DESC"
             else:
-                extra_sql += " ORDER BY order_item.updated_at ASC"
+                extra_sql += " ORDER BY order_items.updated_at ASC"
 
         total_count_sql += extra_sql
         sql += extra_sql
@@ -153,9 +152,9 @@ class OrderDao:
             if not list:
                 raise OrderDoesNotExist('주문 내역이 없습니다.')
             cursor.execute(total_count_sql, data)
-            count = cursor.fetchall()
+            count = cursor.fetchone()
 
-            return {'total_count': count[0]['total_count'], 'order_lists': list}
+            return {'total_count': count['total_count'], 'order_lists': list}
 
 
     def update_order_status_dao(self, connection, data):
