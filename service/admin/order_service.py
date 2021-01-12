@@ -133,12 +133,12 @@ class OrderService:
             if not (data['permission'] == 1 or data['permission'] == 2):
                 raise NoPermission('권한이 없습니다.')
 
-            order_item_id = data['order_item_id']
+            order_item_id   = data['order_item_id']
             updated_at_time = data['updated_at_time']
-            sender_phone = data['sender_phone']
+            sender_phone    = data['sender_phone']
             recipient_phone = data['recipient_phone']
-            address1 = data['address1']
-            address2 = data['address2']
+            address1        = data['address1']
+            address2        = data['address2']
 
             # 수정 정보가 없는 경우 에러 처리
             if not (sender_phone or recipient_phone or address1 or address2):

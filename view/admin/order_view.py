@@ -215,7 +215,7 @@ class OrderDetailView(MethodView):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    @signin_decorator()
     @validate_params(
         Param('order_item_id', PATH, int)
     )
@@ -328,15 +328,16 @@ class OrderDetailView(MethodView):
                 connection.close()
             except Exception:
                 raise DatabaseCloseFail('database close fail')
+            
 
-    @signin_decorator
+    @signin_decorator()
     @validate_params(
-        Param('order_item_id', GET, str, rules=[NumberRule()]),
-        Param("updated_at_time", GET, str, rules=[SecondDateTimeRule()]),
-        Param("sender_phone", GET, str, required=False, rules=[PhoneRule()]),
-        Param("recipient_phone", GET, str, required=False, rules=[PhoneRule()]),
-        Param("address1", GET, str, required=False),
-        Param("address2", GET, str, required=False)
+        Param('order_item_id', JSON, str, rules=[NumberRule()]),
+        Param("updated_at_time", JSON, str, rules=[SecondDateTimeRule()]),
+        Param("sender_phone", JSON, str, required=False, rules=[PhoneRule()]),
+        Param("recipient_phone", JSON, str, required=False, rules=[PhoneRule()]),
+        Param("address1", JSON, str, required=False),
+        Param("address2", JSON, str, required=False)
     )
     def patch(self, *args):
         data = {
@@ -385,7 +386,8 @@ class OrderDetailView(MethodView):
                     
 
         History:
-            2021-01-01(김민서): 초기 생성    
+            2021-01-01(김민서): 초기 생성
+            2021-01-12(김민서): 1차 수정    
         """
 
         try:
