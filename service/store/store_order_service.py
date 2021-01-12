@@ -111,10 +111,6 @@ class StoreOrderService:
                 custom_memo = self.store_order_dao.post_delivery_type_dao(connection, data)
                 data['delivery_memo_type_id'] = custom_memo
 
-            # 주문번호 채번을 위한 당일 주문량 파악
-            today = self.store_order_dao.get_today_order_number_dao(connection)
-            data.update(today)
-
             # 주문 정보 추가 (주문자 정보, 배송지 정보, 기타 배송 정보)
             order = self.store_order_dao.post_store_order_dao(connection, data)
             data['order_id'] = order
