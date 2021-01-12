@@ -20,13 +20,13 @@ class OrderView(MethodView):
         self.service = service
         self.database = database
 
-    @signin_decorator
+    @signin_decorator()
     @validate_params(
         Param('status', GET, int),
         Param('number', GET, str, required=False),
         Param('detail_number', GET, str, required=False),
         Param('sender_name', GET, str, required=False),
-        Param('sender_phone', GET, str, required=False, rules=[NumberRule()]),
+        Param('sender_phone', GET, str, required=False),
         Param('seller_name', GET, str, required=False),
         Param('product_name', GET, str, required=False),
         Param('start_date', GET, str, required=False, rules=[DateRule()]),
@@ -39,9 +39,7 @@ class OrderView(MethodView):
     def get(self, *args):
         data = {
             'permission': g.permission_type_id,
-            'account': g.acount_id,
-            'permission': 2,
-            'account': 1,
+            'account': g.account_id,
             'status': args[0],
             'number': args[1],
             'detail_number': args[2],
@@ -149,19 +147,19 @@ class OrderView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('database close fail')
 
-    @signin_decorator
+    @signin_decorator()
     @validate_params(
-        Param('status_id', GET, int),
-        Param('id', GET, list)
+        Param('status_id', JSON, int),
+        Param('ids', JSON, list)
     )
     def patch(self, *args):
         data = {
             'permission': g.permission_type_id,
-            'account': g.acount_id,
+            'account': g.account_id,
             "status": args[0],
             "ids": args[1]
         }
-
+        
         """PATCH 메소드: 주문 상태 변경
 
         Args: 
@@ -169,7 +167,7 @@ class OrderView(MethodView):
 
         Author: 김민서
 
-        Returns: { "message": "success" }
+        Returns: { "message": "주문 상태가 업데이트 되었습니다." }
 
         Raises:
             400, {'message': 'key error', 
@@ -191,14 +189,15 @@ class OrderView(MethodView):
                      'errorMessage': 'internal server error'} : 알 수 없는 에러
 
         History:
-            2021-01-01(김민서): 초기 생성    
+            2021-01-01(김민서): 초기 생성
+            2021-01-12(김민서): 1차 수정    
         """
 
         try:
             connection = get_connection(self.database)
             self.service.update_order_status_service(connection, data)
             connection.commit()
-            return {'message': 'success'}
+            return jsonify({'message': '주문 상태가 업데이트 되었습니다.'}), 200
 
         except Exception as e:
             connection.rollback()

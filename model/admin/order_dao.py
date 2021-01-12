@@ -178,6 +178,7 @@ class OrderDao:
             if affected_row != data['count_new_status']:
                 raise UnableToUpdate('업데이트가 불가합니다.')
 
+
     def add_order_history_dao(self, connection, data):
         """ 주문 상태 변경 히스토리 생성
 
