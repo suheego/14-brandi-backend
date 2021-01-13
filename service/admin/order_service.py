@@ -1,3 +1,6 @@
+from flask import send_file
+from io import BytesIO
+import pandas as pd
 from utils.custom_exceptions import (OrderFilterNotExist,
                                      NoPermission,
                                      DateInputDoesNotExist,
@@ -123,8 +126,8 @@ class OrderService:
                 "updated_at_time": updated_at_time
             }
 
-        except Exception as e:
-            raise e
+        except KeyError:
+            raise KeyError('key Error')
 
 
     def update_order_detail_service(self, connection, data):
@@ -168,5 +171,19 @@ class OrderService:
             if recipient_phone:
                 self.admin_order_dao.update_recipient_phone_dao(connection, data)
 
-        except Exception as e:
-            raise e
+        except KeyError:
+            raise KeyError('key Error')
+
+
+    def create_excel_service(self, connection, data):
+        try:
+            df = self.admin_order_dao.get_order_list_dao(connection, data)
+            output = BytesIO()
+            writer = pd.ExcelWriter(output, engine='xlsxwriter')
+            df.to_excel(writer, sheet_name=data['sheet_name'], index=False)
+            writer.save()
+            output.seek(0)
+            return send_file(output, attachment_filename=data['file_name'], as_attachment=True)
+
+        except KeyError:
+            raise KeyError('key Error')

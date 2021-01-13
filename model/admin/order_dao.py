@@ -1,5 +1,5 @@
 import pymysql
-import traceback
+import pandas as pd
 from utils.custom_exceptions import (OrderDoesNotExist,
                                      UnableToUpdate,
                                      DoesNotOrderDetail,
@@ -30,20 +30,19 @@ class OrderDao:
         # 기본 sql
         sql = """
                     SELECT 
-                        order_items.id
-                        , order_items.created_at AS created_at_date
-                        , orders.order_number AS order_number
-                        , order_items.order_detail_number AS order_detail_number
-                        , products.name AS product_name
-                        , orders.sender_name AS customer_name
-                        , orders.sender_phone AS customer_phone
+                        order_items.created_at AS 결제일자
+                        , orders.order_number AS 주문번호
+                        , order_items.order_detail_number AS 주문상세번호
+                        , products.name AS 상품명
+                        , orders.sender_name AS 주문자명
+                        , orders.sender_phone AS 핸드폰번호
                 """
 
         # 마스터 공통 sql
         master_sql = """
-                    , sellers.name AS seller_name
-                    , orders.total_price AS total_price
-                    , order_item_status_types.name AS `status`
+                    , sellers.name AS 셀러명
+                    , orders.total_price AS 결제금액
+                    , order_item_status_types.name AS 주문상태
                 """
 
         # 필터링 sql
@@ -71,41 +70,55 @@ class OrderDao:
         permission = data['permission']
         status = data['status']
 
-        # 마스터인 경우 공통 sql 추가
+        # 1.0 컬럼 추가
+        # 1.1 마스터인 경우 공통 sql 추가
         if permission == 1:
             sql += master_sql
 
-        # 상품 준비 관리 상태가 아닌 경우
-        if not status == 1:
-            sql += ", order_items.updated_at AS updated_at_date"
+        # 1.2 상품 준비 관리 상태가 아닌 경우
+        if status == 2:
+            sql += ", order_items.updated_at AS 배송시작일"
+        if status == 3:
+            sql += ", order_items.updated_at AS 배송완료일"
+        if status == 8:
+            sql += ", order_items.updated_at AS 구매확정일"
 
-        # 마스터인 동시에 배송중 상태가 아닌 경우
+        # 1.3 마스터인 동시에 배송중 상태가 아닌 경우
         if (permission == 1) and (not status == 2):
             sql += """
-                , CONCAT(colors.`name`, '/', sizes.`name`) AS option_information
-                , stocks.extra_cost AS option_extra_cost
-                , order_items.quantity AS quantity
+                , CONCAT(colors.name, '/', sizes.name) AS 옵션정보
+                , stocks.extra_cost AS 옵션추가금액
+                , order_items.quantity AS 수량
             """
 
-        # 셀러인 동시에 배송중 상태가 아닌 경우
+        # 1.4 셀러인 동시에 배송중 상태가 아닌 경우
         if (permission == 2) and (not status == 3):
             sql += """
-                , order_item_status_types.`name` AS `status`
+                , order_item_status_types.name AS 주문상태
             """
 
-        # 셀러인 동시에 상품 준비 상태이거나 구매 확정 상태인 경우
+        # 1.5 셀러인 동시에 상품 준비 상태이거나 구매 확정 상태인 경우
         if (permission == 2) and (status == 1 or status == 8):
             sql += """
-                , CONCAT(colors.name, '/', sizes.name) AS option_information
-                , order_items.quantity AS quantity
+                , CONCAT(colors.name, '/', sizes.name) AS 옵션정보
+                , order_items.quantity AS 수량
             """
 
-        # 필터링 조건 추가
-        # 권한 조건 확인
-        if data["permission"] == 2:
-            extra_sql += "AND sellers.account_id = %(account)s"
+        # 1.6 엑셀 API 가 아닌 경우 id값 추가
+        if 'page' in data:
+            sql += ", order_items.id"
 
-        # 검색어 조건
+        # 2.0 필터링 조건 추가
+        # 2.1 엑셀 API 인 경우
+        if 'ids' in data:
+            if data['ids']:
+                extra_sql += " AND order_items.id IN %(ids)s"
+
+        # 2.2 권한 조건 확인
+        if data["permission"] == 2:
+            extra_sql += " AND sellers.account_id = %(account)s"
+
+        # 2.3 검색어 조건
         if data['number']:
             extra_sql += " AND orders.order_number = %(number)s"
         if data['detail_number']:
@@ -119,16 +132,16 @@ class OrderDao:
         if data['product_name']:
             extra_sql += " AND products.name LIKE %(product_name)s"
 
-        # 날짜 조건
+        # 2.4 날짜 조건
         if data['start_date'] and data['end_date']:
             extra_sql += """ AND order_items.updated_at BETWEEN CONCAT(%(start_date)s, ' 00:00:00') AND CONCAT(%(end_date)s, ' 23:59:59')
             """
 
-        # 셀러 속성 조건
+        # 2.5 셀러 속성 조건
         if data['attributes']:
             extra_sql += " AND sellers.seller_attribute_type_id IN %(attributes)s"
 
-        # 정렬 조건
+        # 2.6 정렬 조건
         if data['status'] == 1:
             if data['order_by'] == 'recent':
                 extra_sql += " ORDER BY order_items.id DESC"
@@ -142,11 +155,22 @@ class OrderDao:
 
         total_count_sql += extra_sql
         sql += extra_sql
+        excel_sql = sql
 
-        # 페이지 조건
-        sql += " LIMIT %(page)s, %(length)s;"
+        # 3.0 페이지 조건
+        if 'page' and 'length' in data:
+            sql += " LIMIT %(page)s, %(length)s;"
+        elif not data['ids']:
+            excel_sql += " LIMIT 0, 1000;"
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            # 엑셀 API 인 경우
+            if 'ids' in data:
+                cursor.execute(excel_sql, data)
+                result = pd.DataFrame(cursor.fetchall())
+                return result
+
+            # 주문 리스트 조회 API 인 경우
             cursor.execute(sql, data)
             list = cursor.fetchall()
             if not list:
