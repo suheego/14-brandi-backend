@@ -25,7 +25,7 @@ class DestinationDetailView(MethodView):
         배송지 상세정보를 조회, 반환해준다.
 
         Args:
-            destination_id : url pass_parameter 로 입력받은 값
+            destination_id : url pass_parameter 로 입력받은 값: 배송지정보
 
         Author: 김기용
 
@@ -80,7 +80,8 @@ class DestinationView(MethodView):
         유저에 관련된 모든 배송지 정보를 조회 및 반환한다.
 
         Args:
-            g.account_id: 데코레이터에서 넘겨받은 유저 정보
+            g.account_id        : 데코레이터에서 넘겨받은 유저 정보
+            g.permission_type_id: 권한정보
 
         Author: 김기용
 
@@ -133,13 +134,15 @@ class DestinationView(MethodView):
         최대 배송지 생성 개수는 5개이다.
 
         Args:
-            args =('recipient',
-                   'phone',
-                   'address1',
-                   'address2',
-                   'post_number',
-                   'default_location',
-                   'is_deleted')
+            args:
+                'recipient'  : 수신자
+                'phone'      : 폰번호
+                'address1'   : 메인주소
+                'address2'   : 상세주소
+                'post_number': 우편번호
+
+                g.account_id        : 데코레이터에서 넘겨받은 어카운트 아이디
+                g.permission_type_id: 데코레이터에서 넘겨받은 권한 아이디
 
         Author: 김기용
 
@@ -200,7 +203,17 @@ class DestinationView(MethodView):
 
             사용자가 입력한 배송지 정보를 받아 수정한다.
             
-            Args: destination_id
+            Args:
+                'destination_id'  : 배송지 아이디
+                'recipient'       : 수신자
+                'phone'           : 폰번호
+                'address1'        : 메인주소
+                'address2'        : 상세주소
+                'post_number'     : 우편번호
+                'default_location': 기본 배송지
+
+                g.account_id        : 데코레이터에서 넘겨받은 어카운트 아이디
+                g.permission_type_id: 데코레이터에서 넘겨받은 권한 아이디
 
             Author: 김기용
 
@@ -248,8 +261,10 @@ class DestinationView(MethodView):
         """DELETE 메소드:  배송지 삭제
 
         Args:
-            args =('user_id')
+            'destination_id': 배송지 아이디
 
+            g.account_id           : 데코레이터에서 넘겨받은 account_id
+            g.permission_type_id   : 데코레이터에서 넘겨받은 권한 아이디
         Author: 김기용
 
         Returns: 200, {'message': 'success'}: 배송지 삭제 성공

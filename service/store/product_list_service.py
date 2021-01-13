@@ -118,6 +118,6 @@ class ProductListService:
             product['sizes'] = sizes
             product['images'] = images
             return product
-        except KeyError('키 값이 일치하지 않습니다.'):
-            raise
-        return self.product_dao.get_product_detail_dao(connection, data)
+
+        except KeyError:
+            raise KeyError('키값이 일치 하지 않습니다.')

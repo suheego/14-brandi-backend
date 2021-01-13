@@ -45,7 +45,7 @@ class DestinationDao:
                 return UpdateDenied('기본 배송지 설정에 실패하였습니다.')
 
     def update_default_location_false(self, connection, data):
-        """ 기본 배송지의 정보를 False 로 만든다.
+        """ 모든 기본 배송지의 정보를 False 로 만든다.
 
         Args:
             connection: 데이터베이스 연결 객체
@@ -217,13 +217,18 @@ class DestinationDao:
     def check_default_location(self, connection, data):
         """ 배송지 아이디로 기본 배송지인지 조회
 
+        삭제 이후의 DB 에 남아 있는 배송지 정보 들중에
+        기본 배송지 정보를 가진 배송지가 있는지 조회한다.
+        COUNT 로 존재 유무를 파악한다. 기본 배송지가
+        있을 경우 1을 반환 하고 없을 경우 0 을 반환 한다.
+
         Args:
             connection : 데이터베이스 연결 객체
             data       : user_id, 와 account_id 를 담고 있는 객체
 
         Author: 김기용
 
-        Returns: 3: True, False
+        Returns: 0, 1
 
         Raises: None
 
@@ -245,6 +250,8 @@ class DestinationDao:
         with connection.cursor() as cursor:
             cursor.execute(sql, data)
             default_location = cursor.fetchone()
+
+            # 튜플 형식으로 반환되기 때문에 인덱스로 접근해서 숫자값만 반환해준다.
             return default_location[0]
 
     def check_default_location_by_user(self, connection, account_id):
@@ -259,7 +266,7 @@ class DestinationDao:
 
         Author: 김기용
 
-        Returns: 3: user
+        Returns: None, (1, 0)
 
         Raises: None
 
@@ -282,6 +289,8 @@ class DestinationDao:
         with connection.cursor() as cursor:
             cursor.execute(sql, account_id)
             default_location = cursor.fetchone()
+
+            # 튜플 형식을 반환해준다: 기본배송지가 존재하지 않을경우 None 을 반환한다.
             return default_location
 
     def check_default_location_length(self, connection, account_id):
@@ -399,14 +408,15 @@ class DestinationDao:
     def check_default_flag(self, connection, data):
         """ 배송지 아이디로 기본 배송지인지 조회
 
-            해당 배송지가 기본 배송지인지 체크한다.
+            변경하려는 배송지 정보가 기본 배송지인지 조회한다.
+
         Args:
             connection : 데이터베이스 연결 객체
             data       : user_id, 와 account_id 를 담고 있는 객체
 
         Author: 김기용
 
-        Returns: 3: True, False
+        Returns: True, False
 
         Raises: None
 
@@ -421,10 +431,10 @@ class DestinationDao:
             destinations 
         WHERE
             user_id = %(account_id)s
-        AND id = %(destination_id)s
-        AND default_location = 1
-        AND is_deleted=0 
-        ;
+            AND id = %(destination_id)s
+            AND default_location = 1
+            AND is_deleted=0 
+            ;
         """
 
         with connection.cursor() as cursor:
