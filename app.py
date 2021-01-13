@@ -8,6 +8,9 @@ from view import create_endpoints
 from model import OrderDao, OrderDetailDao, EnquiryDao
 from service import OrderService, EnquiryService
 
+from model import OrderDao, OrderDetailDao
+
+
 from model   import SellerInfoDao, SellerDao
 from service import SellerService, SellerInfoService, ProductCreateService, ProductManageService
 
@@ -89,11 +92,12 @@ def create_app(test_config=None):
     event_dao = EventDao()
     store_order_dao = StoreOrderDao()
     order_dao = OrderDao()
+    order_detail_dao = OrderDetailDao()
     enquiry_dao = EnquiryDao()
     seller_shop_dao = SellerShopDao()
 
     # admin2
-    order_detail_dao = OrderDetailDao()
+
 
     seller_dao = SellerDao()
     seller_info_dao = SellerInfoDao()
@@ -123,6 +127,7 @@ def create_app(test_config=None):
     services.event_service        = EventService(event_dao)
     services.order_service        = OrderService(order_dao)
     services.order_detail_service = OrderService(order_detail_dao)
+    services.order_excel_service  = OrderService(order_dao)
     services.enquiry_service      = EnquiryService(enquiry_dao)
 
     #admin2

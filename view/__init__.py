@@ -23,7 +23,7 @@ from .store.product_enquiry_view import ProductEnquiryListView, MyPageEnquiryLis
 from .store.seller_shop_view import SellerShopView, SellerShopSearchView, SellerShopCategoryView, SellerShopProductListView
 
 # admin1
-from .admin.order_view import OrderView, OrderDetailView
+from .admin.order_view import OrderView, OrderDetailView, OrderExcelView
 from .admin.event_view import EventView, EventDetailView, EventProductsCategoryView, EventProductsToAddView
 from .admin.enquiry_view import EnquiryView, AnswerView
 
@@ -73,6 +73,7 @@ def create_endpoints(app, services, database):
     # admin1
     order_service = services.order_service
     order_detail_service = services.order_detail_service
+    order_excel_service = services.order_excel_service
 
     # admin2
     seller_service         = services.seller_service
@@ -352,6 +353,13 @@ def create_endpoints(app, services, database):
                      view_func=OrderDetailView.as_view(
                          'order_detail_update_view',
                          order_detail_service,
+                         database
+                     ))
+
+    app.add_url_rule('/admin/orders/excel',
+                     view_func=OrderExcelView.as_view(
+                         'order_excel_view',
+                         order_excel_service,
                          database
                      ))
 

@@ -13,6 +13,7 @@ from flask_request_validator import (
     GET,
     PATH
 )
+from datetime import date
 
 
 class OrderView(MethodView):
@@ -401,5 +402,98 @@ class OrderDetailView(MethodView):
         finally:
             try:
                 connection.close()
+            except Exception:
+                raise DatabaseCloseFail('database close fail')
+
+
+class OrderExcelView(MethodView):
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+
+    #@signin_decorator()
+    @validate_params(
+        Param('status', GET, int),
+        Param('ids', GET, list, required=False),
+        Param('number', GET, str, required=False),
+        Param('detail_number', GET, str, required=False),
+        Param('sender_name', GET, str, required=False),
+        Param('sender_phone', GET, str, required=False, rules=[NumberRule()]),
+        Param('seller_name', GET, str, required=False),
+        Param('product_name', GET, str, required=False),
+        Param('start_date', GET, str, required=False, rules=[DateRule()]),
+        Param('end_date', GET, str, required=False, rules=[DateRule()]),
+        Param('attributes', GET, list, required=False),
+        Param('order_by', GET, str, required=False)
+    )
+    def get(self, *args):
+        data = {
+            # 'permission': g.permission_type_id,
+            # 'account': g.account_id,
+            'permission': 1,
+            'account': 1,
+            'status': args[0],
+            'ids': args[1],
+            'number': args[2],
+            'detail_number': args[3],
+            'sender_name': args[4],
+            'sender_phone': args[5],
+            'seller_name': args[6],
+            'product_name': args[7],
+            'start_date': args[8],
+            'end_date': args[9],
+            'attributes': args[10],
+            'order_by': args[11]
+        }
+
+        """GET 메소드: 주문 리스트 엑셀 다운로드     
+            
+            Args:
+                args = ('status', 'ids', 'number', 'detail_number', 'sender_name', 'sender_phone', 'seller_name', 
+                'product_name', 'start_date', 'end_date', 'seller_attributes', 'order_by')
+
+            Author: 김민서
+
+            Returns: {'message': 'success'}
+
+            Raises:
+                400, {'message': 'key_error', 
+                        'errorMessage': 'key error'} : 잘못 입력된 키값
+
+                400, {'message': 'unable_to_close_database', 
+                        'errorMessage': 'unable to close database'}: 커넥션 종료 실패
+
+                500, {'message': 'internal_server_error',
+                             'errorMessage': 'internal server error'} : 알 수 없는 에러
+
+            History:
+                    2021-01-13(김민서): 초기 생성
+        """
+
+        try:
+            status = data['status']
+            today = date.today().strftime('%Y%m%d')
+
+            if status == 1:
+                status = '상품준비'
+            if status == 2:
+                status = '배송중'
+            if data['ids']:
+                choice = '선택'
+            if not data['ids']:
+                choice = '전체'
+
+            # 파일 및 시트 이름 생성
+            data['file_name'] = f"{today}_{choice}주문엑셀다운로드_{status}_브랜디.xlsx"
+            data['sheet_name'] = today
+
+            connection = get_connection(self.database)
+            return self.service.create_excel_service(connection, data)
+        except Exception as e:
+            raise e
+        finally:
+            try:
+                if connection:
+                    connection.close()
             except Exception:
                 raise DatabaseCloseFail('database close fail')
