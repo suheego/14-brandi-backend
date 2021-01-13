@@ -1,5 +1,6 @@
 import traceback
 import json
+
 from flask import g
 from utils.decorator import signin_decorator
 from utils.rules import SortTypeRule, NumberRule
@@ -146,13 +147,15 @@ class ProductListView(MethodView):
         self.database = database
 
     @validate_params(
-        Param('offset', GET, int)
+        Param('offset', GET, int, required=False, default=0),
+        Param('limit', GET, int, required=False, default=30)
     )
     def get(self, *args):
         """ GET 메소드: 전체 상품 리스트 조회
 
             Args:
                 offset = 0부터 시작
+                limit = 30
 
             Author: 김민구
 
@@ -201,12 +204,16 @@ class ProductListView(MethodView):
 
         connection = None
         try:
-            offset = args[0]
+            data = {
+                'offset': args[0],
+                'limit': args[1]
+            }
             connection = get_connection(self.database)
-            result = self.product_list_service.product_list_logic(connection, offset)
+            result = self.product_list_service.product_list_logic(connection, data)
             return jsonify({'message': 'success', 'result': result})
 
         except Exception as e:
+            traceback.print_exc()
             raise e
 
         finally:

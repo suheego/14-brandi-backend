@@ -1,5 +1,3 @@
-import traceback
-
 import pymysql
 
 from utils.custom_exceptions import DatabaseError
@@ -21,12 +19,12 @@ class EventListDao:
 
             Args:
                 connection : 데이터베이스 연결 객체
-                data       : 서비스에서 넘겨 받은 dict (offset, is_proceeding)
+                data       : 서비스에서 넘겨 받은 dict (offset, limit, is_proceeding)
 
             Returns: 해당 기획전 배너 30개 반환
                 [
                     {
-                        "banner_image": "url"
+                        "event_banner_image": "url"
                         "event_id": 1,
                         "event_kind_id": 1,
                         "event_type_id": 1
@@ -43,7 +41,7 @@ class EventListDao:
         sql = """
             SELECT 
                 `event`.id AS event_id
-                , `event`.banner_image
+                , `event`.banner_image AS event_banner_image
                 , `event`.event_type_id
                 , `event`.event_kind_id
             FROM 
@@ -58,7 +56,7 @@ class EventListDao:
                 )
             ORDER BY 
                 `event`.id ASC  
-            LIMIT %(offset)s, 30; 
+            LIMIT %(offset)s, %(limit)s; 
         """
 
         try:
@@ -68,7 +66,6 @@ class EventListDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_event_information(self, connection, event_id):
@@ -133,7 +130,6 @@ class EventListDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_event_button(self, connection, event_id):
@@ -183,7 +179,6 @@ class EventListDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def is_event_has_button(self, connection, event_id):
@@ -230,7 +225,6 @@ class EventListDao:
                 return result['is_button']
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_event_button_product_list(self, connection, data):
@@ -292,7 +286,7 @@ class EventListDao:
                 AND product.is_display = 1
             ORDER BY
                 product.id DESC
-            LIMIT %(offset)s, 30;
+            LIMIT %(offset)s, %(limit)s;
         """
 
         try:
@@ -302,7 +296,6 @@ class EventListDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_event_product_list(self, connection, data):
@@ -310,7 +303,7 @@ class EventListDao:
 
             Args:
                 connection : 데이터베이스 연결 객체
-                data       : 서비스에서 넘겨 받은 dict ( offset, event_id )
+                data       : 서비스에서 넘겨 받은 dict ( offset, limit, event_id )
 
             Returns: 30개의 상품을 반환
                 [
@@ -362,7 +355,7 @@ class EventListDao:
                 AND product.is_display = 1
             ORDER BY
                 product.id DESC
-            LIMIT %(offset)s, 30;
+            LIMIT %(offset)s, %(limit)s;
         """
 
         try:
@@ -372,5 +365,4 @@ class EventListDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')

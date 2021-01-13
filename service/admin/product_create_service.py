@@ -1,10 +1,10 @@
 import io
-import base64
+import uuid
 
 from PIL                     import Image
-from werkzeug.utils          import secure_filename
 
 from config                  import S3_BUCKET_URL
+from model                   import ProductCreateDao
 from utils.amazon_s3         import S3FileManager, GenerateFilePath
 from utils.custom_exceptions import (
     RequiredFieldException,
@@ -17,6 +17,7 @@ from utils.custom_exceptions import (
     FileScaleException,
     FileUploadFailException
 )
+
 
 class ProductCreateService:
     """ Business Layer
@@ -32,8 +33,8 @@ class ProductCreateService:
             2020-01-03(심원두): 이미지 등록 예외 처리 수정, 업로드 시 파일 손상 이슈 수정
     """
     
-    def __init__(self, create_product_dao):
-        self.create_product_dao = create_product_dao
+    def __init__(self):
+        self.create_product_dao = ProductCreateDao()
     
     def create_product_service(self, connection, data):
         """ product 생성
@@ -50,7 +51,7 @@ class ProductCreateService:
             Raises:
                 400, {'message': 'key error',
                       'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키값
-
+                
                 400, {'message': 'required field is blank',
                       'errorMessage': 'required_manufacture_information'}: 제조 정보 필드 없음
                 
@@ -76,64 +77,70 @@ class ProductCreateService:
                       'errorMessage': 'discounted_price_have_to_same_with_origin_price'}: 할인가, 판매가 불일치(할인율 0)
                 
                 500, {'message': 'product create denied',
-                      'errorMessage': 'unable_to_create_product'}               : 상품 정보 등록 실패
-            
+                      'errorMessage': 'unable_to_create_product'}: 상품 정보 등록 실패
+                
             History:
                 2020-12-29(심원두): 초기 생성
                 2020-12-30(심원두): 예외처리 구현
                 2020-01-03(심원두): 예외처리 추가/수정
         """
+        
         try:
-            # 상품 고시 - 직접입력의 경우 하위 필드 필수 체크
-            if int(data['is_product_notice']) == 1:
-                if not data['manufacturer'] or \
-                    not data['manufacturing_date'] or \
-                    not data['product_origin_type_id']:
-                    raise RequiredFieldException('required_manufacture_information')
-
-            # 최소 판매 수량, 최대 판매 수량 비교 체크
-            if int(data['minimum_quantity']) > int(data['maximum_quantity']):
-                raise CompareQuantityCheck('minimum_quantity_cannot_greater_than_maximum_quantity')
+            if int(data['minimum_quantity']) != 0 and int(data['maximum_quantity']) != 0:
+                if int(data['minimum_quantity']) > int(data['maximum_quantity']):
+                    raise CompareQuantityCheck('minimum_quantity_cannot_greater_than_maximum_quantity')
             
-            # 할인율 0이 아닌 경우
-            if int(data['discount_rate']) != 0:
+            if int(data['minimum_quantity']) == 0:
+                data['minimum_quantity'] = 1
+            
+            if int(data['maximum_quantity']) == 0:
+                data['minimum_quantity'] = 20
+            
+            if int(data['is_product_notice']) == 0:
+                data['manufacturer'] = None
+                data['manufacturing_date'] = None
+                data['product_origin_type_id'] = None
                 
-                # 할인가가 판매가 보다 클 경우
+            else:
+                
+                if not data['manufacturer'] or not data['manufacturing_date'] or not data['product_origin_type_id']:
+                    raise RequiredFieldException('required_manufacture_information')
+            
+            if int(data['discount_rate']) == 0:
+                data['discounted_price'] = data['origin_price']
+                data['discount_start_date'] = None
+                data['discount_end_date'] = None
+                
+            else:
+                
                 if float(data['discounted_price']) > float(data['origin_price']):
                     raise ComparePriceCheck('discounted_price_cannot_greater_than_origin_price')
-
-                # [판매가 - 할인가격 != 할인가] 의 경우
-                if (float(data['origin_price']) * (1 - float(data['discount_rate']))) != \
+                
+                if (float(data['origin_price']) * (1 - float(data['discount_rate']) / 100)) != \
                     float(data['discounted_price']):
                     raise ComparePriceCheck('wrong_discounted_price')
                 
-                # 할인율이 0이 아닌 경우, [할인 시작 일자, 할이 종료 일자] 필수 체크
-                if not data['discount_start_date'] or not data['discount_end_date']:
+                if data['discount_start_date'] and not data['discount_end_date']:
                     raise RequiredFieldException('required_discount_start_or_end_date')
                 
-                # [할인 시작 일자 > 할인 종료 일자] 의 경우
-                if data['discount_start_date'] > data['discount_end_date']:
-                    raise DateCompareException('start_date_cannot_greater_than_end_date')
-            else:
+                if not data['discount_start_date'] and data['discount_end_date']:
+                    raise RequiredFieldException('required_discount_start_or_end_date')
                 
-                # 할인율이 0 인 경우, [판매가 != 할인가]
-                if data['discounted_price'] != data['origin_price']:
-                    raise ComparePriceCheck('discounted_price_have_to_same_with_origin_price')
-            
+                if data['discount_start_date'] and data['discount_end_date']:
+                    
+                    if data['discount_start_date'] > data['discount_end_date']:
+                        raise DateCompareException('start_date_cannot_greater_than_end_date')
+                
+                else:
+                    data['discount_start_date'] = None
+                    data['discount_end_date'] = None
+                    
             data['discount_rate'] = float(data['discount_rate']) / 100
             
-            #TODO : HTML with image 파일 DB 저장
-            # 1. encode 방법
-            # html = payload['detail_information']
-            # encode = html.encode("utf-8")
-            # payload['detail_information'] = encode
-            # 2. base64 방법
-            # html = payload['detail_information']
-            # encode = base64.b64encode(html.encode()).decode()
-            # payload['detail_information'] = encode
+            print(type(data['detail_information']), data['detail_information'])
             
             return self.create_product_dao.insert_product(connection, data)
-            
+        
         except KeyError as e:
             raise e
         
@@ -163,23 +170,24 @@ class ProductCreateService:
             History:
                 2020-12-29(심원두): 초기 생성
         """
+        
         try:
-            
-            # 상품 코드 생성
             data = {
                 'product_code' : 'P' + str(product_id).zfill(18),
                 'product_id'   : product_id
             }
             
-            return self.create_product_dao.update_product_code(connection, data)
-        
+            self.create_product_dao.update_product_code(connection, data)
+            
+            return data['product_code']
+            
         except KeyError as e:
             raise e
         
         except Exception as e:
             raise e
-
-    def create_product_images_service(self, connection, seller_id, product_id, product_images):
+    
+    def create_product_images_service(self, connection, seller_id, product_id, product_code, product_images):
         """ 상품 이미지 등록
             
             Args:
@@ -215,56 +223,60 @@ class ProductCreateService:
             
             History:
                 2020-12-29(심원두): 초기 생성
-                2020-01-03(심원두): 이미지 업로드 예외 처리 수정, 파일 손상 이슈 수정
+                2021-01-03(심원두): 이미지 업로드 예외 처리 수정, 파일 손상 이슈 수정
+                2021-01-05(심원두): S3 에 이미지 업로드 처리를, 예외처리 처리 후에 하도록 수정.
+                2021-01-06(심원두): 인덱스가 0부터 들어가는 오류 수정
         """
+        
         try:
-            for index, product_image in enumerate(product_images):
-                
+            image_buffer   = []
+            
+            for product_image in product_images:
                 if not product_image or not product_image.filename:
                     raise NotValidFileException('invalid_file')
                 
-                # 바이트 객체
+                image  = Image.open(product_image, 'r')
                 buffer = io.BytesIO()
-                # 이미지 열기 (읽기 모드)
-                image = Image.open(product_image, 'r')
-                # 임시 저장
+                
                 image.save(buffer, image.format)
-                # 포인터 리와인드
+                
+                product_image.seek(0, 2)
+                if product_image.tell() > (1024 * 1024 * 4):
+                    FileSizeException('file_size_too_large')
+                
                 buffer.seek(0)
                 
-                # 파일 크기 체크 (4메가 이상인 경우 에러)
-                if buffer.getvalue().__sizeof__() > 4194304:
-                    raise FileSizeException('file_size_too_large')
+                width, height, = image.size
+                if width < 640 or height < 720:
+                    raise FileScaleException('file_scale_at_least_640*720')
                 
-                # 파일 사이즈(가로, 세로) 체크 (640*720 미만인 경우 에러)
-                # if image.size[0] < 640 or image.size[1] < 720:
-                #     raise FileScaleException('file_scale_at_least_640*720')
-                
-                # 파일 확장자 체크 (JPEG, JPG 허용)
                 if image.format != "JPEG":
                     raise FileExtensionException('only_allowed_jpg_type')
                 
-                # 이미지 파일 패스 생성
+                image_buffer.append(buffer)
+            
+            for index, buffer in enumerate(image_buffer):
                 file_path = GenerateFilePath().generate_file_path(
                     3,
                     seller_id  = seller_id,
                     product_id = product_id
                 )
                 
-                # 아마존 업로더
+                file_name = file_path + product_code + "-" + str(uuid.uuid4())
+                
                 url = S3FileManager().file_upload(
                     buffer,
-                    file_path + secure_filename(product_image.filename)
+                    file_name
                 )
                 
-                # 아마존 업로드 후 url 리턴 받지 못한 경우
                 if not url:
-                    raise FileUploadFailException('image_file_upload_fail')
+                    S3FileManager().file_delete(file_name)
+                    raise FileUploadFailException('image file upload to amazon fail')
                 
                 data = {
-                    'image_url'   : url,
-                    'product_id'  : product_id,
-                    'order_index' : index
+                    'image_url'  : url,
+                    'product_id' : product_id,
+                    'order_index': index + 1
                 }
                 
                 self.create_product_dao.insert_product_image(connection, data)
@@ -289,7 +301,7 @@ class ProductCreateService:
             Raises:
                 400, {'message': 'key error',
                       'errorMessage': 'key_error' + format(e)}: 잘못 입력된 키값
-
+            
                 500, {'message': 'stock create denied',
                       'errorMessage': 'unable_to_create_stocks'}: 상품 옵션 정보 등록 실패
             
@@ -297,11 +309,11 @@ class ProductCreateService:
                 2020-12-29(심원두): 초기 생성
                 2020-01-03(심원두): 프론트엔드 상의 후 재고 관리 컬럼 추가에 대한 대응
         """
+        
         try:
             data = {}
             
             for stock in stocks:
-                # 상품 옵션 코드 생성
                 product_option_code = \
                     str(product_id) + \
                     str(stock['color']).zfill(3) + \
@@ -312,9 +324,13 @@ class ProductCreateService:
                 data['color_id']            = stock['color']
                 data['size_id']             = stock['size']
                 data['remain']              = stock['remain']
-                data['is_stock_manage']     = stock['isStockManage']
                 
-                if not data['is_stock_manage']:
+                if not stock['isStockManage']:
+                    stock['isStockManage'] = 0
+                
+                data['is_stock_manage'] = stock['isStockManage']
+                
+                if not stock['remain']:
                     data['remain'] = 0
                 
                 self.create_product_dao.insert_stock(connection, data)
@@ -349,6 +365,7 @@ class ProductCreateService:
             History:
                 2020-12-29(심원두): 초기 생성
         """
+        
         try:
             data['product_id']    = product_id
             data['discount_rate'] = float(data['discount_rate'])/100
@@ -362,8 +379,8 @@ class ProductCreateService:
             if not data['discounted_price']:
                 data['discounted_price'] = None
             
-            return self.create_product_dao.insert_product_history(connection, data)
-            
+            self.create_product_dao.insert_product_history(connection, data)
+        
         except KeyError as e:
             raise e
         
@@ -390,12 +407,42 @@ class ProductCreateService:
             History:
                 2020-12-29(심원두): 초기 생성
         """
+        
         try:
-            return self.create_product_dao.insert_product_sales_volumes(connection, product_id)
+            
+            self.create_product_dao.insert_product_sales_volumes(connection, product_id)
         
         except Exception as e:
             raise e
+    
+    def create_bookmark_volumes_service(self, connection, product_id):
+        """ 북 마크 정보 초기 등록
+
+            Args:
+                connection : 데이터 베이스 연결 객체
+                product_id : 상품 번호
+
+            Author: 심원두
+
+            Returns:
+                0: 북마크 정보 초기 등록 실패
+                1: 북마크 정보 초기 등록 성공
+
+            Raises:
+                500, {'message': 'bookmark volumes create denied',
+                      'errorMessage': 'unable_to_create_bookmark_volumes'}: 북마크 초기 등록 실패
+            
+            History:
+                2021-01-05(심원두): 초기 생성
+        """
         
+        try:
+            
+            self.create_product_dao.insert_bookmark_volumes(connection, product_id)
+        
+        except Exception as e:
+            raise e
+    
     def main_category_list_service(self, connection):
         """ 메인 카테고리 정보 취득
             
@@ -424,6 +471,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             main_category_list = self.create_product_dao.get_main_category_list(connection)
             
@@ -470,6 +518,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             color_list = self.create_product_dao.get_color_list(connection)
             
@@ -516,6 +565,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             size_list = self.create_product_dao.get_size_list(connection)
             
@@ -562,6 +612,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             product_origin_types = self.create_product_dao.get_product_origin_types(connection)
             
@@ -609,6 +660,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             if data['seller_name']:
                 data['seller_name'] = '%' + data['seller_name'] + '%'
@@ -624,6 +676,7 @@ class ProductCreateService:
                     'seller_id'         : seller['seller_id'],
                     'seller_name'       : seller['seller_name'],
                     'profile_image_url' : S3_BUCKET_URL + seller['profile_image_url']
+                                          if not seller['profile_image_url'] else None
                 } for seller in seller_info
             ]
             
@@ -664,6 +717,7 @@ class ProductCreateService:
                 2020-01-01(심원두): 초기 생성
                 2020-01-03(심원두): 결과 편집 처리 수정
         """
+        
         try:
             sub_category_list = \
                 self.create_product_dao.get_sub_category_list(

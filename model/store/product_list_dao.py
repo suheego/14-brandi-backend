@@ -1,5 +1,3 @@
-import traceback
-
 import pymysql
 
 from utils.custom_exceptions import DatabaseError
@@ -90,16 +88,15 @@ class ProductListDao:
                 result = cursor.fetchall()
                 return result
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
-    def get_product_list(self, connection, event_id):
+    def get_product_list(self, connection, data):
 
         """ 상품 리스트 조회
 
             Args:
                 connection : 데이터베이스 연결 객체
-                event_id   : 서비스에서 넘겨 받은 int
+                data   : 서비스에서 넘겨 받은 dict
 
             Author: 김민구
 
@@ -143,35 +140,36 @@ class ProductListDao:
                 ON event_product.product_id = product.id
             INNER JOIN product_images AS product_image
                 ON product_image.product_id = product.id
+                AND product_image.order_index = 1
+                AND product_image.is_deleted = 0
             INNER JOIN sellers AS seller
                 ON seller.account_id = product.seller_id
             INNER JOIN product_sales_volumes AS product_sales_volume
                 ON product_sales_volume.product_id = product.id
             WHERE
-                event_id = %s
+                event_id = %(event_id)s
                 AND product.is_deleted = 0
                 AND product.is_display = 1
             ORDER BY
                 product.id DESC
-            LIMIT 30;
+            LIMIT %(limit)s
         """
 
         try:
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-                cursor.execute(sql, event_id)
+                cursor.execute(sql, data)
                 result = cursor.fetchall()
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
-    def get_event(self, connection, offset):
+    def get_event(self, connection, data):
         """ 상품 리스트 조회
 
             Args:
                 connection : 데이터베이스 연결 객체
-                offset     : 서비스에서 넘겨 받은 int
+                data     : 서비스에서 넘겨 받은 dict
 
             Author: 김민구
 
@@ -201,17 +199,16 @@ class ProductListDao:
                 AND is_deleted = 0
             ORDER BY 
                 id ASC
-            LIMIT %s, 1
+            LIMIT %(offset)s, 1
         """
 
         try:
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-                cursor.execute(sql, offset)
+                cursor.execute(sql, data)
                 result = cursor.fetchone()
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 
     def get_product_image_dao(self, connection, data):
@@ -443,6 +440,5 @@ class ProductListDao:
                 return result
 
         except Exception:
-            traceback.print_exc()
             raise DatabaseError('서버에 알 수 없는 에러가 발생했습니다.')
 

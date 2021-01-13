@@ -17,12 +17,12 @@ class ProductListService:
     def __init__(self):
         self.product_dao = ProductListDao()
 
-    def product_list_logic(self, connection, offset):
+    def product_list_logic(self, connection, data):
         """ 상품 리스트와 이벤트 배너 조회
 
             Args:
                 connection : 데이터베이스 연결 객체
-                offset     : View 에서 넘겨받은 int
+                data       : View 에서 넘겨받은 dict
 
             Author: 김민구
 
@@ -54,10 +54,13 @@ class ProductListService:
                 2020-12-31(김민구): 에러 문구 변경 / 이벤트에 해당하는 상품리스트를 반환하는 작업으로 수정
         """
 
-        event = self.product_dao.get_event(connection, offset)
+        event = self.product_dao.get_event(connection, data)
+
         if not event:
             return []
-        product_list = self.product_dao.get_product_list(connection, event['event_id'])
+
+        data['event_id'] = event['event_id']
+        product_list = self.product_dao.get_product_list(connection, data)
         return {'event': event, 'product_list': product_list}
     
     def product_search_service(self, connection, data):
@@ -104,6 +107,7 @@ class ProductListService:
                 2020-12-31(김기용): 초기 생성
                 2020-01-05(김기용): 누락된여러개의 size 와 color 값을 추가
         """
+        
         try:
 
             images = self.product_dao.get_product_image_dao(connection, data)
@@ -114,6 +118,6 @@ class ProductListService:
             product['sizes'] = sizes
             product['images'] = images
             return product
+
         except KeyError:
             raise KeyError('키값이 일치 하지 않습니다.')
-

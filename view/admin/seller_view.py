@@ -1,12 +1,23 @@
 import json
+
 from flask                   import jsonify, request
 from flask.views             import MethodView
 
 from utils.connection        import get_connection
-from utils.custom_exceptions import DatabaseCloseFail
-from utils.decorator         import signin_decorator
-from utils.rules             import NumberRule, DefaultRule, EmailRule
-
+from utils.custom_exceptions import (
+    DatabaseCloseFail
+)
+from utils.rules             import (
+    NumberRule,
+    PasswordRule,
+    UsernameRule,
+    DefaultRule,
+    PhoneRule,
+    PageRule,
+    PositiveInteger,
+    EmailRule,
+    SellerTypeRule
+)
 
 from flask_request_validator import (
     Param,
@@ -16,6 +27,34 @@ from flask_request_validator import (
     GET,
     validate_params
 )
+class SellerListView(MethodView):
+
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+
+    @validate_params(
+        Param('offset', GET, int)
+    )
+
+    def get(self, *args):
+
+        connection = None
+        try:
+            offset = args[0]
+            connection = get_connection(self.database)
+            result = self.service.seller_list_service(connection, offset)
+            return jsonify({'message': 'success', 'result': result})
+
+        except Exception as e:
+            raise e
+
+        finally:
+            try:
+                if connection is not None:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('서버에 알 수 없는 에러가 발생했습니다.')
 
 class SellerSearchView(MethodView):
   
@@ -24,17 +63,17 @@ class SellerSearchView(MethodView):
         self.database = database
 
     @validate_params(
-        Param('page', GET, int, required=False),
-        Param('page_view', GET, int, required=False),
-        Param('account_id', JSON, int, required=False),
-        Param('username', JSON, str, required=False),
-        Param('seller_english_name', JSON, str, required=False),
-        Param('seller_name', JSON, str, required=False),
-        Param('contact_name', JSON, str, required=False),
-        Param('contact_phone', JSON, str, required=False),
-        Param('contact_email', JSON, str, required=False),
-        Param('seller_attribute_type_name', JSON, str, required=False),
-        Param('seller_status_type_name', JSON, str, required=False),
+        Param('page', GET, int, required=True, rules=[PageRule()]),
+        Param('page_view', GET, int, required=True),
+        Param('account_id', GET, int, required=False, rules=[PositiveInteger()]),
+        Param('username', GET, str, required=False),
+        Param('seller_english_name', GET, str, required=False),
+        Param('seller_name', GET, str, required=False),
+        Param('contact_name', GET, str, required=False),
+        Param('contact_phone', GET, str, required=False,rules=[PhoneRule()]),
+        Param('contact_email', GET, str, required=False, rules=[EmailRule()]),
+        Param('seller_attribute_type_name', GET, str, required=False),
+        Param('seller_status_type_name', GET, str, required=False),
         Param('updated_at', JSON, str, required=False),
         Param('start_date',JSON, str, required=False),
         Param('end_date', JSON, str, required=False)
@@ -57,12 +96,12 @@ class SellerSearchView(MethodView):
                 'end_date' : args[13]
             }
 
-            page = request.args.get('page',1)
-            page_view = request.args.get('page_view',10)
+            page = request.args.get('page')
+            page_view = request.args.get('page_view')
 
             connection = get_connection(self.database)
-            seller_list = self.service.seller_search_service(connection, data, page, page_view)
-            return jsonify({'message':'success', 'result': seller_list}),200
+            result = self.service.seller_search_service(connection, data, page, page_view)
+            return jsonify({'message':'success', 'seller_list': result}),200
 
         except Exception as e:
             raise e
@@ -75,14 +114,18 @@ class SellerSearchView(MethodView):
 
 class SellerSignupView(MethodView):
 
+    def __init__(self, service, database):
+        self.service = service
+        self.database = database
+
     @validate_params(
         Param('username', JSON, str),
-        Param('password', JSON, str),
-        Param('seller_attribute_type_id', JSON, str),
+        Param('password', JSON, str, rules=[PasswordRule()]),
+        Param('seller_attribute_type_id', JSON, str, rules=[SellerTypeRule()]),
         Param('name', JSON, str),
         Param('english_name', JSON, str),
-        Param('contact_phone', JSON, str),
-        Param('service_center_number', JSON, str),
+        Param('contact_phone', JSON, str, rules=[PhoneRule()]),
+        Param('service_center_number', JSON, str, rules=[PhoneRule()]),
     )
     def post(self, *args):
 
@@ -100,7 +143,7 @@ class SellerSignupView(MethodView):
             connection = get_connection(self.database)
             self.service.seller_signup_service(connection,data)
             connection.commit()
-            return jsonify({'message': 'success'}),200
+            return jsonify({'message': 'success'}), 200
 
 
         except Exception as e:
@@ -111,10 +154,8 @@ class SellerSignupView(MethodView):
             try:
                 if connection:
                     connection.close()
-
             except Exception:
                 raise DatabaseCloseFail('database close fail')
-
 
 class SellerSigninView(MethodView):
 
@@ -127,19 +168,27 @@ class SellerSigninView(MethodView):
         Param('password', JSON, str)
     )
     def post(self, *args):
-        connection = None
+        print(args)
+
         data = {
             'username': args[0],
             'password': args[1]
         }
+        connection = None
         try:
             connection = get_connection(self.database)
             token = self.service.seller_signin_service(connection, data)
-            return jsonify({'message':'login success','token': token}),200
+            return jsonify({'message': 'success', 'token': token}), 200
 
         except Exception as e:
-            connection.rollback()                
+            raise e
 
+        finally:
+            try:
+                if connection is not None:
+                    connection.close()
+            except Exception:
+                raise DatabaseCloseFail('서버에 알 수 없는 에러가 발생했습니다.')
 
 class SellerInfoView(MethodView):
     """ Presentation Layer
