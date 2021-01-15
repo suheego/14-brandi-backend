@@ -1,5 +1,5 @@
 from utils.custom_exceptions import UserAlreadyExist
-
+from datetime import datetime
 
 class SampleUserService:
     """ Business Layer
