@@ -1,6 +1,6 @@
 # wecode-14-brandi-team-project-backend
 
-![브랜디](/img/brandi_logo.png)
+![브랜디](https://brandi-intern-8.s3.ap-northeast-2.amazonaws.com/brandi_logo.png)
 
 <br>
 
@@ -12,13 +12,14 @@
 * **`어드민`** - 관리자 기능으로써 회원관리(유저, 셀러, 관리자)와 상품 관리 및 결제 완료 후의 과정에 대한 기능.
 
 ### 2. 프로젝트 목적
-+ Frontend
-  * Vue.js 를 채용하여 제작해본 후 React 와의 차이점을 경험한다.
 
-+ Backend
-  * E-commerce 데이터 베이스 모델링을 실제 업무 상황과 정책에 기반해 구축함으로써, 대량 데이터 적재와 확장성에 기반한 설계를 경험한다.
-  * Flask Framework 채용하여 Raw query 로 DAO 단을 처리하고, CRUD 와 Transaction 처리에 대한 로직의 흐름을 이해한다.
-  * 서비스/관리자 기능을 연결하여 실제 업무 상황에서 발생할 수 있는 비지니스 로직 설계 및 구현한다.
+#### Frontend
+* Vue.js 를 채용하여 제작해본 후 React 와의 차이점을 경험한다.
+
+#### Backend
+* E-commerce 데이터 베이스 모델링을 실제 업무 상황과 정책에 기반해 구축함으로써, 대량 데이터 적재와 확장성에 기반한 설계를 경험한다.
+* Flask Framework 채용하여 Raw query 로 DAO 단을 처리하고, CRUD 와 Transaction 처리에 대한 로직의 흐름을 이해한다.
+* 서비스/관리자 기능을 연결하여 실제 업무 상황에서 발생할 수 있는 비지니스 로직 설계 및 구현한다.
 
 ### 3. 프로젝트 기간 / 참여 인원
 + 2020/12/14 ~ 2021/01/07
