@@ -181,37 +181,6 @@ class StoreOrderDao:
             traceback.print_exc()
             raise ServerError('server_error')
 
-    def get_today_order_number_dao(self, connection):
-        """주문번호 생성을 위한 당일 주문번호 채번
-
-        Args:
-            connection: 데이터베이스 연결 객체
-
-        Author: 고수희
-
-        Returns: 당일 주문량 +1
-
-        History:
-            2020-12-30(고수희): 초기 생성
-        """
-
-        # TODO 다른 주문이 같은 시점에 주문이 될 수 있음
-        today_sql = """
-        SELECT count(*)+1 as today 
-        FROM orders 
-        WHERE date(created_at) = date(now())
-        ;
-        """
-
-        try:
-            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-                cursor.execute(today_sql)
-                result = cursor.fetchone()
-                return result
-
-        except Exception:
-            traceback.print_exc()
-            raise ServerError('server_error')
 
     def post_store_order_dao(self, connection, data):
         """주문 정보 추가
@@ -249,7 +218,8 @@ class StoreOrderDao:
         , total_price
         )
         VALUES (
-        CONCAT(DATE_FORMAT(now(), '%%Y%%m%%d'),(LPAD(%(today)s,6,0)),(LPAD(0,3,0)))
+        (CONCAT(DATE_FORMAT(now(), '%%Y%%m%%d'),
+        (SELECT LPAD(count(*)+1,6,0)from orders as ord where date(created_at) = date(now())),(LPAD(0,3,0))))
         , %(sender_name)s
         , %(sender_phone)s
         , %(sender_email)s
@@ -318,14 +288,15 @@ class StoreOrderDao:
               , %(quantity)s
               , %(order_id)s
               , %(cart_id)s
-              , CONCAT('B', DATE_FORMAT(now(), '%%Y%%m%%d'),(LPAD(%(today)s,6,0)),(LPAD(1,3,0)))
+              , (CONCAT('B',
+              (select replace(order_number,"000","001") from orders where id = %(order_id)s)))
               , %(order_item_status_type_id)s
               , %(original_price)s
               , %(discounted_price)s
               , %(sale)s
           );
           """
-        # TODO insert로 꺼내서 넣기
+
         try:
             with connection.cursor() as cursor:
                 cursor.execute(sql, data)
@@ -452,7 +423,6 @@ class StoreOrderDao:
         History:
             2020-12-31(고수희): 초기 생성
         """
-        # TODO 주문이 복수 아이템일 경우 Update join을 사용해서 삭제 처리
         sql = """
         UPDATE cart_items
         SET is_deleted = 1
