@@ -423,7 +423,6 @@ class StoreOrderDao:
         History:
             2020-12-31(고수희): 초기 생성
         """
-        # TODO 주문이 복수 아이템일 경우 Update join을 사용해서 삭제 처리
         sql = """
         UPDATE cart_items
         SET is_deleted = 1
