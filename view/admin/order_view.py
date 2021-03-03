@@ -428,8 +428,8 @@ class OrderExcelView(MethodView):
     )
     def get(self, *args):
         data = {
-            # 'permission': g.permission_type_id,
-            # 'account': g.account_id,
+            'permission': g.permission_type_id,
+            'account': g.account_id,
             'permission': 1,
             'account': 1,
             'status': args[0],
